@@ -5,7 +5,7 @@ export default function Master():JSX.Element{
 return(
 
     <div>
-        Master
+        Master Data File
     </div>
 )
 
