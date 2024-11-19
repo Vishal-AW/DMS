@@ -27,12 +27,13 @@ return(
             <span className={styles.sh}>SharePoint</span>
             <div className={styles.topnavright}>
              
-            <span><Dropdown
-        placeholder="Select an option"
-        //label="Basic uncontrolled example"
-        options={options}
-        styles={dropdownStyles}
-      /></span>
+            <span className={styles.headerdropdown}>
+              <Dropdown placeholder="Select an option"
+              //label="Basic uncontrolled example"
+              options={options}
+              styles={dropdownStyles}
+              />
+            </span>
 	          <a href="#" className={styles.system}> <HomeIcon></HomeIcon>
             </a>
             </div>

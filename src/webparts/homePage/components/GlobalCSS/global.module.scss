@@ -6,11 +6,14 @@
     text-align: center;
     font-size: 35px;
     color: white;
+    
   }
 
   .topnavright
   {
     float: right;
+    display: flex;
+  align-items: center; /* Ensures both the dropdown and logo are centered vertically */
   }
 
   .sh
@@ -32,7 +35,17 @@
     margin: auto;
     padding: 10px 6px;
     text-decoration: none;
-    font-size: 14px;
+    font-size: 25px;
+  }
+
+  .headerdropdown
+  {
+    margin-right: 20px;
+  }
+
+  .headericon
+  {
+     font-size:20px;
   }
 
   .nav 
