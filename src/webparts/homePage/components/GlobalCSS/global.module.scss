@@ -1,33 +1,87 @@
 @import '~@fluentui/react/dist/sass/References.scss';
-.header {
-    background-color: #666;
-    padding: 30px;
+.header 
+  {
+    background-color: #ffffff;
+    padding: 5px;
     text-align: center;
     font-size: 35px;
     color: white;
   }
 
-  .nav {
-    float: left;
-    width: 20%;
-    height: 300px; /* only for demonstration, should be removed */
-    background: #ccc;
-    padding: 20px;
-  }
-  .article {
-    float: left;
-    padding: 20px;
-    width: 70%;
-    background-color: #f1f1f1;
-    height: 300px; /* only for demonstration, should be removed */
+  .topnavright
+  {
+    float: right;
   }
 
-  .footer {
-    background-color: #777;
+  .sh
+  {
+    float: left;
+    color: #111111;
+    text-align: center;
+    margin: auto;
+    padding: 10px 6px;
+    text-decoration: none;
+    font-size: 14px;
+  }
+
+  .system
+  {
+    float: left;
+    color: #111111;
+    text-align: center;
+    margin: auto;
+    padding: 10px 6px;
+    text-decoration: none;
+    font-size: 14px;
+  }
+
+  .nav 
+  {
+    float: left;
+    //width: 20%;
+    height: 384px; /* only for demonstration, should be removed */
+    background: #ccc;
+    //padding: 20px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 0 28px 0 rgba(82, 63, 105, .05);
+    padding: 0;
+  }
+
+  
+  .article 
+  {
+    float: left;
+    padding: 22px;
+    width: 78%;
+    background-color: #f1f1f1;
+    height: 340px; /* only for demonstration, should be removed */
+  }
+
+  .footer 
+  {
+    background-color: #ffffff;
     padding: 10px;
     text-align: center;
-    color: white;
+    color: #181c32;
+
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
   }
+
+  .footer a
+  {
+    text-decoration: none;
+    color: #181c32;
+  }
+
+   a:link { color:  #181c32; }  
+   a:visited { color: #181c32; }  
+  a:hover { color: #181c32; }  
+  a:active { color: #181c32; } 
+
   section::after {
     content: "";
     display: table;

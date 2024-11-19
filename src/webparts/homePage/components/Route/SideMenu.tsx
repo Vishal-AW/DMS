@@ -3,6 +3,8 @@ import { Sidebar, Menu, MenuItem, SubMenu } from 'react-pro-sidebar';
 //import styles from '../GlobalCSS/global.module.scss';
 import { Link } from 'react-router-dom';
 import {ConstName} from '../Constants/Constants'
+import styles from "../HomePage.module.scss";
+
 
 export default function SideMenu(): JSX.Element {
 
@@ -10,7 +12,12 @@ export default function SideMenu(): JSX.Element {
 
     <div >
       <Sidebar>
-        <Menu
+          <div className={styles.asidelogo}>
+						<a>
+						    <span>Logo</span>
+						</a>
+					</div>
+        <Menu 
           menuItemStyles={{
             button: {
               // the active class will be added automatically by react router

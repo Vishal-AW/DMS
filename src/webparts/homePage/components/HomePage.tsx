@@ -9,6 +9,7 @@ import Master from '../components/Master/Master';
 import Header from '../components/ResuableComponents/Header';
 import Footer from '../components/ResuableComponents/Footer';
 import Dashboard from '../components/Home/Dashboard';
+import '../components/Hidedesign.css';
 
 export default function HomePage(props : IHomePageProps):JSX.Element{
 //export default class HomePage extends React.Component<IHomePageProps> {
