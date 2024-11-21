@@ -1,44 +1,51 @@
 import * as React from "react";
 import styles from '../GlobalCSS/global.module.scss';
 import { Icon } from '@fluentui/react/lib/Icon';
-import { Dropdown, IDropdownStyles, IDropdownOption, DropdownMenuItemType} from '@fluentui/react/lib/Dropdown';
+import { useState } from "react";
+//import { Dropdown, IDropdownStyles, IDropdownOption, DropdownMenuItemType} from '@fluentui/react/lib/Dropdown';
 
 
 export default function Header():JSX.Element{
-  
-const HomeIcon = () => <Icon iconName="Contact" />;
-const dropdownStyles: Partial<IDropdownStyles> = {
-  dropdown: { width: 100 },
-};
 
-const options: IDropdownOption[] = [
-  { key: 'fruitsHeader', text: 'Fruits', itemType: DropdownMenuItemType.Header },
-  { key: 'apple', text: 'Apple' },
-  { key: 'banana', text: 'Banana' },
-  
-];
+ //interface ImageProps {imageUrl:string}
+ const Imageurl="https://apar.com/wp-content/uploads/2023/05/APAR_Media_Kit/APAROriginalIDlWithBrandLine050820.png"
+const HomeIcon = () => <Icon iconName="Contact" />;
+
+  const [isDropdownVisible, setDropdownVisible] = useState(false);
+ 
+  const toggleDropdown = () => {
+    setDropdownVisible(!isDropdownVisible);
+  };
 
 return(
 
     <div className={styles.header}>
-        <div>
-            This is header
-            <a></a>
-            <span className={styles.sh}>SharePoint</span>
+        <div className={styles.headerdiv}>
+            <img src={Imageurl} style={{maxWidth:'100%' ,height:'35px'}}/>
             <div className={styles.topnavright}>
              
-            <span className={styles.headerdropdown}>
-              <Dropdown placeholder="Select an option"
-              //label="Basic uncontrolled example"
-              options={options}
-              styles={dropdownStyles}
-              />
-            </span>
-	          <a href="#" className={styles.system}> <HomeIcon></HomeIcon>
+          
+	          <a href="#" className={styles.system}> 
             </a>
+
+            <div className={styles.userProfile}>
+<div className={styles.profileIcon} onClick={toggleDropdown}>
+<span className="ms-Icon ms-Icon--Contact" aria-hidden="true"></span>
+<span className={styles.profileName} style={{fontSize:'17px'}}><HomeIcon></HomeIcon></span>
+</div>
+      {isDropdownVisible && (
+<div className={styles.dropdownMenu} >
+<div className={styles.dropdownItem}>View account</div>
+<div className={styles.dropdownItem}>My Microsoft 365 profile</div>
+<div className={styles.dropdownItem}>Sign out</div>
+</div>
+      )}
+</div>
+
+
             </div>
         </div>
     </div>
 )
-
 }
+

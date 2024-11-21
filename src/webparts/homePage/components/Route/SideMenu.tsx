@@ -7,6 +7,8 @@ import styles from "../HomePage.module.scss";
 
 
 export default function SideMenu(): JSX.Element {
+const Imageurl="https://apar.com/wp-content/uploads/2023/05/APAR_Media_Kit/APAROriginalIDlWithBrandLine050820.png"
+
 
   return (
 
@@ -14,7 +16,7 @@ export default function SideMenu(): JSX.Element {
       <Sidebar>
           <div className={styles.asidelogo}>
 						<a>
-						    <span>Logo</span>
+						    <span><img src={Imageurl} style={{maxWidth:'100%' ,height:'35px'}}/></span>
 						</a>
 					</div>
         <Menu 
@@ -40,6 +42,8 @@ export default function SideMenu(): JSX.Element {
           <MenuItem component={<Link to="/e-commerce" />}> E-commerce</MenuItem>
         </Menu>
       </Sidebar>
+
+      
     </div>
   )
 
