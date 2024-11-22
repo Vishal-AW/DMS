@@ -1,28 +1,22 @@
-.h1
-{
-   color:red;
-}
-.elementor6165 .elementorelement.elementorelement5187ed5 {
-    padding: 70px 0px 0px 0px;
-    padding-top: 70px;
-    padding-right: 0px;
-    padding-bottom: 0px;
-    padding-left: 0px;
+@import '~@fluentui/react/dist/sass/References.scss';
+
+.cityMaster {
+  overflow: hidden;
+  padding: 1em;
+  color: "[theme:bodyText, default: #323130]";
+  color: var(--bodyText);
+  &.teams {
+    font-family: $ms-font-family-fallbacks;
+  }
 }
 
-.elementorsection .elementorcontainer {
-    display: -webkit-box;
-    display: -ms-flexbox;
+.inlineFormContainer {
     display: flex;
-    margin-right: auto;
-    margin-left: auto;
-    position: relative;
-}
+    gap: 95px; /* Adjust the gap between columns */
+    align-items: flex-start; /* Align items to the top */
+  }
 
-.elementorcolumn, .elementorcolumnwrap {
-    position: relative;
-    display: -webkit-box;
-    display: -ms-flexbox;
+  .inlineFormContainer2 {
     display: flex;
 }
 .elementorcolumn {
@@ -67,14 +61,14 @@
     transition: box-shadow .35s ease-in-out,transform .35s cubic-bezier(.1,.47,.18,1.01);
     transition: box-shadow .35s ease-in-out,transform .35s cubic-bezier(.1,.47,.18,1.01),-webkit-box-shadow .35s ease-in-out,-webkit-transform .35s cubic-bezier(.1,.47,.18,1.01);
 }
-.elementorwidgetcontainer 
-{
-    -webkit-transition: background .3s,border .3s,border-radius .3s,-webkit-box-shadow .3s;
-    transition: background .3s,border .3s,border-radius .3s,-webkit-box-shadow .3s;
-    -o-transition: background .3s,border .3s,border-radius .3s,box-shadow .3s;
-    transition: background .3s,border .3s,border-radius .3s,box-shadow .3s;
-    transition: background .3s,border .3s,border-radius .3s,box-shadow .3s,-webkit-box-shadow .3s;
-}
+//.elementorwidgetcontainer 
+//{
+   // -webkit-transition: background .3s,border .3s,border-radius .3s,-webkit-box-shadow .3s;
+    //transition: background .3s,border .3s,border-radius .3s,-webkit-box-shadow .3s;
+   // -o-transition: background .3s,border .3s,border-radius .3s,box-shadow .3s;
+    //transition: background .3s,border .3s,border-radius .3s,box-shadow .3s;
+    //transition: background .3s,border .3s,border-radius .3s,box-shadow .3s,-webkit-box-shadow .3s;
+//}
 
 .qodefbanner  
 {
@@ -83,42 +77,35 @@
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
-    -webkit-box-align: start;
-    -ms-flex-align: start;
-    align-items: flex-start;
-    -webkit-box-orient: vertical;
-    -webkit-box-direction: normal;
-    -ms-flex-direction: column;
     flex-direction: column;
-    -webkit-box-pack: center;
-    -ms-flex-pack: center;
-    justify-content: center;
+  }
+  
+
+.wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 10px;
+  }
+  .Headerlabel{
+    color: #0e0d0d;
+    font-size: 14px;
+    font-weight: 500
+     
+  }
+.col-md-12{
+    padding-right: 20px;
+  }
+  
+  .col-md-6{
+    padding-top: 20px;
+  }
+.Accodordianherder{
+font-size: large;
+font-weight: bold;
 }
 
-.qodefmimage 
-{
-    -webkit-transform: translateY(-5px);
-    -ms-transform: translateY(-5px);
-    transform: translateY(-5px);
-}
-
-.qodefmcontentinner 
-{
-    padding: 20px 80px 25px 25px;
-    position: relative;
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    -webkit-box-align: start;
-    -ms-flex-align: start;
-    align-items: flex-start;
-    -webkit-box-orient: vertical;
-    -webkit-box-direction: normal;
-    -ms-flex-direction: column;
-    flex-direction: column;
-    -webkit-box-pack: center;
-    -ms-flex-pack: center;
-    justify-content: center;
+.welcome {
+  text-align: center;
 }
 .qodefmtitle 
 {
@@ -137,30 +124,47 @@
     -ms-word-wrap: break-word;
     word-wrap: break-word;
 }
+.submit:hover {
+  color: #009EF7;
+}
+.alignbutton{
+  text-align-last: right;
+  padding-right: 20px;
+}
+.subbtn{
+  padding: 12px 22px;
+  text-align: center;
+  color: #fff;
+  background: #3e77ab;
+  text-decoration: none;
+  margin: 3px 15px 0px 3px;
+  font-size: 15px;
+  
+}
+.subbtn:hover{
+  color: #fff;
+  background: #f35922;
+}
+.canbtn{
+  padding: 12px 22px;
+  text-align: center;
+  color: #fff;
+  background: #f35922;
+  text-decoration: none;
+  
+  margin: 3px 15px 0px 3px;
+  font-size: 15px;
+}
+.links {
+  a {
+    text-decoration: none;
+    color: "[theme:link, default:#03787c]";
+    color: var(--link); // note: CSS Custom Properties support is limited to modern browsers only
 
-.qodefmarrow
- {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    -webkit-box-pack: center;
-    -ms-flex-pack: center;
-    justify-content: center;
-    -webkit-box-align: center;
-    -ms-flex-align: center;
-    align-items: center;
-    width: 60px;
-    height: 60px;
-    font-size: 18px;
-    color: #1a2942;
-    border-color: #eaecee;
-    border-style: solid;
-    border-width: 1px 0 0 1px;
-    border-radius: 10px 0 10px 0;
-   // -webkit-transition: color .2s ease-out,border-color .2s ease-out,background-color .2s ease-out;
-   // -o-transition: color .2s ease-out,border-color .2s ease-out,background-color .2s ease-out;
-   // transition: color .2s ease-out,border-color .2s ease-out,background-color .2s ease-out;
+    &:hover {
+      text-decoration: underline;
+      color: "[theme:linkHovered, default: #014446]";
+      color: var(--linkHovered); // note: CSS Custom Properties support is limited to modern browsers only
+    }
+  }
 }
