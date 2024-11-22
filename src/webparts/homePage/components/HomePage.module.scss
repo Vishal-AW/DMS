@@ -19,6 +19,13 @@
   max-width: 420px;
 }
 
+.sitebar
+{
+  display: 'flex';
+  height: '100%';
+  min-height: '400px';
+}
+
 .links {
   a {
     text-decoration: none;
@@ -32,6 +39,7 @@
     }
   }
 }
+
 
 
 .asidelogo 

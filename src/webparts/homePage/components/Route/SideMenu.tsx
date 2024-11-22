@@ -4,9 +4,12 @@ import { Sidebar, Menu, MenuItem, SubMenu } from 'react-pro-sidebar';
 import { Link } from 'react-router-dom';
 import {ConstName} from '../Constants/Constants'
 import styles from "../HomePage.module.scss";
-
-
+//import { BarChart } from "../icons/BarChart"
+//import { Global } from '../icons/Global';
+//import { InkBottle } from '../icons/InkBottle';
 export default function SideMenu(): JSX.Element {
+const Imageurl="https://apar.com/wp-content/uploads/2023/05/APAR_Media_Kit/APAROriginalIDlWithBrandLine050820.png"
+
 
   return (
 
@@ -14,7 +17,7 @@ export default function SideMenu(): JSX.Element {
       <Sidebar>
           <div className={styles.asidelogo}>
 						<a>
-						    <span>Logo</span>
+						    <span><img src={Imageurl} style={{maxWidth:'100%' ,height:'35px'}}/></span>
 						</a>
 					</div>
         <Menu 
@@ -29,10 +32,23 @@ export default function SideMenu(): JSX.Element {
             },
           }}
         >
-          <SubMenu label="Charts">
+        <SubMenu label="Charts">
             <MenuItem> Pie charts </MenuItem>
             <MenuItem> Line charts </MenuItem>
           </SubMenu>
+          {/*  <SubMenu icon={<Icon name="bar-chart" />} label="Charts">
+            <MenuItem> Pie charts</MenuItem>
+            <MenuItem> Line charts</MenuItem>
+            <MenuItem> Bar charts</MenuItem>
+          </SubMenu>
+          <SubMenu icon={<Icon name="global" />} label="Maps">
+            <MenuItem> Google maps</MenuItem>
+            <MenuItem> Open street maps</MenuItem>
+          </SubMenu>
+          <SubMenu icon={<Icon name="ink-bottle" />} label="Theme">
+            <MenuItem> Dark</MenuItem>
+            <MenuItem> Light</MenuItem>
+          </SubMenu>-->*/}
            
           <MenuItem component={<Link to="/" />}> {ConstName.Const_Route.Dashboard} </MenuItem>
           <MenuItem component={<Link to="/Master" />}> {ConstName.Const_Route.Master} </MenuItem>
