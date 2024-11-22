@@ -52,7 +52,7 @@ export default function Master(): JSX.Element {
           type={PanelType.large}
           isFooterAtBottom={true}
         >
-          <h6 className={styles.headder}>Add Tile Management</h6><hr />
+          <h6 className={styles.Headerlabel}>Add Tile Management</h6><hr />
 
           <Accordion alwaysOpen >
             <Accordion.Item eventKey="0">
