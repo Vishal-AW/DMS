@@ -4,8 +4,9 @@ import { Sidebar, Menu, MenuItem, SubMenu } from 'react-pro-sidebar';
 import { Link } from 'react-router-dom';
 import {ConstName} from '../Constants/Constants'
 import styles from "../HomePage.module.scss";
-
-
+//import { BarChart } from "../icons/BarChart"
+//import { Global } from '../icons/Global';
+//import { InkBottle } from '../icons/InkBottle';
 export default function SideMenu(): JSX.Element {
 const Imageurl="https://apar.com/wp-content/uploads/2023/05/APAR_Media_Kit/APAROriginalIDlWithBrandLine050820.png"
 
@@ -31,10 +32,23 @@ const Imageurl="https://apar.com/wp-content/uploads/2023/05/APAR_Media_Kit/APARO
             },
           }}
         >
-          <SubMenu label="Charts">
+        <SubMenu label="Charts">
             <MenuItem> Pie charts </MenuItem>
             <MenuItem> Line charts </MenuItem>
           </SubMenu>
+          {/*  <SubMenu icon={<Icon name="bar-chart" />} label="Charts">
+            <MenuItem> Pie charts</MenuItem>
+            <MenuItem> Line charts</MenuItem>
+            <MenuItem> Bar charts</MenuItem>
+          </SubMenu>
+          <SubMenu icon={<Icon name="global" />} label="Maps">
+            <MenuItem> Google maps</MenuItem>
+            <MenuItem> Open street maps</MenuItem>
+          </SubMenu>
+          <SubMenu icon={<Icon name="ink-bottle" />} label="Theme">
+            <MenuItem> Dark</MenuItem>
+            <MenuItem> Light</MenuItem>
+          </SubMenu>-->*/}
            
           <MenuItem component={<Link to="/" />}> {ConstName.Const_Route.Dashboard} </MenuItem>
           <MenuItem component={<Link to="/Master" />}> {ConstName.Const_Route.Master} </MenuItem>
@@ -42,8 +56,6 @@ const Imageurl="https://apar.com/wp-content/uploads/2023/05/APAR_Media_Kit/APARO
           <MenuItem component={<Link to="/e-commerce" />}> E-commerce</MenuItem>
         </Menu>
       </Sidebar>
-
-      
     </div>
   )
 
