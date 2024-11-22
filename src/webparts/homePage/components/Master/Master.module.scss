@@ -5,68 +5,132 @@
   padding: 1em;
   color: "[theme:bodyText, default: #323130]";
   color: var(--bodyText);
+
   &.teams {
     font-family: $ms-font-family-fallbacks;
   }
 }
 
-.inlineFormContainer {
-    display: flex;
-    gap: 95px; /* Adjust the gap between columns */
-    align-items: flex-start; /* Align items to the top */
-  }
+.toknes {
 
-  .inlineFormContainer2 {
-    display: flex;
-    gap: 64px; /* Adjust the gap between columns */
-    align-items: flex-start; /* Align items to the top */
-  }
-  
-  .col-md-4 {
-    flex: 2; /* Make each column take an equal amount of space */
-  }
-  
-  .form-group {
-    display: flex;
-    flex-direction: column;
-  }
-  
+  gap: 20;
+  padding: 20
+}
+
+.inlineFormContainer {
+  display: flex;
+  gap: 95px;
+  /* Adjust the gap between columns */
+  align-items: flex-start;
+  /* Align items to the top */
+}
+
+.inlineFormContainer2 {
+  display: flex;
+  gap: 64px;
+  /* Adjust the gap between columns */
+  align-items: flex-start;
+  /* Align items to the top */
+}
+
+.col-md-4 {
+  flex: 2;
+  /* Make each column take an equal amount of space */
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
 
 .wrapper {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 10px;
-  }
-  .Headerlabel{
-    color: #0e0d0d;
-    font-size: 14px;
-    font-weight: 500
-     
-  }
-.col-md-12{
-    padding-right: 20px;
-  }
-  
-  .col-md-6{
-    padding-top: 20px;
-  }
-.Accodordianherder{
-font-size: large;
-font-weight: bold;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 10px;
+}
+
+.Headerlabel {
+  color: #0e0d0d;
+  font-size: 14px;
+  font-weight: 500
+}
+
+.col-md-12 {
+  padding-right: 20px;
+}
+
+.col-md-6 {
+  padding-top: 20px;
+}
+
+.container {
+  max-width: 100%;
+  margin: 0px auto;
+  // box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 25px 50px 0 rgba(0, 0, 0, 0.1);
+
+}
+
+.containerOne {
+  @include ms-Grid-row;
+  max-width: 100%;
+  text-align-last: center;
+}
+
+.sub-btn {
+  padding: 12px 22px;
+  text-align: center;
+  color: #fff;
+  background:#009EF7;
+  text-decoration: none;
+  margin: 3px 15px 0px 3px;
+  //font-size: 15px;
+  border: 0px;
+  display: inline-block;
+  font-weight: 500;
+  outline: 0 !important;
+}
+
+.sub-btn:hover {
+  color: #fff;
+  background: #009EF7;
+}
+
+.can-btn {
+  padding: 12px 22px;
+  text-align: center;
+  color: #7e8299;
+  background: #dddad8;
+  text-decoration: none;
+  margin: 20px 0;
+  font-size: 15px;
+  border: 0px;
+  outline: 0 !important;
+}
+
+.can-btn:hover {
+  color: #fff;
+  background:#dddad8;
+}
+
+.Accodordianherder {
+  font-size: large;
+  font-weight: bold;
 }
 
 .welcome {
   text-align: center;
 }
 
-.headder{
-    margin-top: -3px;
-   }
+.headder {
+  margin-top: -3px;
+}
 
 .welcomeImage {
   width: 100%;
   max-width: 420px;
 }
+
 .submit {
   background-color: #009EF7;
   color: #fff;
@@ -75,14 +139,17 @@ font-weight: bold;
   border-radius: 5px;
   border: none !important;
 }
+
 .submit:hover {
   color: #009EF7;
 }
-.alignbutton{
+
+.alignbutton {
   text-align-last: right;
   padding-right: 20px;
 }
-.subbtn{
+
+.subbtn {
   padding: 12px 22px;
   text-align: center;
   color: #fff;
@@ -90,22 +157,25 @@ font-weight: bold;
   text-decoration: none;
   margin: 3px 15px 0px 3px;
   font-size: 15px;
-  
+
 }
-.subbtn:hover{
+
+.subbtn:hover {
   color: #fff;
   background: #f35922;
 }
-.canbtn{
+
+.canbtn {
   padding: 12px 22px;
   text-align: center;
   color: #fff;
   background: #f35922;
   text-decoration: none;
-  
+
   margin: 3px 15px 0px 3px;
   font-size: 15px;
 }
+
 .links {
   a {
     text-decoration: none;
