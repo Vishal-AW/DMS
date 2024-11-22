@@ -77,12 +77,35 @@ export default function Master(): JSX.Element {
 
   const handleToggleChange = (checked: boolean): void => {
     setIsDropdownVisible(checked);
-    setIsRequired(checked);
-    setFieldstatus(checked);
-    setFieldAllowinFile(checked);
-    setSearchFilterRequired(checked);
+    
 
   };
+
+  const handleIsRequiredToggleChange = (checked: boolean): void => {
+    setIsRequired(checked);
+    
+
+  };
+  const handleFieldstatusToggleChange = (checked: boolean): void => {
+    setFieldstatus(checked);
+    
+
+  };
+  const handleFieldAllowinFileToggleChange = (checked: boolean): void => {
+    setFieldAllowinFile(checked);
+    
+
+  };
+  const handleSearchFilterRequiredToggleChange = (checked: boolean): void => {
+    setSearchFilterRequired(checked);
+    
+
+  };
+
+  
+    
+    
+    
 
   const ToggleChangeforrefernceno = (checked: boolean): void => {
 
@@ -307,16 +330,16 @@ export default function Master(): JSX.Element {
                             />
                           </td>
                           <td style={{ padding: '10px' }}>
-                            <Toggle checked={IsRequired} onChange={(_, checked) => handleToggleChange(checked!)} />
+                            <Toggle checked={IsRequired} onChange={(_, checked) => handleIsRequiredToggleChange(checked!)} />
                           </td>
                           <td style={{ padding: '10px' }}>
-                            <Toggle checked={Fieldstatus} onChange={(_, checked) => handleToggleChange(checked!)} />
+                            <Toggle checked={Fieldstatus} onChange={(_, checked) => handleFieldstatusToggleChange(checked!)} />
                           </td>
                           <td style={{ padding: '10px' }}>
-                            <Toggle checked={FieldAllowinFile} onChange={(_, checked) => handleToggleChange(checked!)} />
+                            <Toggle checked={FieldAllowinFile} onChange={(_, checked) => handleFieldAllowinFileToggleChange(checked!)} />
                           </td>
                           <td style={{ padding: '10px' }}>
-                            <Toggle checked={SearchFilterRequired} onChange={(_, checked) => handleToggleChange(checked!)} />
+                            <Toggle checked={SearchFilterRequired} onChange={(_, checked) => handleSearchFilterRequiredToggleChange(checked!)} />
                           </td>
                           <td style={{ padding: '10px' }}>
                             <Icon iconName="Add" onClick={addRow} style={{ color: '#009EF7', font: 'bold', cursor: 'pointer' }} />
