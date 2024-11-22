@@ -7,8 +7,8 @@ import { useState } from "react";
 
 export default function Header():JSX.Element{
 
- //interface ImageProps {imageUrl:string}
- const Imageurl="https://apar.com/wp-content/uploads/2023/05/APAR_Media_Kit/APAROriginalIDlWithBrandLine050820.png"
+//interface ImageProps {imageUrl:string}
+const Imageurl="https://apar.com/wp-content/uploads/2023/05/APAR_Media_Kit/APAROriginalIDlWithBrandLine050820.png"
 const HomeIcon = () => <Icon iconName="Contact" />;
 
   const [isDropdownVisible, setDropdownVisible] = useState(false);
@@ -23,8 +23,6 @@ return(
         <div className={styles.headerdiv}>
             <img src={Imageurl} style={{maxWidth:'100%' ,height:'35px'}}/>
             <div className={styles.topnavright}>
-             
-          
 	          <a href="#" className={styles.system}> 
             </a>
 
