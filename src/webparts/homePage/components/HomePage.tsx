@@ -9,6 +9,8 @@ import Master from '../components/Master/Master';
 import Header from '../components/ResuableComponents/Header';
 import Footer from '../components/ResuableComponents/Footer';
 import Dashboard from '../components/Home/Dashboard';
+import TreeView from '../components/v1_tree/TreeView';
+
 import '../components/Hidedesign.css';
 
 export default function HomePage(props : IHomePageProps):JSX.Element{
@@ -31,7 +33,8 @@ export default function HomePage(props : IHomePageProps):JSX.Element{
             
               <Routes>
                 <Route path='/Dashboard' element={<Dashboard></Dashboard>}></Route>
-                <Route path='/Master' element={<Master></Master>}></Route>
+                <Route path='/Master' element={<Master props={props}></Master>}></Route>
+                <Route path='/TreeView' element={<TreeView></TreeView>}></Route>
               </Routes>
           
              

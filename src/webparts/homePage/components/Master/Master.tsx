@@ -1,7 +1,8 @@
 import * as React from "react";
 import { useState } from 'react';
 import styles from '../Master/Master.module.scss';
-import { DefaultButton, Panel, PanelType, TextField, Toggle, Dropdown, IDropdownStyles, IDropdownOption, Checkbox, Icon, ChoiceGroup, IChoiceGroupOption } from 'office-ui-fabric-react';
+import { DefaultButton, Panel, PanelType, TextField, Toggle, Dropdown, IDropdownStyles,
+IDropdownOption, Checkbox, Icon, ChoiceGroup, IChoiceGroupOption } from 'office-ui-fabric-react';
 //import { FilePicker, IFilePickerResult } from '@pnp/spfx-controls-react/lib/FilePicker';
 //import MaterialTable from "material-table";
 import { Accordion, Form } from 'react-bootstrap';
@@ -10,7 +11,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 //import type { IHomePageProps } from '../IHomePageProps';
 
 
-export default function Master(): JSX.Element {
+export default function Master({props}:any): JSX.Element {
   const [showModal, setShowModal] = useState(false);
   const [preview, setPreview] = useState(false);
   const [download, setDownload] = useState(false);
@@ -214,7 +215,18 @@ export default function Master(): JSX.Element {
                           placeholder=" "
                           // errorMessage={"Please fill this field"}
                           value={""}
-                        />
+                          type="file"
+                        /> 
+                        {/* <FilePicker
+                        bingAPIKey="<BING API KEY>"
+                        accepts={[".doc", ".docx", ".xls", ".xlsm"]}
+                        buttonIcon="FileImage"
+                        onSave={(filePickerResult: IFilePickerResult[]) => {
+                          // this.setState({ filePickerResult })
+                          this.attachment1(filePickerResult);
+                        }}
+                        context={props.context}
+                      /> */}
                       </div>
                     </div>
                     <div className="col-md-3">
