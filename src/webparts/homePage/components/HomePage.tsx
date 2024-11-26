@@ -8,6 +8,7 @@ import SideMenu from '../components/Route/SideMenu';
 import Master from '../components/Master/Master';
 import Header from '../components/ResuableComponents/Header';
 import Footer from '../components/ResuableComponents/Footer';
+import Datatable from '../components/ResuableComponents/Header';
 import Dashboard from '../components/Home/Dashboard';
 import TreeView from '../components/v1_tree/TreeView';
 
@@ -35,6 +36,7 @@ export default function HomePage(props : IHomePageProps):JSX.Element{
                 <Route path='/Dashboard' element={<Dashboard></Dashboard>}></Route>
                 <Route path='/Master' element={<Master props={props}></Master>}></Route>
                 <Route path='/TreeView' element={<TreeView></TreeView>}></Route>
+                <Route path='/Datatable' element={<Datatable></Datatable>}></Route>
               </Routes>
           
              
