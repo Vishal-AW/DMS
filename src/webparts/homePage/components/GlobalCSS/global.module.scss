@@ -1,197 +1,188 @@
 @import '~@fluentui/react/dist/sass/References.scss';
 
-body
-{
-  background-color: #f1f1f1 !important;
+body {
+  background-color: #f4f4f4 !important;
 }
 
-.header 
-  {
-    background-color: #ffffff;
-    //text-align: center;
-    //font-size: 40px;
-    color: white;
-   // padding-top: 5px;
-   box-shadow: 0 10px 30px 0 rgba(82, 63, 105, .05);
-  }
-  
-  .headerdiv
-  {
-    padding: 10px;
-  }  
-  .topnavright
-  {
-    float: right;
-    display: flex;
-  align-items: center; /* Ensures both the dropdown and logo are centered vertically */
-  }
+.header {
+  background-color: #ffffff;
+  //text-align: center;
+  //font-size: 40px;
+  color: white;
+  // padding-top: 5px;
+  box-shadow: 0 10px 30px 0 rgba(82, 63, 105, .05);
+}
 
-  .sh
-  {
-    float: left;
-    color: #111111;
-    text-align: center;
-    margin: auto;
-    padding: 10px 6px;
-    text-decoration: none;
-    font-size: 14px;
-  }
+.headerdiv {
+  padding: 10px;
+}
 
-  .system
-  {
-    float: left;
-    color: #111111;
-    text-align: center;
-    margin: auto;
-    padding: 10px 6px;
-    text-decoration: none;
-    font-size: 25px;
-  }
+.topnavright {
+  float: right;
+  display: flex;
+  align-items: center;
+  /* Ensures both the dropdown and logo are centered vertically */
+}
 
-  .headerdropdown
-  {
-    margin-right: 20px;
-  }
+.sh {
+  float: left;
+  color: #111111;
+  text-align: center;
+  margin: auto;
+  padding: 10px 6px;
+  text-decoration: none;
+  font-size: 14px;
+}
 
-  .headericon
-  {
-     font-size:20px;
-  }
+.system {
+  float: left;
+  color: #111111;
+  text-align: center;
+  margin: auto;
+  padding: 10px 6px;
+  text-decoration: none;
+  font-size: 25px;
+}
 
-  .nav 
-  {
-    float: left;
-    //width: 20%;
-    height: 100%; /* only for demonstration, should be removed */
-    background: #ffffff;
-    //padding: 20px;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 0 28px 0 rgba(82, 63, 105, .05);
-    padding: 0;
-    margin-top: 48px;
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 101;
-    overflow: hidden;
-  }
+.headerdropdown {
+  margin-right: 20px;
+}
 
-  
-  .article 
-  {
-    float: left;
-    padding: 22px;
-    width: 100%;
-    background-color: #f1f1f1;
-    height: 100%; /* only for demonstration, should be removed */
-  }
+.headericon {
+  font-size: 20px;
+}
 
-  .footer 
-  {
-    background-color: #ffffff;
-    padding: 10px;
-    text-align: center;
-    color: #181c32;
-    position: fixed;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-  }
-
-  .footer a
-  {
-    text-decoration: none;
-    color: #181c32;
-  }
-
-  a:link { color:  #181c32; }  
-  a:visited { color: #181c32; }  
-  a:hover { color: #181c32; }  
-  a:active { color: #181c32; } 
-
-  section::after 
-  {
-    content: "";
-    display: table;
-    clear: both;
-  }
-  .userProfile
-  {
-    position: relative;
-  }
-   
-  .profileIcon 
-  {
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-  }
-   
-  .profileName 
-  {
-    margin-left: 8px;
-    font-weight: bold;
-    font-weight: 500px !important;
-
-  }
-   
-  .dropdownMenu 
-  {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    //background-color: white;
-    //border: 1px solid #ccc;
-   // box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    width: 200px;
-    //z-index: 100;
-    padding: 10px;
-    border-radius: .475rem;
-    background-color: #fff;
-    box-shadow: 0 0 50px 0 rgba(82, 63, 105, .1);
-    z-index: 105;
-  }
-   
-  .dropdownItem 
-  {
-    cursor: pointer;
-    padding-right: 1.25rem !important;
-    padding-left: 1.25rem !important;
-    padding-top: 10px !important;
-    padding-bottom: 10px !important;
-    color: #3f4254;
-    font-size: 15px;
-    text-align: left;
-    border-radius: .475rem;
-    font-weight: 500;
-
-  }
-
-  .dropdownItem:hover 
-  {
-   // background-color: #f0f0f0;
-    transition: color .2s ease, background-color .2s ease;
-    background-color:#f5f8facc !important;
-    color: #009ef7;
-  }
-   
-  .dropdownItem:hover 
-  {
-    background-color: #f0f0f0;
-  }
-
-  .profileName
-  {
-    color: #000000;
-    font-size: 22px ;
-    font-weight: 500px !important;
-    border: 1px solid;
-    border-radius: 50%;
-    padding: 5px 8px;
-  }
-
-  
+.nav {
+  float: left;
+  //width: 20%;
+  height: 100%;
+  /* only for demonstration, should be removed */
+  background: #ffffff;
+  //padding: 20px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 28px 0 rgba(82, 63, 105, .05);
+  padding: 0;
+  margin-top: 48px;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 101;
+  overflow: hidden;
+}
 
 
+.article {
+  float: left;
+  padding: 22px;
+  width: 100%;
+  background-color: #f1f1f1;
+  height: 100%;
+  /* only for demonstration, should be removed */
+}
+
+.footer {
+  background-color: #ffffff;
+  padding: 10px;
+  text-align: center;
+  color: #181c32;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+}
+
+.footer a {
+  text-decoration: none;
+  color: #181c32;
+}
+
+a:link {
+  color: #181c32;
+}
+
+a:visited {
+  color: #181c32;
+}
+
+a:hover {
+  color: #181c32;
+}
+
+a:active {
+  color: #181c32;
+}
+
+section::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.userProfile {
+  position: relative;
+}
+
+.profileIcon {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.profileName {
+  margin-left: 8px;
+  font-weight: bold;
+  font-weight: 500px !important;
+
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  //background-color: white;
+  //border: 1px solid #ccc;
+  // box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  width: 200px;
+  //z-index: 100;
+  padding: 10px;
+  border-radius: .475rem;
+  background-color: #fff;
+  box-shadow: 0 0 50px 0 rgba(82, 63, 105, .1);
+  z-index: 105;
+}
+
+.dropdownItem {
+  cursor: pointer;
+  padding-right: 1.25rem !important;
+  padding-left: 1.25rem !important;
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+  color: #3f4254;
+  font-size: 15px;
+  text-align: left;
+  border-radius: .475rem;
+  font-weight: 500;
+
+}
+
+.dropdownItem:hover {
+  // background-color: #f0f0f0;
+  transition: color .2s ease, background-color .2s ease;
+  background-color: #f5f8facc !important;
+  color: #009ef7;
+}
+
+.dropdownItem:hover {
+  background-color: #f0f0f0;
+}
+
+.profileName {
+  color: #000000;
+  font-size: 22px;
+  font-weight: 500px !important;
+  border: 1px solid;
+  border-radius: 50%;
+  padding: 5px 8px;
+}
