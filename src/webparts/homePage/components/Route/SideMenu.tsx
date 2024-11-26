@@ -75,6 +75,18 @@ return (
         icon={<Icon iconName="Diamond" style={{ color: '#00bcd4', fontSize: '18px' }} />}>
         {ConstName.Const_Route.Dashboard}        
         </MenuItem>
+        
+        
+
+        
+
+        
+
+
+         {/* <MenuItem component={<Link to="/" />}> {ConstName.Const_Route.Dashboard} </MenuItem>
+          <MenuItem component={<Link to="/Master" />}> {ConstName.Const_Route.Master} </MenuItem>
+          <MenuItem component={<Link to="/Dashboard" />}> {ConstName.Const_Route.Dashboard} </MenuItem>
+          <MenuItem component={<Link to="/e-commerce" />}> E-commerce</MenuItem>*/}
         </Menu>
       </Sidebar>
     </div>
