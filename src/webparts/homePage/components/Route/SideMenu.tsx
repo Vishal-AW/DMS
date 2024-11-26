@@ -30,30 +30,18 @@ return (
           color: '#fff',         // Text color
         }}
       >
-         {/* <div className={styles.asidelogo}>
-						<a>
-						    <span><img src={Imageurl} style={{maxWidth:'100%' ,height:'35px'}}/></span>
-						</a>
-					</div>*/}
-
+        
         <div>
-          <span style={{ marginBottom: '20px', marginTop: '20px', marginLeft: '22px' }}>
-            <img src={Imageurl} style={{maxWidth:'100%' ,height:'50px'}}/>
-          </span>
+        {!collapsed && (<span style={{marginBottom: '20px', marginTop: '20px', marginLeft: '22px' }}>
+          <img src={Imageurl} style={{maxWidth:'100%' ,height:'50px'}}/>
+          </span>)}
 
-          <span
-          style={{
-            textAlign: 'center',
-            marginBottom: '20px',
-            color: '#00bcd4',
-            cursor: 'pointer',
-          }}
+          <span style={{textAlign: 'center',marginBottom: '20px',color: '#00bcd4',cursor: 'pointer',}}
           onClick={toggleSidebar} // Toggle on click
-        >
-          <Icon iconName="GlobalNavButton" style={{ fontSize: '24px' }} />
+          >
+          <Icon iconName="GlobalNavButton" style={{ fontSize: '24px' ,paddingLeft: '27px',verticalAlign: 'middle',}} />
         </span>
         </div>
-        
 
         <Menu>
         
@@ -74,83 +62,26 @@ return (
           </SubMenu>
 
         <MenuItem component={<Link to="/" />} 
-        icon={<Icon iconName="calendar" style={{ color: '#00bcd4', fontSize: '18px' }} />} label="calendar">
+        icon={<Icon iconName="calendar" style={{ color: '#00bcd4', fontSize: '18px' }} />}>
         {ConstName.Const_Route.Dashboard}  
         </MenuItem>
 
         <MenuItem component={<Link to="/" />}
-        icon={<Icon iconName="ShoppingCart" style={{ color: '#00bcd4', fontSize: '18px' }} />} label="ShoppingCart">
+        icon={<Icon iconName="ShoppingCart" style={{ color: '#00bcd4', fontSize: '18px' }} />}>
         {ConstName.Const_Route.Master}        
         </MenuItem>
 
         <MenuItem component={<Link to="/Dashboard" />}
-        icon={<Icon iconName="Diamond" style={{ color: '#00bcd4', fontSize: '18px' }} />} label="Diamond">
+        icon={<Icon iconName="Diamond" style={{ color: '#00bcd4', fontSize: '18px' }} />}>
         {ConstName.Const_Route.Dashboard}        
         </MenuItem>
-
-        
-
-
-         {/* <MenuItem component={<Link to="/" />}> {ConstName.Const_Route.Dashboard} </MenuItem>
-          <MenuItem component={<Link to="/Master" />}> {ConstName.Const_Route.Master} </MenuItem>
-          <MenuItem component={<Link to="/Dashboard" />}> {ConstName.Const_Route.Dashboard} </MenuItem>
-          <MenuItem component={<Link to="/e-commerce" />}> E-commerce</MenuItem>*/}
         </Menu>
       </Sidebar>
     </div>
 
-    /*<div style={{ display: 'flex', height: '100vh' }}>
-      <Sidebar
-        style={{
-          background: '#1d1d1d', // Sidebar background color
-          color: '#fff',         // Text color
-          padding: '10px',
-        }}
-      >
-        <div style={{ marginBottom: '20px', textAlign: 'center' }}>
-          <h2 style={{ color: '#00bcd4', margin: '0' }}>Pro Sidebar</h2>
-        </div>
+    
 
-        <Menu>
-          {/* Charts Section *
-          <SubMenu
-            icon={<Icon iconName="BarChartVertical" style={{ color: '#00bcd4', fontSize: '18px' }} />}
-            label="Charts"
-          >
-            <MenuItem>Pie charts</MenuItem>
-            <MenuItem>Line charts</MenuItem>
-            <MenuItem>Bar charts</MenuItem>
-          </SubMenu>
-
-          {/* Maps Section *
-          <SubMenu
-            icon={<Icon iconName="Globe" style={{ color: '#00bcd4', fontSize: '18px' }} />}
-            label="Maps"
-          >
-            <MenuItem>Google maps</MenuItem>
-            <MenuItem>Open street maps</MenuItem>
-          </SubMenu>
-
-          {/* Theme Section *
-          <SubMenu
-            icon={<Icon iconName="Color" style={{ color: '#00bcd4', fontSize: '18px' }} />}
-            label="Theme"
-          >
-            <MenuItem>Dark Theme</MenuItem>
-            <MenuItem>Light Theme</MenuItem>
-          </SubMenu>
-
-          {/* Components Section *
-          <SubMenu
-            icon={<Icon iconName="Components" style={{ color: '#00bcd4', fontSize: '18px' }} />}
-            label="Components"
-          >
-            <MenuItem>Buttons</MenuItem>
-            <MenuItem>Cards</MenuItem>
-          </SubMenu>
-        </Menu>
-      </Sidebar>
-    </div>*/
+    
   )
 
 }
