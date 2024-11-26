@@ -1,17 +1,21 @@
 import * as React from "react";
 import { useState } from 'react';
 import styles from '../Master/Master.module.scss';
-import { DefaultButton, Panel, PanelType, TextField, Toggle, Dropdown, IDropdownStyles,
-IDropdownOption, Checkbox, Icon, ChoiceGroup, IChoiceGroupOption } from 'office-ui-fabric-react';
+import {
+  DefaultButton, Panel, PanelType, TextField, Toggle, Dropdown, IDropdownStyles,
+  IDropdownOption, Checkbox, Icon, ChoiceGroup, IChoiceGroupOption
+} from 'office-ui-fabric-react';
+import MessageDialog from '../ResuableComponents/MessageDialog';
 //import { FilePicker, IFilePickerResult } from '@pnp/spfx-controls-react/lib/FilePicker';
 //import MaterialTable from "material-table";
 import { Accordion, Form } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { useBoolean } from '@fluentui/react-hooks'
 //import {WebPartContext} from '@microsoft/sp-webpart-base'
 //import type { IHomePageProps } from '../IHomePageProps';
 
 
-export default function Master({props}:any): JSX.Element {
+export default function Master({ props }: any): JSX.Element {
   const [showModal, setShowModal] = useState(false);
   const [preview, setPreview] = useState(false);
   const [download, setDownload] = useState(false);
@@ -21,15 +25,30 @@ export default function Master({props}:any): JSX.Element {
   const [years1, setYYY] = useState(false);
   const [monthsdate, setMM] = useState(false);
   const toggleModal = () => setShowModal(!showModal);
+  //const [showDialog, setShowDialog] = useState(false);
+  //const [dialogMessage, setDialogMessage] = useState('');
+  const [isPopupVisible, { setTrue: showPopup, setFalse: hidePopup }] = useBoolean(false);
+
+
+  // const openDialog = () => {
+  //   setDialogMessage('Save Data Successfully.');
+  //   setShowDialog(true);
+  // };
+
+  // Function to handle dialog actions (e.g., Submit or Close)
+  // const handleDialogAction = (action: string) => {
+  //   console.log(`Dialog action: ${action}`);
+  //   setShowDialog(false); // Close the dialog
+  // };
 
   //const [selectedFields, setSelectedFields] = useState<string[]>([]);
 
-	
-	// const ChangeSettingdropdownOptions: IDropdownOption[] = [
+
+  // const ChangeSettingdropdownOptions: IDropdownOption[] = [
   //   { key: 'separator', text: 'Separator' },
   //   { key: 'concat', text: 'concat' },
-	// ];
-	
+  // ];
+
 
   // const onChange = React.useCallback(
   //   (ev?: React.FormEvent<HTMLElement | HTMLInputElement>, checked?: boolean): void => {
@@ -41,7 +60,7 @@ export default function Master({props}:any): JSX.Element {
   //   [],
   // );
 
-  
+
 
 
   const choiceoptions: IChoiceGroupOption[] = [
@@ -78,35 +97,35 @@ export default function Master({props}:any): JSX.Element {
 
   const handleToggleChange = (checked: boolean): void => {
     setIsDropdownVisible(checked);
-    
+
 
   };
 
   const handleIsRequiredToggleChange = (checked: boolean): void => {
     setIsRequired(checked);
-    
+
 
   };
   const handleFieldstatusToggleChange = (checked: boolean): void => {
     setFieldstatus(checked);
-    
+
 
   };
   const handleFieldAllowinFileToggleChange = (checked: boolean): void => {
     setFieldAllowinFile(checked);
-    
+
 
   };
   const handleSearchFilterRequiredToggleChange = (checked: boolean): void => {
     setSearchFilterRequired(checked);
-    
+
 
   };
 
-  
-    
-    
-    
+
+
+
+
 
   const ToggleChangeforrefernceno = (checked: boolean): void => {
 
@@ -159,7 +178,7 @@ export default function Master({props}:any): JSX.Element {
     { key: '60', text: '60' },
     { key: '90', text: '90' },
     { key: '120', text: '120' },
-    
+
   ];
 
   const options: IDropdownOption[] = [
@@ -216,7 +235,7 @@ export default function Master({props}:any): JSX.Element {
                           // errorMessage={"Please fill this field"}
                           value={""}
                           type="file"
-                        /> 
+                        />
                         {/* <FilePicker
                         bingAPIKey="<BING API KEY>"
                         accepts={[".doc", ".docx", ".xls", ".xlsm"]}
@@ -426,10 +445,10 @@ export default function Master({props}:any): JSX.Element {
                             border: '1px solid #f5f8fa',
                           }}
                         >
-                          
-                           <Checkbox label="YYYY" checked={Years} onChange={(e, checked) => setYYYY(!!checked)} />
+
+                          <Checkbox label="YYYY" checked={Years} onChange={(e, checked) => setYYYY(!!checked)} />
                           <Checkbox label="YY_YY" checked={years1} onChange={(e, checked) => setYYY(!!checked)} />
-                          <Checkbox label="MM" checked={monthsdate} onChange={(e, checked) => setMM(!!checked)} /> 
+                          <Checkbox label="MM" checked={monthsdate} onChange={(e, checked) => setMM(!!checked)} />
 
                         </div>
 
@@ -453,7 +472,7 @@ export default function Master({props}:any): JSX.Element {
                               display: 'flex',
                               flexDirection: 'column', // Arrange label and ChoiceGroup vertically
                               gap: '10px',
-                             // color: '#5e6278',
+                              // color: '#5e6278',
                               padding: '10px',
                               //border: '1px solid #f5f8fa',
                               flex: 1, // Make both sections take equal width
@@ -489,7 +508,7 @@ export default function Master({props}:any): JSX.Element {
                               //border: '1px solid #f5f8fa',
                               flex: 1, // Make both sections take equal width
                             }}
-                          > 
+                          >
                             <label className={styles.Headerlabel} style={{ display: 'block' }}>Initial Increment</label>
                             <ChoiceGroup
                               options={InitialIncrementoptions}
@@ -508,15 +527,15 @@ export default function Master({props}:any): JSX.Element {
                           </div>
                         </div>
                       </div>
-                    )}<br/>
+                    )}<br />
 
-                      {DynamicDataReference && (
+                    {DynamicDataReference && (
                       <div>
-                      {/* Choose Fields Section */}
+                        {/* Choose Fields Section */}
 
                         <div>
                           <label className={styles.Headerlabel} style={{ display: 'block' }}>Change Setting</label>
-                         
+
                         </div>
                       </div>
                     )}
@@ -524,7 +543,7 @@ export default function Master({props}:any): JSX.Element {
 
 
                   </div>
-                  
+
                 </Form>
               </Accordion.Body>
             </Accordion.Item>
@@ -533,19 +552,19 @@ export default function Master({props}:any): JSX.Element {
               <Accordion.Header className={styles.Accodordianherder}>Archive Section</Accordion.Header>
               <Accordion.Body>
                 <Form>
-                <div style={{ marginBottom: '20px' }}>
+                  <div style={{ marginBottom: '20px' }}>
 
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  {/* Dynamic Reference Toggle */}
-                  <div className="col-md-3">
-                    <label className={styles.Headerlabel}>Is Archive Allowed</label>
-                    <Toggle
-                      checked={IsArchiveAllowed}
-                      onChange={(_, checked) => ToggleChangeforArchiveAllowed(checked!)}
-                    />
-                  </div>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      {/* Dynamic Reference Toggle */}
+                      <div className="col-md-3">
+                        <label className={styles.Headerlabel}>Is Archive Allowed</label>
+                        <Toggle
+                          checked={IsArchiveAllowed}
+                          onChange={(_, checked) => ToggleChangeforArchiveAllowed(checked!)}
+                        />
+                      </div>
 
-                  {IsArchiveAllowed && (
+                      {IsArchiveAllowed && (
                         <div className="col-md-6">
                           <label className={styles.Headerlabel}>Archive Document Library Name</label>
                           <TextField
@@ -555,9 +574,9 @@ export default function Master({props}:any): JSX.Element {
                           />
                         </div>
                       )}
-                  </div>
+                    </div>
 
-                  {IsArchiveAllowed && (
+                    {IsArchiveAllowed && (
                       <div style={{ marginBottom: '20px' }}>
                         <div
                           style={{
@@ -573,7 +592,7 @@ export default function Master({props}:any): JSX.Element {
                               display: 'flex',
                               flexDirection: 'column', // Arrange label and ChoiceGroup vertically
                               gap: '10px',
-                             // color: '#5e6278',
+                              // color: '#5e6278',
                               padding: '10px',
                               //border: '1px solid #f5f8fa',
                               flex: 1, // Make both sections take equal width
@@ -599,11 +618,11 @@ export default function Master({props}:any): JSX.Element {
                               //border: '1px solid #f5f8fa',
                               flex: 1, // Make both sections take equal width
                             }}
-                          > 
+                          >
                             <label className={styles.Headerlabel} style={{ display: 'block' }}>Archive Versions</label>
                             <TextField
-                            placeholder=" "
-                            value=""
+                              placeholder=" "
+                              value=""
                             />
                           </div>
                         </div>
@@ -616,14 +635,20 @@ export default function Master({props}:any): JSX.Element {
           </Accordion>
 
           <div className={styles.container} >
-              <div className={styles.containerOne} >
-                
-                <DefaultButton text="Save" className={styles['sub-btn']} allowDisabledFocus />
-                <DefaultButton text="Cancel" className={styles['can-btn']} allowDisabledFocus />
+            <div className={styles.containerOne} >
 
-              </div>
+              {/* <DefaultButton text="Save" className={styles['sub-btn']} allowDisabledFocus onClick={showPopup} />
+              {isDatapopvisible && (<MessageDialog />)} */}
+
+              <DefaultButton onClick={showPopup} text="Save" className={styles['sub-btn']} />
+              <MessageDialog isPopupVisible={isPopupVisible} hidePopup={hidePopup} />
+
+
+              <DefaultButton text="Cancel" className={styles['can-btn']} allowDisabledFocus />
 
             </div>
+
+          </div>
 
         </Panel>
 
