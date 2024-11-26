@@ -50,7 +50,7 @@ export default function HomePage(props: IHomePageProps): JSX.Element {
             <Routes>
               <Route path='/Dashboard' element={<Dashboard></Dashboard>}></Route>
               <Route path='/Master' element={<Master props={props}></Master>}></Route>
-              <Route path='/TreeView' element={<TreeView></TreeView>}></Route>
+              <Route path='/TreeView' element={<ParentComponent></ParentComponent>}></Route>
               <Route path='/Datatable' element={<Datatable></Datatable>}></Route>
             </Routes>
 
