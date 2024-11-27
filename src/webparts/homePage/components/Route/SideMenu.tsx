@@ -35,56 +35,50 @@ const SideMenu: React.FC<ISideMenu> = ({ onclickbutton }) => {
       }}
       >
 
-        <div>
-          {!collapsed && (<span style={{ marginBottom: '20px', marginTop: '20px', marginLeft: '22px' }}>
-            <img src={Imageurl} style={{ maxWidth: '100%', height: '50px' }} />
-          </span>)}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '65px', padding: '0 25px' }}>
+          {!collapsed && (<a style={{ marginBottom: '20px', marginTop: '20px', marginLeft: '22px' }}>
+            <img src={Imageurl} style={{ maxWidth: '100%', height: '50px', padding: '10px 0px 5px 10px;' }} />
+          </a>)}
 
-          <span style={{ textAlign: 'center', marginBottom: '20px', color: '#00bcd4', cursor: 'pointer', }}
+          <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'space-between', padding: '0', height: 'calc(1.5em + 1.5rem + 2px)' }}
             onClick={toggleSidebar} // Toggle on click
           >
-            <Icon iconName="GlobalNavButton" style={{ fontSize: '24px', paddingLeft: '27px', verticalAlign: 'middle', }} />
+            <Icon iconName="GlobalNavButton" style={{ fontSize: '24px', verticalAlign: 'middle', color: '#a4a7b9', cursor: 'pointer', textAlign: 'center' }} />
           </span>
         </div>
 
         <Menu>
 
-          <SubMenu icon={<Icon iconName="BarChartVertical" style={{ color: '#00bcd4', fontSize: '18px' }} />} label="Charts">
+          <SubMenu icon={<Icon iconName="BarChartVertical" style={{ color: '#3f4254', fontSize: '18px' }} />} label="Charts">
             <MenuItem>Pie charts</MenuItem>
             <MenuItem>Line charts</MenuItem>
             <MenuItem>Bar charts</MenuItem>
           </SubMenu>
 
-          <SubMenu icon={<Icon iconName="Globe" style={{ color: '#00bcd4', fontSize: '18px' }} />} label="Maps">
+          <SubMenu icon={<Icon iconName="Globe" style={{ color: '#3f4254', fontSize: '18px' }} />} label="Maps">
             <MenuItem>Google maps</MenuItem>
             <MenuItem>Open street maps</MenuItem>
           </SubMenu>
 
-          <SubMenu icon={<Icon iconName="Color" style={{ color: '#00bcd4', fontSize: '18px' }} />} label="Theme">
+          <SubMenu icon={<Icon iconName="Color" style={{ color: '#3f4254', fontSize: '18px' }} />} label="Theme">
             <MenuItem>Dark</MenuItem>
             <MenuItem>Light</MenuItem>
           </SubMenu>
 
           <MenuItem component={<Link to="/" />}
-            icon={<Icon iconName="calendar" style={{ color: '#00bcd4', fontSize: '18px' }} />}>
+            icon={<Icon iconName="calendar" style={{ color: '#3f4254', fontSize: '18px' }} />}>
             {ConstName.Const_Route.Dashboard}
           </MenuItem>
 
           <MenuItem component={<Link to="/" />}
-            icon={<Icon iconName="ShoppingCart" style={{ color: '#00bcd4', fontSize: '18px' }} />}>
+            icon={<Icon iconName="ShoppingCart" style={{ color: '#3f4254', fontSize: '18px' }} />}>
             {ConstName.Const_Route.Master}
           </MenuItem>
 
           <MenuItem component={<Link to="/Dashboard" />}
-            icon={<Icon iconName="Diamond" style={{ color: '#00bcd4', fontSize: '18px' }} />}>
+            icon={<Icon iconName="Diamond" style={{ color: '#3f4254', fontSize: '18px' }} />}>
             {ConstName.Const_Route.Dashboard}
           </MenuItem>
-
-
-
-
-
-
 
 
           {/* <MenuItem component={<Link to="/" />}> {ConstName.Const_Route.Dashboard} </MenuItem>
