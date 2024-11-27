@@ -1,0 +1,79 @@
+/* CommonStyle.module.scss */
+
+/* Styling for the modal popup body */
+.popupBody {
+  width: 100px;
+  padding: 20px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Header section of the popup */
+.popupHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+/* Styling for the close button container */
+.close {
+  cursor: pointer;
+  font-size: 16px;
+  color: #888;
+  &:hover {
+    color: #000;
+  }
+}
+
+/* Icon button styling for closing the modal */
+.closeBtn {
+  background-color: transparent;
+  border: none;
+  color: #888;
+  font-size: 16px;
+  cursor: pointer;
+  &:hover {
+    color: #000;
+  }
+}
+/* Primary Button Style */
+.primaryButton {
+  background-color: #0078d4; /* Primary color (e.g., Fluent UI's default blue) */
+  color: #ffffff; /* White text */
+  padding: 10px 20px; /* Padding for button size */
+  font-size: 16px; /* Text size */
+  font-weight: bold; /* Bold text */
+  border: none; /* Remove border */
+  border-radius: 4px; /* Rounded corners */
+  cursor: pointer; /* Pointer cursor on hover */
+  transition: all 0.3s ease; /* Smooth transition for hover effects */
+
+  &:hover {
+    background-color: #005a9e; /* Darker blue on hover */
+  }
+
+  &:active {
+    background-color: #004578; /* Even darker blue on click */
+  }
+
+  &:focus {
+    outline: 2px solid #cce4f6; /* Accessible focus outline */
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    background-color: #c7e0f4; /* Light blue for disabled state */
+    color: #a6a6a6; /* Light gray text */
+    cursor: not-allowed; /* Disabled cursor */
+  }
+}

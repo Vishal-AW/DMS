@@ -10,7 +10,7 @@ import Header from '../components/ResuableComponents/Header';
 import Footer from '../components/ResuableComponents/Footer';
 import Datatable from '../components/ResuableComponents/Header';
 import Dashboard from '../components/Home/Dashboard';
-import TreeView from '../components/v1_tree/TreeView';
+import ParentComponent from '../components/v1_tree/ParentTreeView';
 
 import '../components/Hidedesign.css';
 import { useState } from 'react';
@@ -51,7 +51,7 @@ export default function HomePage(props: IHomePageProps): JSX.Element {
             <Routes>
               <Route path='/Dashboard' element={<Dashboard></Dashboard>}></Route>
               <Route path='/Master' element={<Master props={props}></Master>}></Route>
-              <Route path='/TreeView' element={<TreeView></TreeView>}></Route>
+              <Route path='/TreeView' element={<ParentComponent></ParentComponent>}></Route>
               <Route path='/Datatable' element={<Datatable></Datatable>}></Route>
             </Routes>
 
