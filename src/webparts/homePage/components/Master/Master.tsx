@@ -6,6 +6,8 @@ import {
   IDropdownOption, Checkbox, Icon, ChoiceGroup, IChoiceGroupOption
 } from 'office-ui-fabric-react';
 import MessageDialog from '../ResuableComponents/MessageDialog';
+import ReactTableComponent from '../ResuableComponents/ReactTableComponent';
+import { IStackItemStyles, IStackStyles, IStackTokens, Stack, FontIcon } from 'office-ui-fabric-react';
 //import { FilePicker, IFilePickerResult } from '@pnp/spfx-controls-react/lib/FilePicker';
 //import MaterialTable from "material-table";
 import { Accordion, Form } from 'react-bootstrap';
@@ -60,6 +62,25 @@ export default function Master({ props }: any): JSX.Element {
   //   [],
   // );
 
+  const columns = [
+    { Header: 'TILES', accessor: 'TILES' },
+    { Header: 'ALLOW APPROVER', accessor: 'ALLOWAPPROVER' },
+    { Header: 'LAST MODIFIED', accessor: 'uploadedOn' },
+    { Header: 'ACTIVE', accessor: 'ACTIVE' },
+    { Header: 'ACTION', accessor: 'ACTION' },
+
+  ];
+
+  const data = [
+    {
+      TILES: 1,
+      ALLOWAPPROVER: 'No',
+      uploadedOn: 'AscenWork-Prajesh Borkar 04-09-2024 at 03:02:25 PM',
+      ACTIVE: 'Yes',
+      ACTION: <FontIcon aria-label="Edit" onClick={toggleModal} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer' }}></FontIcon>,
+
+    },
+  ];
 
 
 
@@ -191,6 +212,20 @@ export default function Master({ props }: any): JSX.Element {
     { key: '6', text: '6' },
     { key: '7', text: '7' },
   ];
+
+  const stackStyles: IStackStyles = { root: { height: "100vh", marginTop: 15 } };
+  const stackItemStyles: IStackItemStyles = {
+    root: {
+      padding: 10,
+      border: "1px solid #ddd",
+      overflow: "auto",
+      background: "#fff",
+      boxShadow: "0 10px 30px 0 rgba(82, 63, 105, .05)"
+    },
+  };
+  const stackTokens: IStackTokens = { childrenGap: 10 };
+
+
   return (
 
     <div>
@@ -199,6 +234,22 @@ export default function Master({ props }: any): JSX.Element {
         <div className={styles.alignbutton} >
           <DefaultButton id="requestButton" className={styles.submit} text="+ ADD" onClick={toggleModal}  ></DefaultButton>
         </div>
+
+        <Stack horizontal styles={stackStyles} tokens={stackTokens}>
+          <Stack.Item grow={2} styles={stackItemStyles}>
+            <ReactTableComponent
+              tableClassName="ReactTables"
+              columns={columns}
+              data={data}
+              defaultPageSize={10}
+              minRows={1}
+              showPagination={data.length > 10}
+              showFilter={true}
+            />
+          </Stack.Item>
+        </Stack>
+
+
 
         <Panel
           headerText=""
@@ -644,7 +695,7 @@ export default function Master({ props }: any): JSX.Element {
               <MessageDialog isPopupVisible={isPopupVisible} hidePopup={hidePopup} />
 
 
-              <DefaultButton text="Cancel" className={styles['can-btn']} allowDisabledFocus />
+              <DefaultButton text="Cancel" onClick={toggleModal} className={styles['can-btn']} allowDisabledFocus />
 
             </div>
 

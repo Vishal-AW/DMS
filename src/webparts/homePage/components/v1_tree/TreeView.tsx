@@ -1,8 +1,10 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { Icon } from '@fluentui/react/lib/Icon';
+//import { Icon } from '@fluentui/react/lib/Icon';
+import { Icon } from '@fluentui/react';
 //import { Stack } from '@fluentui/react/lib/Stack';
 //import { IStackTokens } from '@fluentui/react';
+//import styles from './TreeView.module.scss'
 
 interface ITreeNode {
     id: number;
@@ -17,7 +19,7 @@ interface TreeViewProps {
 
 
 const ChildTreeView: React.FC<TreeViewProps> = ({ onNodeSelect }) => {
-   // const stackTokens: IStackTokens = { childrenGap: 10 };
+    // const stackTokens: IStackTokens = { childrenGap: 10 };
 
     const treeData: ITreeNode[] = [
         {
@@ -73,7 +75,7 @@ const ChildTreeView: React.FC<TreeViewProps> = ({ onNodeSelect }) => {
     };
 
     const handleNodeClick = (nodeName: string) => {
-        onNodeSelect(nodeName); 
+        onNodeSelect(nodeName);
     };
 
     const renderTree = (nodes: ITreeNode[]) => {
@@ -83,14 +85,14 @@ const ChildTreeView: React.FC<TreeViewProps> = ({ onNodeSelect }) => {
                     <span
                         onClick={() => {
                             toggleNode(node.id);
-                            handleNodeClick(node.name); 
+                            handleNodeClick(node.name);
                         }}
                         style={{ cursor: 'pointer' }}
                     >
                         {node.children && (
                             <Icon
-                                iconName={expandedNodes.indexOf(node.id) > -1 ? 'FolderOpen' : 'Folder'}
-                                style={{ marginRight: '5px' }}
+                                iconName={expandedNodes.indexOf(node.id) > -1 ? 'FabricOpenFolderHorizontal' : 'FabricFolderFill'}
+                                style={{ marginRight: '5px', color: '#0162e8' }}
                             />
                         )}
                         {node.name}
@@ -105,6 +107,8 @@ const ChildTreeView: React.FC<TreeViewProps> = ({ onNodeSelect }) => {
         <div>
             <h3>Tree View</h3>
             {renderTree(treeData)}
+
+
         </div>
     );
 };

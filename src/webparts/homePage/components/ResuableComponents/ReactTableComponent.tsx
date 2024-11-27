@@ -21,7 +21,7 @@ const ReactTableComponent: React.FC<IReactTableComponentProps> = ({
     showPagination,
     showFilter,
 }) => {
-    
+
     return (
         <ReactTable
             columns={columns}
@@ -38,8 +38,8 @@ const ReactTableComponent: React.FC<IReactTableComponentProps> = ({
                     row[id] !== null &&
                     row[id] !== '' &&
                     (row[id] as string)
-                    .toLocaleLowerCase()
-                    .includes(filter.value.toLocaleLowerCase())
+                        .toLocaleLowerCase()
+                        .includes(filter.value.toLocaleLowerCase())
                 );
             }}
         />

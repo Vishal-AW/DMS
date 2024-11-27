@@ -43,73 +43,74 @@
   flex-direction: column;
 }
 
-  .inlineFormContainer2 {
-    display: flex;
+.inlineFormContainer2 {
+  display: flex;
 }
+
 .elementorcolumn {
-    min-height: 1px;
+  min-height: 1px;
 }
 
 .elementorwidgetwrap {
-    position: relative;
-    width: 100%;
-    -ms-flex-wrap: wrap;
-    flex-wrap: wrap;
-    -ms-flex-line-pack: start;
-    align-content: flex-start;
+  position: relative;
+  width: 100%;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  -ms-flex-line-pack: start;
+  align-content: flex-start;
 }
 
- .qodefmcontent 
-{
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    height: auto;
-	
-    width: auto;
-    top: auto;
-    left: 75px;
-    bottom: -12px;
-    right: -12px;
-    min-height: 80px;
-    -webkit-box-shadow: 0 12px 32px 0 rgb(25 41 66 / 7%);
-    box-shadow: 0 12px 32px 0 rgb(25 41 66 / 7%);
-    border-radius: 10px;
-    background-color: #fff;
-    z-index: 10;
-    -webkit-transform: translateY(0);
-    -ms-transform: translateY(0);
-    transform: translateY(0);
-    -webkit-transition: -webkit-box-shadow .35s ease-in-out,-webkit-transform .35s cubic-bezier(.1,.47,.18,1.01);
-    transition: -webkit-box-shadow .35s ease-in-out,-webkit-transform .35s cubic-bezier(.1,.47,.18,1.01);
-    -o-transition: box-shadow .35s ease-in-out,transform .35s cubic-bezier(.1,.47,.18,1.01);
-    transition: box-shadow .35s ease-in-out,transform .35s cubic-bezier(.1,.47,.18,1.01);
-    transition: box-shadow .35s ease-in-out,transform .35s cubic-bezier(.1,.47,.18,1.01),-webkit-box-shadow .35s ease-in-out,-webkit-transform .35s cubic-bezier(.1,.47,.18,1.01);
+.qodefmcontent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  height: auto;
+
+  width: auto;
+  top: auto;
+  left: 75px;
+  bottom: -12px;
+  right: -12px;
+  min-height: 80px;
+  -webkit-box-shadow: 0 12px 32px 0 rgb(25 41 66 / 7%);
+  box-shadow: 0 12px 32px 0 rgb(25 41 66 / 7%);
+  border-radius: 10px;
+  background-color: #fff;
+  z-index: 10;
+  -webkit-transform: translateY(0);
+  -ms-transform: translateY(0);
+  transform: translateY(0);
+  -webkit-transition: -webkit-box-shadow .35s ease-in-out, -webkit-transform .35s cubic-bezier(.1, .47, .18, 1.01);
+  transition: -webkit-box-shadow .35s ease-in-out, -webkit-transform .35s cubic-bezier(.1, .47, .18, 1.01);
+  -o-transition: box-shadow .35s ease-in-out, transform .35s cubic-bezier(.1, .47, .18, 1.01);
+  transition: box-shadow .35s ease-in-out, transform .35s cubic-bezier(.1, .47, .18, 1.01);
+  transition: box-shadow .35s ease-in-out, transform .35s cubic-bezier(.1, .47, .18, 1.01), -webkit-box-shadow .35s ease-in-out, -webkit-transform .35s cubic-bezier(.1, .47, .18, 1.01);
 }
+
 //.elementorwidgetcontainer 
 //{
-   // -webkit-transition: background .3s,border .3s,border-radius .3s,-webkit-box-shadow .3s;
-    //transition: background .3s,border .3s,border-radius .3s,-webkit-box-shadow .3s;
-   // -o-transition: background .3s,border .3s,border-radius .3s,box-shadow .3s;
-    //transition: background .3s,border .3s,border-radius .3s,box-shadow .3s;
-    //transition: background .3s,border .3s,border-radius .3s,box-shadow .3s,-webkit-box-shadow .3s;
+// -webkit-transition: background .3s,border .3s,border-radius .3s,-webkit-box-shadow .3s;
+//transition: background .3s,border .3s,border-radius .3s,-webkit-box-shadow .3s;
+// -o-transition: background .3s,border .3s,border-radius .3s,box-shadow .3s;
+//transition: background .3s,border .3s,border-radius .3s,box-shadow .3s;
+//transition: background .3s,border .3s,border-radius .3s,box-shadow .3s,-webkit-box-shadow .3s;
 //}
 
-.qodefbanner  
-{
-    margin: 0;
-    position: relative;
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .headder{
-    margin-top: -3px;
-   }
+.qodefbanner {
+  margin: 0;
+  position: relative;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  flex-direction: column;
+}
+
+.headder {
+  margin-top: -3px;
+}
+
 .wrapper {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -147,7 +148,7 @@
   padding: 12px 22px;
   text-align: center;
   color: #fff;
-  background:#009EF7;
+  background: #009EF7;
   text-decoration: none;
   margin: 3px 15px 0px 3px;
   //font-size: 15px;
@@ -176,7 +177,7 @@
 
 .can-btn:hover {
   color: #fff;
-  background:#dddad8;
+  background: #dddad8;
 }
 
 .Accodordianherder {
@@ -254,4 +255,15 @@
       color: var(--linkHovered); // note: CSS Custom Properties support is limited to modern browsers only
     }
   }
+}
+
+.ReactTables {
+  text-align: center;
+}
+
+.ReactTables th,
+.ReactTables td {
+  text-align: center !important;
+  /* Override any existing styles */
+  vertical-align: middle;
 }

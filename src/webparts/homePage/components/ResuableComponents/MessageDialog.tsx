@@ -28,7 +28,7 @@ const popupStyles = mergeStyleSets({
         textAlign: 'center',
     },
     buttonContainer: {
-        marginTop: '20px',
+        marginTop: '-5px',
 
     }
 
@@ -48,27 +48,6 @@ const MessageDialog: React.FC<IMessageDialogProps> = ({ isPopupVisible, hidePopu
     //const PopupModal: React.FunctionComponent<PopupModalProps> = ({ isPopupVisible, hidePopup }) => {
     return (
         isPopupVisible && (
-            // <Layer>
-            //     <Popup style={{ width: '300px', height: '139px', boxSizing: 'border-box' }}
-            //         className={popupStyles.root}
-            //         role="dialog"
-            //         aria-modal="true"
-            //         onDismiss={hidePopup}
-            //         enableAriaHiddenSiblings={true}
-            //     >
-            //         <Overlay onClick={hidePopup} />
-            //         <FocusTrapZone>
-            //             <div role="document" className={popupStyles.content}>
-            //                 <h6>Popup</h6>
-            //                 <div>
-            //                     Data Saved Successfully!!!!!!!!!!
-            //                 </div>
-            //                 <DefaultButton onClick={hidePopup}>Close</DefaultButton>
-            //             </div>
-            //         </FocusTrapZone>
-            //     </Popup>
-            // </Layer>
-
             <Layer>
                 <Popup
                     className={popupStyles.root}
@@ -79,14 +58,16 @@ const MessageDialog: React.FC<IMessageDialogProps> = ({ isPopupVisible, hidePopu
                 >
                     <Overlay onClick={hidePopup} />
                     <FocusTrapZone>
-                        <div role="document" className={popupStyles.content} style={{ width: '300px', height: '195px' }}>
+                        <div role="document" className={popupStyles.content} style={{ width: '300px', height: '235px', borderRadius: 5 }}>
                             <div>
-                                <Icon style={{ color: '#50cd89' }} iconName="AcceptIcon" />
-                                <h6>Data Save SuccessFully!!!</h6>
-                            </div>
+                                <Icon style={{ color: '#50cd89', fontSize: 80 }} iconName="Completed" />
 
+                            </div>
+                            <div>
+                                <h6>Data Saved Successfully.</h6>
+                            </div>
                             <div className={popupStyles.buttonContainer}>
-                                <DefaultButton onClick={hidePopup} style={{ background: '#0095e8', top: '30px' }}>OK</DefaultButton>
+                                <DefaultButton onClick={hidePopup} style={{ background: '#0095e8', top: '30px', border: 0, color: 'white' }}>OK</DefaultButton>
                             </div>
 
 
@@ -99,3 +80,27 @@ const MessageDialog: React.FC<IMessageDialogProps> = ({ isPopupVisible, hidePopu
 };
 
 export default MessageDialog;
+
+
+
+
+// <Layer>
+//     <Popup style={{ width: '300px', height: '139px', boxSizing: 'border-box' }}
+//         className={popupStyles.root}
+//         role="dialog"
+//         aria-modal="true"
+//         onDismiss={hidePopup}
+//         enableAriaHiddenSiblings={true}
+//     >
+//         <Overlay onClick={hidePopup} />
+//         <FocusTrapZone>
+//             <div role="document" className={popupStyles.content}>
+//                 <h6>Popup</h6>
+//                 <div>
+//                     Data Saved Successfully!!!!!!!!!!
+//                 </div>
+//                 <DefaultButton onClick={hidePopup}>Close</DefaultButton>
+//             </div>
+//         </FocusTrapZone>
+//     </Popup>
+// </Layer>
