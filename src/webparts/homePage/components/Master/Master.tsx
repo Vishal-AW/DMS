@@ -5,6 +5,7 @@ import {
   DefaultButton, Panel, PanelType, TextField, Toggle, Dropdown, IDropdownStyles,
   IDropdownOption, Checkbox, Icon, ChoiceGroup, IChoiceGroupOption
 } from 'office-ui-fabric-react';
+import { PeoplePicker } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 import MessageDialog from '../ResuableComponents/MessageDialog';
 import ReactTableComponent from '../ResuableComponents/ReactTableComponent';
 import { IStackItemStyles, IStackStyles, IStackTokens, Stack, FontIcon } from 'office-ui-fabric-react';
@@ -61,6 +62,9 @@ export default function Master({ props }: any): JSX.Element {
   //   },
   //   [],
   // );
+
+
+
 
   const columns = [
     { Header: 'TILES', accessor: 'TILES' },
@@ -238,7 +242,7 @@ export default function Master({ props }: any): JSX.Element {
         <Stack horizontal styles={stackStyles} tokens={stackTokens}>
           <Stack.Item grow={2} styles={stackItemStyles}>
             <ReactTableComponent
-              tableClassName="ReactTables"
+              tableClassName={styles.ReactTables}
               columns={columns}
               data={data}
               defaultPageSize={10}
@@ -302,10 +306,23 @@ export default function Master({ props }: any): JSX.Element {
                     <div className="col-md-3">
                       <div className="form-group">
                         <label className={styles.Headerlabel}>Access To Tile</label>
-                        <TextField
+                        {/* <TextField
                           placeholder=" "
                           //errorMessage={"Please fill this field"}
                           value={""}
+                        /> */}
+
+                        <PeoplePicker
+                          context={props.context}
+                          //errorMessage={this.state.ErrorAssign}
+                          personSelectionLimit={1}
+                          required={false}
+                          // errorMessage={this.state.ErrorRequestor}
+                          onChange={this._getPeoplePickerItems}
+                          //defaultSelectedUsers={[this.state.AssignID ? this.state.AssignName : ""]}
+                          showHiddenInUI={false}
+                          resolveDelay={1000}
+                          ensureUser={true}
                         />
                       </div>
                     </div>

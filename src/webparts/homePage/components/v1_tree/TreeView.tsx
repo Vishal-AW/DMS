@@ -1,116 +1,115 @@
 import * as React from 'react';
 import { useState } from 'react';
-//import { Icon } from '@fluentui/react/lib/Icon';
-import { Icon } from '@fluentui/react';
-//import { Stack } from '@fluentui/react/lib/Stack';
-//import { IStackTokens } from '@fluentui/react';
-//import styles from './TreeView.module.scss'
+import { Icon } from 'office-ui-fabric-react'; // Import icons from Office UI Fabric
+import styles from './TreeView.module.scss'
 
-interface ITreeNode {
-    id: number;
+interface TreeNode {
     name: string;
-    children?: ITreeNode[];
+    children?: TreeNode[];
 }
 
 interface TreeViewProps {
     onNodeSelect: (nodeName: string) => void;
 }
 
+const treeData: TreeNode[] = [
+    {
+        name: 'Leasing Department',
+        children: [
+            { name: 'Demo Nexus Mall' },
+            {
+                name: 'Nexus Ahmedabad One',
+                children: [
+                    { name: 'Documents Tracker' },
+                    { name: 'Floor Plan' },
+                    {
+                        name: 'Kiosk Storage and Service Agreements',
+                        children: [
+                            {
+                                name: 'Kiosks',
+                                children: [
+                                    { name: 'BATA' },
+                                    { name: 'Brillare' },
+                                    { name: 'Reebok' },
+                                    { name: 'Tommy Kids' },
+
+                                ],
+                            },
+                            { name: 'Service' },
+                            { name: 'Storage' },
+
+                        ],
 
 
-const ChildTreeView: React.FC<TreeViewProps> = ({ onNodeSelect }) => {
-    // const stackTokens: IStackTokens = { childrenGap: 10 };
+                    },
+                    { name: 'Retail' },
+                ],
+            },
+            { name: 'Nexus Amritsar' },
+            { name: 'Nexus Hyderabad' },
+            { name: 'Nexus Indore Central' },
+            { name: 'Nexus Mall Koramangala' },
+            { name: 'Nexus Seawood' },
+            { name: 'Nexus Select CityWalk Delhi' },
+            { name: 'Nexus Shantiniketan' },
+            { name: 'Nexus Vijaya Complex' },
+        ],
+    },
+];
 
-    const treeData: ITreeNode[] = [
-        {
-            id: 1,
-            name: 'Leasing Department',
-            children: [
-                {
-                    id: 2,
-                    name: 'Demo Nexus Mall',
-                },
-                {
-                    id: 3,
-                    name: 'Nexus Ahmedabad One',
-                    children: [
-                        { id: 4, name: 'Documents Tracker' },
-                        { id: 5, name: 'Floor Plan' },
-                        {
-                            id: 6,
-                            name: 'Kiosk Storage and Service Agreements',
-                            children: [
-                                { id: 7, name: 'Kiosks' },
-                                { id: 8, name: 'Service' },
-                                { id: 9, name: 'Storage' },
-                            ],
-                        },
-                        {
-                            id: 10,
-                            name: 'Retail',
-                            children: [
-                                { id: 11, name: 'Bata' },
-                                { id: 12, name: 'OnePlus' },
-                                { id: 13, name: 'Puma' },
-                                { id: 14, name: 'Red Tape' },
-                            ],
-                        },
-                    ],
-                },
-            ],
-        },
-    ];
+const TreeView: React.FC<TreeViewProps> = ({ onNodeSelect }) => {
+    const [expandedNodes, setExpandedNodes] = useState<string[]>([]);
 
-    const [expandedNodes, setExpandedNodes] = useState<number[]>([]);
-
-    const toggleNode = (id: number) => {
-        const index = expandedNodes.indexOf(id);
-        if (index > -1) {
-            const newExpandedNodes = [...expandedNodes];
-            newExpandedNodes.splice(index, 1);
-            setExpandedNodes(newExpandedNodes);
+    const toggleNode = (nodeName: string) => {
+        if (expandedNodes.includes(nodeName)) {
+            setExpandedNodes(expandedNodes.filter(name => name !== nodeName));
         } else {
-            setExpandedNodes([...expandedNodes, id]);
+            setExpandedNodes([...expandedNodes, nodeName]);
         }
     };
 
-    const handleNodeClick = (nodeName: string) => {
-        onNodeSelect(nodeName);
-    };
+    const renderTree = (nodes: TreeNode[]) => {
+        return nodes.map(node => (
+            <li key={node.name}>
+                <div className={styles['tree-node']}>
+                    <span onClick={() => toggleNode(node.name)} style={{ cursor: 'pointer' }}>
+                        {/* {node.children && ( */}
+                        <Icon
+                            iconName={
 
-    const renderTree = (nodes: ITreeNode[]) => {
-        return nodes.map((node) => (
-            <div key={node.id} style={{ marginLeft: '20px' }}>
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <span
-                        onClick={() => {
-                            toggleNode(node.id);
-                            handleNodeClick(node.name);
-                        }}
-                        style={{ cursor: 'pointer' }}
-                    >
-                        {node.children && (
-                            <Icon
-                                iconName={expandedNodes.indexOf(node.id) > -1 ? 'FabricOpenFolderHorizontal' : 'FabricFolderFill'}
-                                style={{ marginRight: '5px', color: '#0162e8' }}
-                            />
-                        )}
-                        {node.name}
+
+
+                                expandedNodes.includes(node.name)
+                                    ? 'FabricOpenFolderHorizontal'
+                                    : 'FabricFolderFill'
+
+
+                            }
+                            className={styles['folder-icon']}
+                            style={{ marginRight: '5px', color: '#0162e8' }}
+                        />
+                        {/* )} */}
+                        {/* {node.children && (
+                            <button className="toggle-button">
+                                {expandedNodes.includes(node.name) ? '-' : '+'}
+                            </button>
+                        )} */}
+                        <span
+                            className={styles['node-name']}
+                            onClick={() => onNodeSelect(node.name)}
+                        >
+                            {node.name}
+                        </span>
                     </span>
                 </div>
-                {node.children && expandedNodes.indexOf(node.id) > -1 && renderTree(node.children)}
-            </div>
+                {node.children && expandedNodes.includes(node.name) && (
+                    <ul className="nested-list">{renderTree(node.children)}</ul>
+                )}
+            </li>
         ));
     };
 
-    return (
-        <div>
-            <h3>Tree View</h3>
-            {renderTree(treeData)}
-
-
-        </div>
-    );
+    return <ul className={styles['tree-view']}>{renderTree(treeData)}</ul>;
 };
 
-export default ChildTreeView;
+export default TreeView;
