@@ -43,7 +43,7 @@ const SideMenu: React.FC<ISideMenu> = ({ onclickbutton }) => {
           <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'space-between', padding: '0', height: 'calc(1.5em + 1.5rem + 2px)' }}
             onClick={toggleSidebar} // Toggle on click
           >
-            <Icon iconName="GlobalNavButton" style={{ fontSize: '24px', verticalAlign: 'middle', color: '#a4a7b9', cursor: 'pointer', textAlign: 'center' }} />
+            <Icon iconName="DoubleChevronLeftMed" style={{ fontSize: '16px', verticalAlign: 'middle', color: '#a4a7b9', cursor: 'pointer', textAlign: 'center' }} />
           </span>
         </div>
 
