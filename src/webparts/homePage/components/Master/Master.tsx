@@ -16,7 +16,9 @@ import { GetAllLabel } from "../../../../Services/ControlLabel";
 //import MaterialTable from "material-table";
 import { Accordion, Form } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { useBoolean } from '@fluentui/react-hooks'
+import { useBoolean } from '@fluentui/react-hooks';
+import {ILabel} from '../Interface/ILabel';
+
 //import {WebPartContext} from '@microsoft/sp-webpart-base'
 //import type { IHomePageProps } from '../IHomePageProps';
 
@@ -41,10 +43,13 @@ export default function Master({ props }: any): JSX.Element {
   const [selectedUsers, setSelectedUsers] = useState<any[]>([]);
   const [TileName, setTileName] = useState("");
   const [TileError, setTileErr] = useState("");
+  const [DisplayLabel, setDisplayLabel] = useState<ILabel>();
 
 
   useEffect(() => {
 
+let DisplayLabel : ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}'); //localStorage.getItem('DisplayLabel')|| null;
+setDisplayLabel(DisplayLabel);
     clearField();
     //fetchData();
     getAllData();
@@ -91,7 +96,7 @@ export default function Master({ props }: any): JSX.Element {
 
 
   const getAllData = async () => {
-    let data: any = await GetAllLabel(props.SiteURL, props.spHttpClient);
+    let data: any = await GetAllLabel(props.SiteURL, props.spHttpClient,"DefaultText");
     console.log(data);
   };
 
@@ -318,7 +323,7 @@ export default function Master({ props }: any): JSX.Element {
           type={PanelType.large}
           isFooterAtBottom={true}
         >
-          <h6 className={styles.Headerlabel}>Add Tile Management</h6><hr />
+          <h6 className={styles.Headerlabel}>{DisplayLabel?.AddTileManagement}</h6><hr />
 
           <Accordion alwaysOpen >
             <Accordion.Item eventKey="0">
@@ -790,6 +795,8 @@ export default function Master({ props }: any): JSX.Element {
 
               {/* <DefaultButton text="Save" className={styles['sub-btn']} allowDisabledFocus onClick={showPopup} />
               {isDatapopvisible && (<MessageDialog />)} */}
+
+<DefaultButton onClick={submitTileData} text={DisplayLabel?.Draft} className={styles['sub-btn']} />
 
               <DefaultButton onClick={submitTileData} text="Save" className={styles['sub-btn']} />
               <MessageDialog isPopupVisible={isPopupVisible} hidePopup={hidePopup} />

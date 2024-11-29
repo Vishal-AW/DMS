@@ -1,14 +1,49 @@
 
 import { SPHttpClient } from '@microsoft/sp-http';
 import { GetListItem, CreateItem, UpdateItem } from '../DAL/Commonfile';
+import {ILabel} from "../webparts/homePage/components/Interface/ILabel"
 
 
-export function GetAllLabel(WebUrl: string, spHttpClient: SPHttpClient) {
+export async function GetAllLabel(WebUrl: string, spHttpClient: SPHttpClient,Language : string) {
   let filter = "";
 
-  return getMethod(WebUrl, spHttpClient, filter);
+  let DisplayLabel : ILabel;
+
+   let data = await getMethod(WebUrl, spHttpClient, filter).then(data=>{
+ 
+    data = data.value;
+    
+     DisplayLabel = {
+      Cancel: getValue("Cancel",data,Language) ,
+    Submit: getValue("Submit",data,Language) ,
+    Draft: getValue("Draft",data,Language) ,
+    Tiles: getValue("Tiles",data,Language),
+    AddTileManagement :  getValue("AddTileManagement",data,Language),
+    };
+
+   // 
+    return DisplayLabel
+
+  });
+return data;
+  
 }
 
+
+
+function getValue(Key:string,LabelData:any,Language:string){
+
+  let Val : any = LabelData.filter((item :any)=> item.Key === Key);
+
+  // let returnval :string = if(Val && Val.length > 0){ 
+  //                         Val[0].DefaultText
+  //                       };
+
+   let returnval :string = (Val && Val.length > 0)? Val[0].DefaultText : "";
+ 
+  return returnval;
+
+}
 
 
 async function getMethod(WebUrl: string, spHttpClient: any, filter: any) {

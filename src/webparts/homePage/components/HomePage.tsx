@@ -2,6 +2,7 @@ import * as React from 'react';
 //import styles from './HomePage.module.scss';
 import type { IHomePageProps } from './IHomePageProps';
 import styles from '../components/GlobalCSS/global.module.scss';
+import { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 //import { escape } from '@microsoft/sp-lodash-subset';
 import SideMenu from '../components/Route/SideMenu';
@@ -11,15 +12,28 @@ import Footer from '../components/ResuableComponents/Footer';
 import Datatable from '../components/ResuableComponents/Header';
 import Dashboard from '../components/Home/Dashboard';
 import ParentComponent from '../components/v1_tree/ParentTreeView';
+import { GetAllLabel } from "../../../Services/ControlLabel";
 
 import '../components/Hidedesign.css';
-import { useState } from 'react';
+ 
 
 
 export default function HomePage(props: IHomePageProps): JSX.Element {
   //export default class HomePage extends React.Component<IHomePageProps> {
   //public render(): React.ReactElement<IHomePageProps> {
   const [collapsed, setCollapsed] = useState(false); // State to toggle collapse
+
+  useEffect(() => {
+    getAllData();
+
+  });
+
+
+  const getAllData = async () => {
+    let data: any = await GetAllLabel(props.SiteURL, props.spHttpClient,"DefaultText");
+    localStorage.setItem('DisplayLabel', JSON.stringify( data));
+    console.log(data);
+  };
 
   // Function to toggle sidebar collapse
   const toggleSidebar = (value: boolean) => {
