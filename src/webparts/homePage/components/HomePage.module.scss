@@ -5,6 +5,7 @@
   padding: 1em;
   color: "[theme:bodyText, default: #323130]";
   color: var(--bodyText);
+
   &.teams {
     font-family: $ms-font-family-fallbacks;
   }
@@ -19,8 +20,7 @@
   max-width: 420px;
 }
 
-.sitebar
-{
+.sitebar {
   display: 'flex';
   height: '100%';
   min-height: '400px';
@@ -42,19 +42,15 @@
 
 
 
-.asidelogo 
-  {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    height: 65px;
-    padding: 0 25px;
-    
-  }
+.asidelogo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 65px;
+  padding: 0 25px;
 
-.footera
-{
-  color: #181c32;
 }
 
-
+.footera {
+  color: #181c32;
+}

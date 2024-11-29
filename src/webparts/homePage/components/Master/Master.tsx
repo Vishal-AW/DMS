@@ -378,7 +378,7 @@ export default function Master({ props }: any): JSX.Element {
                           personSelectionLimit={1}
                           required={false}
                           // errorMessage={this.state.ErrorRequestor}
-                          //onChange={this._getPeoplePickerItems}
+                          // onChange={this._getPeoplePickerItems}
                           //defaultSelectedUsers={[this.state.AssignID ? this.state.AssignName : ""]}
                           showHiddenInUI={false}
                           resolveDelay={1000}

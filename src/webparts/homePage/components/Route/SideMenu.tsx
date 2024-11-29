@@ -31,7 +31,7 @@ const SideMenu: React.FC<ISideMenu> = ({ onclickbutton }) => {
 
     <div style={{ display: 'flex', height: '100vh' }}>
       <Sidebar collapsed={collapsed} style={{
-        color: '#fff',         // Text color
+        color: '#fff',// Text color
       }}
       >
 
@@ -50,19 +50,19 @@ const SideMenu: React.FC<ISideMenu> = ({ onclickbutton }) => {
         <Menu>
 
           <SubMenu icon={<Icon iconName="BarChartVertical" style={{ color: '#3f4254', fontSize: '18px' }} />} label="Charts">
-            <MenuItem>Pie charts</MenuItem>
-            <MenuItem>Line charts</MenuItem>
-            <MenuItem>Bar charts</MenuItem>
+            <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '11px' }} />}>Pie charts</MenuItem>
+            <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '11px' }} />}>Line charts</MenuItem>
+            <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '11px' }} />}>Bar charts</MenuItem>
           </SubMenu>
 
           <SubMenu icon={<Icon iconName="Globe" style={{ color: '#3f4254', fontSize: '18px' }} />} label="Maps">
-            <MenuItem>Google maps</MenuItem>
-            <MenuItem>Open street maps</MenuItem>
+            <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '11px' }} />}>Google maps</MenuItem>
+            <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '11px' }} />}>Open street maps</MenuItem>
           </SubMenu>
 
           <SubMenu icon={<Icon iconName="Color" style={{ color: '#3f4254', fontSize: '18px' }} />} label="Theme">
-            <MenuItem>Dark</MenuItem>
-            <MenuItem>Light</MenuItem>
+            <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '11px' }} />}>Dark</MenuItem>
+            <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '11px' }} />}>Light</MenuItem>
           </SubMenu>
 
           <MenuItem component={<Link to="/" />}
