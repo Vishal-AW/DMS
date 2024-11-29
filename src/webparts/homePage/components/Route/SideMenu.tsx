@@ -50,19 +50,19 @@ const SideMenu: React.FC<ISideMenu> = ({ onclickbutton }) => {
         <Menu>
 
           <SubMenu icon={<Icon iconName="BarChartVertical" style={{ color: '#3f4254', fontSize: '18px' }} />} label="Charts">
-            <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '13px' }} />}>Pie charts</MenuItem>
-            <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '13px' }} />}>Line charts</MenuItem>
-            <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '13px' }} />}>Bar charts</MenuItem>
+            <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '11px' }} />}>Pie charts</MenuItem>
+            <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '11px' }} />}>Line charts</MenuItem>
+            <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '11px' }} />}>Bar charts</MenuItem>
           </SubMenu>
 
           <SubMenu icon={<Icon iconName="Globe" style={{ color: '#3f4254', fontSize: '18px' }} />} label="Maps">
-            <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '13px' }} />}>Google maps</MenuItem>
-            <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '13px' }} />}>Open street maps</MenuItem>
+            <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '11px' }} />}>Google maps</MenuItem>
+            <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '11px' }} />}>Open street maps</MenuItem>
           </SubMenu>
 
           <SubMenu icon={<Icon iconName="Color" style={{ color: '#3f4254', fontSize: '18px' }} />} label="Theme">
-            <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '13px' }} />}>Dark</MenuItem>
-            <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '13px' }} />}>Light</MenuItem>
+            <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '11px' }} />}>Dark</MenuItem>
+            <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '11px' }} />}>Light</MenuItem>
           </SubMenu>
 
           <MenuItem component={<Link to="/" />}
