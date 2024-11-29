@@ -1,14 +1,17 @@
 import * as React from "react";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styles from '../Master/Master.module.scss';
+//import { HTTPServices, _getListItem } from "../../../HTTPServices";
 import {
   DefaultButton, Panel, PanelType, TextField, Toggle, Dropdown, IDropdownStyles,
   IDropdownOption, Checkbox, Icon, ChoiceGroup, IChoiceGroupOption
 } from 'office-ui-fabric-react';
-import { PeoplePicker } from "@pnp/spfx-controls-react/lib/PeoplePicker";
+import { PeoplePicker, PrincipalType } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 import MessageDialog from '../ResuableComponents/MessageDialog';
 import ReactTableComponent from '../ResuableComponents/ReactTableComponent';
 import { IStackItemStyles, IStackStyles, IStackTokens, Stack, FontIcon } from 'office-ui-fabric-react';
+import { SaveTileSetting } from "../../../../Services/MasTileService";
+import { GetAllLabel } from "../../../../Services/ControlLabel";
 //import { FilePicker, IFilePickerResult } from '@pnp/spfx-controls-react/lib/FilePicker';
 //import MaterialTable from "material-table";
 import { Accordion, Form } from 'react-bootstrap';
@@ -19,6 +22,8 @@ import { useBoolean } from '@fluentui/react-hooks'
 
 
 export default function Master({ props }: any): JSX.Element {
+
+  //const _spService = new HTTPServices();
   const [showModal, setShowModal] = useState(false);
   const [preview, setPreview] = useState(false);
   const [download, setDownload] = useState(false);
@@ -30,8 +35,21 @@ export default function Master({ props }: any): JSX.Element {
   const toggleModal = () => setShowModal(!showModal);
   //const [showDialog, setShowDialog] = useState(false);
   //const [dialogMessage, setDialogMessage] = useState('');
-  const [isPopupVisible, { setTrue: showPopup, setFalse: hidePopup }] = useBoolean(false);
+  //const [isOpen, setIsOpen] = useState(false);
+  //const [isPopupVisible, { setTrue: showPopup, setFalse: hidePopup }] = useBoolean(false);
+  const [isPopupVisible, { setFalse: hidePopup }] = useBoolean(false);
+  const [selectedUsers, setSelectedUsers] = useState<any[]>([]);
+  const [TileName, setTileName] = useState("");
+  const [TileError, setTileErr] = useState("");
 
+
+  useEffect(() => {
+
+    clearField();
+    //fetchData();
+    getAllData();
+
+  });
 
   // const openDialog = () => {
   //   setDialogMessage('Save Data Successfully.');
@@ -63,6 +81,57 @@ export default function Master({ props }: any): JSX.Element {
   //   [],
   // );
 
+  const onPeoplePickerChange = (items: any[]) => {
+    console.log("Selected users:", items);
+    setSelectedUsers(items);
+    console.log("Users to process:", selectedUsers);
+  };
+
+
+
+
+  const getAllData = async () => {
+    let data: any = await GetAllLabel(props.SiteURL, props.spHttpClient);
+    console.log(data);
+  };
+
+
+  const clearField = () => {
+
+    setTileName("");
+    clearError();
+
+  };
+  const clearError = () => {
+
+    setTileErr('');
+  };
+
+
+  const submitTileData = () => {
+    clearError();
+    let valid = validation();
+    valid ? saveData() : "";
+  };
+
+  const validation = () => {
+    let isValidForm = true;
+    if (TileName === "" || TileName === undefined || TileName === null) {
+      setTileErr('Tile name is required');
+      isValidForm = false;
+
+    }
+    return isValidForm;
+  }
+
+
+  const saveData = async () => {
+
+    let option = {
+
+    }
+    await SaveTileSetting(props.webURL, props.spHttpClient, option);
+  };
 
 
 
@@ -103,6 +172,9 @@ export default function Master({ props }: any): JSX.Element {
 
   ];
 
+
+
+
   function _onChange(ev: React.FormEvent<HTMLInputElement>, option: IChoiceGroupOption): void {
     console.dir(option);
   }
@@ -119,46 +191,25 @@ export default function Master({ props }: any): JSX.Element {
   const [FieldAllowinFile, setFieldAllowinFile] = React.useState<boolean>(true);
   const [SearchFilterRequired, setSearchFilterRequired] = React.useState<boolean>(true);
 
-
   const handleToggleChange = (checked: boolean): void => {
     setIsDropdownVisible(checked);
-
-
   };
-
   const handleIsRequiredToggleChange = (checked: boolean): void => {
     setIsRequired(checked);
-
-
   };
   const handleFieldstatusToggleChange = (checked: boolean): void => {
     setFieldstatus(checked);
-
-
   };
   const handleFieldAllowinFileToggleChange = (checked: boolean): void => {
     setFieldAllowinFile(checked);
-
-
   };
   const handleSearchFilterRequiredToggleChange = (checked: boolean): void => {
     setSearchFilterRequired(checked);
-
-
   };
-
-
-
-
-
-
   const ToggleChangeforrefernceno = (checked: boolean): void => {
-
     setDynamicDataReference(checked);
   };
-
   const ToggleChangeforArchiveAllowed = (checked: boolean): void => {
-
     setArchiveAllowed(checked);
   };
 
@@ -167,6 +218,9 @@ export default function Master({ props }: any): JSX.Element {
   };
 
   const [tableData, setTableData] = useState<any[]>([]);
+
+
+
 
   // Adding a new row to the table
   const addRow = () => {
@@ -275,10 +329,16 @@ export default function Master({ props }: any): JSX.Element {
                     <div className="col-md-3">
                       <div className="form-group">
                         <label className={styles.Headerlabel}>Tile Name</label>
+
+                        <TextField label="Title" errorMessage={TileError} value={TileName} onChange={(e: any) => { setTileName(e.target.value); }} />
                         <TextField
-                          placeholder=" "
-                          //errorMessage={"Please fill this field"}
-                          value={""}
+                          placeholder="Enter Tile Name"
+                          // onChange={(e: any) => { setTileName(e.target.value); }}
+                          //onChange={(e: any) => { setTileName(e.target.value); }}
+                          errorMessage={TileError}
+                          value={TileName}
+                          onChange={(el: React.ChangeEvent<HTMLInputElement>) => setTileName(el.target.value)}
+
                         />
                       </div>
                     </div>
@@ -312,18 +372,29 @@ export default function Master({ props }: any): JSX.Element {
                           value={""}
                         /> */}
 
-                        <PeoplePicker
+                        {/* <PeoplePicker
                           context={props.context}
                           //errorMessage={this.state.ErrorAssign}
                           personSelectionLimit={1}
                           required={false}
                           // errorMessage={this.state.ErrorRequestor}
-                          onChange={this._getPeoplePickerItems}
+                          //onChange={this._getPeoplePickerItems}
                           //defaultSelectedUsers={[this.state.AssignID ? this.state.AssignName : ""]}
                           showHiddenInUI={false}
                           resolveDelay={1000}
                           ensureUser={true}
+                        /> */}
+                        <PeoplePicker
+                          context={props.context}
+                          personSelectionLimit={5}
+                          //showtooltip={true}
+                          //isRequired={true}
+                          onChange={onPeoplePickerChange}
+                          showHiddenInUI={false}
+                          principalTypes={[PrincipalType.User]}
+                          resolveDelay={500}
                         />
+
                       </div>
                     </div>
 
@@ -352,11 +423,23 @@ export default function Master({ props }: any): JSX.Element {
                     <div className="col-md-3">
                       <div className="form-group">
                         <label className={styles.Headerlabel}>Tile Admin</label>
-                        <TextField
+                        <PeoplePicker
+                          context={props.context}
+                          //errorMessage={this.state.ErrorAssign}
+                          personSelectionLimit={1}
+                          required={false}
+                          // errorMessage={this.state.ErrorRequestor}
+                          //onChange={this._getPeoplePickerItems}
+                          //defaultSelectedUsers={[this.state.AssignID ? this.state.AssignName : ""]}
+                          showHiddenInUI={false}
+                          resolveDelay={1000}
+                          ensureUser={true}
+                        />
+                        {/* <TextField
                           placeholder=" "
                           //errorMessage={"Please fill this field"}
                           value={""}
-                        />
+                        /> */}
                       </div>
                     </div>
 
@@ -708,7 +791,7 @@ export default function Master({ props }: any): JSX.Element {
               {/* <DefaultButton text="Save" className={styles['sub-btn']} allowDisabledFocus onClick={showPopup} />
               {isDatapopvisible && (<MessageDialog />)} */}
 
-              <DefaultButton onClick={showPopup} text="Save" className={styles['sub-btn']} />
+              <DefaultButton onClick={submitTileData} text="Save" className={styles['sub-btn']} />
               <MessageDialog isPopupVisible={isPopupVisible} hidePopup={hidePopup} />
 
 
