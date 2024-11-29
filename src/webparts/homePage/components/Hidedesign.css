@@ -1,3 +1,9 @@
+/*@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+
+body {
+    font-family: 'Poppins', sans-serif;
+}*/
+
 #sp-appBar {
     display: none;
 }
@@ -92,10 +98,12 @@ body {
 
 .ps-menu-button {
     color: #000 !important;
+    height: 40px !important;
 }
 
 .ps-menu-button:hover {
     background-color: #fff !important;
+    color: #009ef7 !important;
 
 }
 
@@ -124,6 +132,19 @@ body {
     height: 8px !important;
 }
 
+.css-jn69v9 {
+    border-right: 2px solid #a4a7b9 !important;
+    border-bottom: 2px solid #a4a7b9 !important;
+    width: 8px !important;
+    height: 8px !important;
+}
+
 .ps-menu-label:hover {
+    color: #009ef7 !important;
+}
+
+
+
+.ps-menuitem-root:hover {
     color: #009ef7 !important;
 }
