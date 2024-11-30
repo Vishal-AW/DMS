@@ -1,6 +1,6 @@
 import * as React from 'react';
 import TreeView from './TreeView'; // Adjust the path as needed
-import ReactTableComponent from '../ResuableComponents/ReactTableComponent';
+import ReactTableComponent from '../ResuableComponents/ReusableDataTable';
 import { Stack, IStackStyles, IStackItemStyles, IStackTokens } from 'office-ui-fabric-react';
 
 const ParentComponent: React.FC = () => {
@@ -51,13 +51,13 @@ const ParentComponent: React.FC = () => {
                 </Stack.Item>
                 <Stack.Item grow={3} styles={stackItemStyles}>
                     <ReactTableComponent
-                        tableClassName="ReactTables"
-                        columns={columns}
-                        data={data}
-                        defaultPageSize={10}
-                        minRows={1}
-                        showPagination={data.length > 10}
-                        showFilter={true}
+                        TableClassName="ReactTables"
+                        Tablecolumns={columns}
+                        Tabledata={data}
+                        PagedefaultSize={10}
+                        TableRows={1}
+                        TableshowPagination={data.length > 10}
+                        TableshowFilter={true}
                     />
                 </Stack.Item>
             </Stack>

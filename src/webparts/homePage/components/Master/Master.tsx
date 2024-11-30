@@ -7,8 +7,8 @@ import {
   IDropdownOption, Checkbox, Icon, ChoiceGroup, IChoiceGroupOption
 } from 'office-ui-fabric-react';
 import { PeoplePicker, PrincipalType } from "@pnp/spfx-controls-react/lib/PeoplePicker";
-import MessageDialog from '../ResuableComponents/MessageDialog';
-import ReactTableComponent from '../ResuableComponents/ReactTableComponent';
+import MessageDialog from '../ResuableComponents/PopupBox';
+import ReactTableComponent from '../ResuableComponents/ReusableDataTable';
 import { IStackItemStyles, IStackStyles, IStackTokens, Stack, FontIcon } from 'office-ui-fabric-react';
 import { SaveTileSetting } from "../../../../Services/MasTileService";
 import { GetAllLabel } from "../../../../Services/ControlLabel";
@@ -17,7 +17,7 @@ import { GetAllLabel } from "../../../../Services/ControlLabel";
 import { Accordion, Form } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useBoolean } from '@fluentui/react-hooks';
-import {ILabel} from '../Interface/ILabel';
+import { ILabel } from '../Interface/ILabel';
 
 //import {WebPartContext} from '@microsoft/sp-webpart-base'
 //import type { IHomePageProps } from '../IHomePageProps';
@@ -44,17 +44,23 @@ export default function Master({ props }: any): JSX.Element {
   const [TileName, setTileName] = useState("");
   const [TileError, setTileErr] = useState("");
   const [DisplayLabel, setDisplayLabel] = useState<ILabel>();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+      setSelectedFile(event.target.files[0]);
+    }
+  };
 
   useEffect(() => {
 
-let DisplayLabel : ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}'); //localStorage.getItem('DisplayLabel')|| null;
-setDisplayLabel(DisplayLabel);
+    let DisplayLabel: ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}'); //localStorage.getItem('DisplayLabel')|| null;
+    setDisplayLabel(DisplayLabel);
     clearField();
     //fetchData();
     getAllData();
 
-  });
+  }, []);
 
   // const openDialog = () => {
   //   setDialogMessage('Save Data Successfully.');
@@ -96,7 +102,7 @@ setDisplayLabel(DisplayLabel);
 
 
   const getAllData = async () => {
-    let data: any = await GetAllLabel(props.SiteURL, props.spHttpClient,"DefaultText");
+    let data: any = await GetAllLabel(props.SiteURL, props.spHttpClient, "DefaultText");
     console.log(data);
   };
 
@@ -301,13 +307,13 @@ setDisplayLabel(DisplayLabel);
         <Stack horizontal styles={stackStyles} tokens={stackTokens}>
           <Stack.Item grow={2} styles={stackItemStyles}>
             <ReactTableComponent
-              tableClassName={styles.ReactTables}
-              columns={columns}
-              data={data}
-              defaultPageSize={10}
-              minRows={1}
-              showPagination={data.length > 10}
-              showFilter={true}
+              TableClassName={styles.ReactTables}
+              Tablecolumns={columns}
+              Tabledata={data}
+              PagedefaultSize={10}
+              TableRows={1}
+              TableshowPagination={data.length > 10}
+              TableshowFilter={true}
             />
           </Stack.Item>
         </Stack>
@@ -335,7 +341,7 @@ setDisplayLabel(DisplayLabel);
                       <div className="form-group">
                         <label className={styles.Headerlabel}>Tile Name</label>
 
-                        <TextField label="Title" errorMessage={TileError} value={TileName} onChange={(e: any) => { setTileName(e.target.value); }} />
+                        {/* <TextField label="Title" errorMessage={TileError} value={TileName} onChange={(e: any) => { setTileName(e.target.value); }} /> */}
                         <TextField
                           placeholder="Enter Tile Name"
                           // onChange={(e: any) => { setTileName(e.target.value); }}
@@ -353,9 +359,12 @@ setDisplayLabel(DisplayLabel);
                         <TextField
                           placeholder=" "
                           // errorMessage={"Please fill this field"}
-                          value={""}
+                          //value={selectedFile}
+                          onChange={handleFileChange}
+                          //onChange={(el: React.ChangeEvent<HTMLInputElement>) => setSelectedFile()}
                           type="file"
                         />
+                        {selectedFile && <p>Selected file: {selectedFile.name}</p>}
                         {/* <FilePicker
                         bingAPIKey="<BING API KEY>"
                         accepts={[".doc", ".docx", ".xls", ".xlsm"]}
@@ -796,10 +805,10 @@ setDisplayLabel(DisplayLabel);
               {/* <DefaultButton text="Save" className={styles['sub-btn']} allowDisabledFocus onClick={showPopup} />
               {isDatapopvisible && (<MessageDialog />)} */}
 
-<DefaultButton onClick={submitTileData} text={DisplayLabel?.Draft} className={styles['sub-btn']} />
+              {/* <DefaultButton onClick={submitTileData} text={DisplayLabel?.Draft} className={styles['sub-btn']} /> */}
 
               <DefaultButton onClick={submitTileData} text="Save" className={styles['sub-btn']} />
-              <MessageDialog isPopupVisible={isPopupVisible} hidePopup={hidePopup} />
+              <MessageDialog isPopupBoxVisible={isPopupVisible} hidePopup={hidePopup} />
 
 
               <DefaultButton text="Cancel" onClick={toggleModal} className={styles['can-btn']} allowDisabledFocus />

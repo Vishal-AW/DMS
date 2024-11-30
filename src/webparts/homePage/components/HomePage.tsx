@@ -11,11 +11,11 @@ import Header from '../components/ResuableComponents/Header';
 import Footer from '../components/ResuableComponents/Footer';
 import Datatable from '../components/ResuableComponents/Header';
 import Dashboard from '../components/Home/Dashboard';
-import ParentComponent from '../components/v1_tree/ParentTreeView';
+import ParentComponent from './GeneralDocumentTreeView/ParentTreeView';
 import { GetAllLabel } from "../../../Services/ControlLabel";
 
 import '../components/Hidedesign.css';
- 
+
 
 
 export default function HomePage(props: IHomePageProps): JSX.Element {
@@ -25,13 +25,12 @@ export default function HomePage(props: IHomePageProps): JSX.Element {
 
   useEffect(() => {
     getAllData();
-
-  });
+  }, []);
 
 
   const getAllData = async () => {
-    let data: any = await GetAllLabel(props.SiteURL, props.spHttpClient,"DefaultText");
-    localStorage.setItem('DisplayLabel', JSON.stringify( data));
+    let data: any = await GetAllLabel(props.SiteURL, props.spHttpClient, "DefaultText");
+    localStorage.setItem('DisplayLabel', JSON.stringify(data));
     console.log(data);
   };
 
