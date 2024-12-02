@@ -1,113 +1,173 @@
-import { SPHttpClient, SPHttpClientResponse } from '@microsoft/sp-http';
-
- 
-
-export  function getUSERID(WebUrl:string,spHttpClient:SPHttpClient,username:any){
-
-    let url = WebUrl+"/_api/web/SiteUserInfoList/items?$select=Id&$filter=Title eq '"+username+"'";
-     
-  
-       return  spHttpClient.get(url,
-        SPHttpClient.configurations.v1,
-        {
-          headers: {
-            'Accept': 'application/json;odata=nometadata',
-            'odata-version': ''
-          }
-        }).then((response: SPHttpClientResponse) => {
-          console.log("response");
-          /*if(response.ok)
-          {
-             response.json().then((data)=>{
-                 console.log(data.value);
-                 var userID=data;
-            alert(userID);
-            });
-          }*/
-         
-          return response.json();
-        });
-  }
- 
-export  function GetListItem(WebUrl:string,spHttpClient:SPHttpClient,ListName:string,options:any) {
-  
-    //let returnval =[];
-    let url = WebUrl+"/_api/web/lists/getbytitle('"+ListName+"')/Items";
-    url = URLBuilder(url,options);
-
-     return  spHttpClient.get(url,
-      SPHttpClient.configurations.v1,
-      {
-        headers: {
-          'Accept': 'application/json;odata=nometadata',
-          'odata-version': ''
-        }
-      }).then((response: SPHttpClientResponse) => {
-        console.log("response");
-        
-        return response.json();
-      });
-      
-}
+import { ISPHttpClientOptions, SPHttpClient, SPHttpClientResponse } from '@microsoft/sp-http';
+import { WebPartContext } from '@microsoft/sp-webpart-base';
 
 
-export  function CreateItem(WebUrl:string,spHttpClient:SPHttpClient,ListName:string,jsonBody:any) {
-  
-    
 
-      if (!jsonBody.__metadata) {
-            jsonBody.__metadata = {
-                'type': 'SP.ListItem'
-            };
-        }
+export function getUSERID(WebUrl: string, spHttpClient: SPHttpClient, username: any) {
 
-  
-      const URL = WebUrl+"/_api/web/lists/getbytitle('"+ListName+"')/Items";
-      return  spHttpClient.post(URL,
-        SPHttpClient.configurations.v1,{
-          headers: {
-            'Accept': 'application/json;odata=nometadata',
-            'odata-version': '3.0'
-          },
-          body:JSON.stringify(jsonBody)
-        }).then((response: SPHttpClientResponse) => {
-            if(response.ok)
-            {
-                return response.json();
-            }
-        });
-      
-}
+  let url = WebUrl + "/_api/web/SiteUserInfoList/items?$select=Id&$filter=Title eq '" + username + "'";
 
-export  function UpdateItem(WebUrl:string,spHttpClient:SPHttpClient,ListName:string,jsonBody:any,ID:Number) {
-  
-    
 
-    if (!jsonBody.__metadata) {
-          jsonBody.__metadata = {
-              'type': 'SP.ListItem'
-          };
+  return spHttpClient.get(url,
+    SPHttpClient.configurations.v1,
+    {
+      headers: {
+        'Accept': 'application/json;odata=nometadata',
+        'odata-version': ''
       }
+    }).then((response: SPHttpClientResponse) => {
+      console.log("response");
+      /*if(response.ok)
+      {
+         response.json().then((data)=>{
+             console.log(data.value);
+             var userID=data;
+        alert(userID);
+        });
+      }*/
 
-
-    const URL = WebUrl+"/_api/web/lists/getbytitle('"+ListName+"')/Items("+ID+")";
-    return  spHttpClient.post(URL,
-      SPHttpClient.configurations.v1,{
-        headers: {
-            'Accept': 'application/json;odata=nometadata',
-            'odata-version': '3.0',
-            'IF-MATCH': '*',  
-            'X-HTTP-Method': 'MERGE' 
-        },
-        body:JSON.stringify(jsonBody)
-      }).then((response: SPHttpClientResponse) => {
-          if(response.ok)
-          {
-              return response;
-          }
-      });
-    
+      return response.json();
+    });
 }
+
+export function GetListItem(WebUrl: string, spHttpClient: SPHttpClient, ListName: string, options: any) {
+
+  //let returnval =[];
+  let url = WebUrl + "/_api/web/lists/getbytitle('" + ListName + "')/Items";
+  url = URLBuilder(url, options);
+
+  return spHttpClient.get(url,
+    SPHttpClient.configurations.v1,
+    {
+      headers: {
+        'Accept': 'application/json;odata=nometadata',
+        'odata-version': ''
+      }
+    }).then((response: SPHttpClientResponse) => {
+      console.log("response");
+
+      return response.json();
+    });
+
+}
+
+
+export function CreateItem(WebUrl: string, spHttpClient: SPHttpClient, ListName: string, jsonBody: any) {
+
+
+
+  if (!jsonBody.__metadata) {
+    jsonBody.__metadata = {
+      'type': 'SP.ListItem'
+    };
+  }
+
+
+  const URL = WebUrl + "/_api/web/lists/getbytitle('" + ListName + "')/Items";
+  return spHttpClient.post(URL,
+    SPHttpClient.configurations.v1, {
+    headers: {
+      'Accept': 'application/json;odata=nometadata',
+      'odata-version': '3.0'
+    },
+    body: JSON.stringify(jsonBody)
+  }).then((response: SPHttpClientResponse) => {
+    if (response.ok) {
+      return response.json();
+    }
+  });
+
+}
+
+export function UpdateItem(WebUrl: string, spHttpClient: SPHttpClient, ListName: string, jsonBody: any, ID: Number) {
+
+
+
+  if (!jsonBody.__metadata) {
+    jsonBody.__metadata = {
+      'type': 'SP.ListItem'
+    };
+  }
+
+
+  const URL = WebUrl + "/_api/web/lists/getbytitle('" + ListName + "')/Items(" + ID + ")";
+  return spHttpClient.post(URL,
+    SPHttpClient.configurations.v1, {
+    headers: {
+      'Accept': 'application/json;odata=nometadata',
+      'odata-version': '3.0',
+      'IF-MATCH': '*',
+      'X-HTTP-Method': 'MERGE'
+    },
+    body: JSON.stringify(jsonBody)
+  }).then((response: SPHttpClientResponse) => {
+    if (response.ok) {
+      return response;
+    }
+  });
+
+}
+
+
+export async function getUserIdFromLoginName(context: WebPartContext, loginName: string): Promise<any> {
+  const response = await context.spHttpClient.post(
+    `${context.pageContext.web.absoluteUrl}/_api/web/ensureuser`,
+    SPHttpClient.configurations.v1,
+    {
+      headers: {
+        "Accept": "application/json;odata=verbose",
+        "Content-Type": "application/json;odata=verbose",
+        "odata-version": ""
+      },
+      body: JSON.stringify({ 'logonName': loginName })
+    }
+  );
+
+  const userData = await response.json();
+  return userData.d;
+};
+
+
+
+export async function UploadFile(context: WebPartContext, WebUrl: string, DocumentLib: string, file: any, DisplayName: string, jsonBody: any) {
+  let spOpts: ISPHttpClientOptions = {
+    headers: {
+      "Accept": "application/json",
+      "Content-Type": "application/json"
+    },
+    body: file
+  };
+  const redirectionURL = WebUrl + "/_api/Web/GetFolderByServerRelativeUrl('" + DocumentLib + "')/Files/Add(url='" + DisplayName + "', overwrite=true)?$expand=ListItemAllFields";
+
+  return await context.spHttpClient.post(redirectionURL, SPHttpClient.configurations.v1, spOpts).then((response: SPHttpClientResponse) => {
+    response.json().then(async (responseJSON: any) => {
+      if (jsonBody !== null) {
+        let metaData = await this.UpdateItem(context, WebUrl, DocumentLib, jsonBody, responseJSON.ListItemAllFields.ID);
+        return metaData;
+      }
+    });
+  });
+}
+
+export async function uuidv4() {
+  let tday = new Date();
+  let d: any = tday.getDate();
+  let m: any = tday.getMonth() + 1;
+  let y = tday.getFullYear();
+  let hr = tday.getHours();
+  let min = tday.getMinutes();
+  let sec = tday.getMilliseconds();
+  if (d < 10) {
+    d = '0' + d;
+  }
+  if (m < 10) {
+    m = '0' + m;
+  }
+
+  let CreationDate = y + '-' + m + '-' + d + '-' + hr + '-' + min + '-' + sec;
+  return CreationDate.toString();
+}
+
 
 /*export  function UploadFile(WebUrl,spHttpClient,file,DisplayName,DocumentLib,jsonBody,FolderName):Promise<any>  {
   
@@ -132,53 +192,52 @@ export  function UpdateItem(WebUrl:string,spHttpClient:SPHttpClient,ListName:str
     
 }*/
 
-export async  function DeleteItem(WebUrl:string,spHttpClient:SPHttpClient,ListName:string,ID:Number) {
-  
-  const URL = WebUrl+"/_api/web/lists/getbytitle('"+ListName+"')/Items("+ID+")";
+export async function DeleteItem(WebUrl: string, spHttpClient: SPHttpClient, ListName: string, ID: Number) {
+
+  const URL = WebUrl + "/_api/web/lists/getbytitle('" + ListName + "')/Items(" + ID + ")";
   return await spHttpClient.post(URL,
-    SPHttpClient.configurations.v1,{
-      headers: {
-          'Accept': 'application/json;odata=nometadata',
-          'odata-version': '3.0',
-          'IF-MATCH': '*',  
-          'X-HTTP-Method': 'DELETE' 
-      }
-    }).then((response: SPHttpClientResponse) => {
-        if(response.ok)
-        {
-            return response;
-        }
-    });
-  
-}
-function URLBuilder(url:string,options:any){
-    if (options) {
-        if (options.filter) {
-            url += ((url.indexOf('?') > -1) ? "&" : "?") + "$filter=" + options.filter;
-        }
-        if (options.select) {
-            url += ((url.indexOf('?') > -1) ? "&" : "?") + "$select=" + options.select;
-        }
-        if (options.orderby) {
-            url += ((url.indexOf('?') > -1) ? "&" : "?") + "$orderby=" + options.orderby;
-        }
-        if (options.expand) {
-            url += ((url.indexOf('?') > -1) ? "&" : "?") + "$expand=" + options.expand;
-        }
-        if (options.top) {
-            url += ((url.indexOf('?') > -1) ? "&" : "?") + "$top=" + options.top;
-        }
-        if (options.skip) {
-            url += ((url.indexOf('?') > -1) ? "&" : "?") + "$skip=" + options.skip;
-        }
-        if (options.skiptoken) {
-            url += ((url.indexOf('?') > -1) ? "&" : "?") + "$skiptoken=Paged%3DTRUE%26p_ID%3D" + options.skiptoken;
-        }
+    SPHttpClient.configurations.v1, {
+    headers: {
+      'Accept': 'application/json;odata=nometadata',
+      'odata-version': '3.0',
+      'IF-MATCH': '*',
+      'X-HTTP-Method': 'DELETE'
     }
-    return url;
+  }).then((response: SPHttpClientResponse) => {
+    if (response.ok) {
+      return response;
+    }
+  });
+
+}
+function URLBuilder(url: string, options: any) {
+  if (options) {
+    if (options.filter) {
+      url += ((url.indexOf('?') > -1) ? "&" : "?") + "$filter=" + options.filter;
+    }
+    if (options.select) {
+      url += ((url.indexOf('?') > -1) ? "&" : "?") + "$select=" + options.select;
+    }
+    if (options.orderby) {
+      url += ((url.indexOf('?') > -1) ? "&" : "?") + "$orderby=" + options.orderby;
+    }
+    if (options.expand) {
+      url += ((url.indexOf('?') > -1) ? "&" : "?") + "$expand=" + options.expand;
+    }
+    if (options.top) {
+      url += ((url.indexOf('?') > -1) ? "&" : "?") + "$top=" + options.top;
+    }
+    if (options.skip) {
+      url += ((url.indexOf('?') > -1) ? "&" : "?") + "$skip=" + options.skip;
+    }
+    if (options.skiptoken) {
+      url += ((url.indexOf('?') > -1) ? "&" : "?") + "$skiptoken=Paged%3DTRUE%26p_ID%3D" + options.skiptoken;
+    }
+  }
+  return url;
 };
 
 
 
 
- 
+

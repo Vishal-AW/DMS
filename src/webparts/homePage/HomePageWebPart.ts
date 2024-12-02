@@ -30,9 +30,10 @@ export default class HomePageWebPart extends BaseClientSideWebPart<IHomePageWebP
         environmentMessage: this._environmentMessage,
         hasTeamsContext: !!this.context.sdks.microsoftTeams,
         userDisplayName: this.context.pageContext.user.displayName,
-        context : this.context,
-        SiteURL : this.context.pageContext.web.absoluteUrl,
-        UserEmailID : this.context.pageContext.user.email
+        context: this.context,
+        SiteURL: this.context.pageContext.web.absoluteUrl,
+        UserEmailID: this.context.pageContext.user.email,
+        spHttpClient: this.context.spHttpClient
       }
     );
 

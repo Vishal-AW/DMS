@@ -1,24 +1,33 @@
 import * as React from "react";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styles from '../Master/Master.module.scss';
+//import { HTTPServices, _getListItem } from "../../../HTTPServices";
 import {
   DefaultButton, Panel, PanelType, TextField, Toggle, Dropdown, IDropdownStyles,
   IDropdownOption, Checkbox, Icon, ChoiceGroup, IChoiceGroupOption
 } from 'office-ui-fabric-react';
-import { PeoplePicker } from "@pnp/spfx-controls-react/lib/PeoplePicker";
-import MessageDialog from '../ResuableComponents/MessageDialog';
-import ReactTableComponent from '../ResuableComponents/ReactTableComponent';
+import { PeoplePicker, PrincipalType, IPeoplePickerContext } from "@pnp/spfx-controls-react/lib/PeoplePicker";
+import MessageDialog from '../ResuableComponents/PopupBox';
+import ReactTableComponent from '../ResuableComponents/ReusableDataTable';
 import { IStackItemStyles, IStackStyles, IStackTokens, Stack, FontIcon } from 'office-ui-fabric-react';
+import { SaveTileSetting } from "../../../../Services/MasTileService";
+import { GetAllLabel } from "../../../../Services/ControlLabel";
 //import { FilePicker, IFilePickerResult } from '@pnp/spfx-controls-react/lib/FilePicker';
 //import MaterialTable from "material-table";
 import { Accordion, Form } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { useBoolean } from '@fluentui/react-hooks'
+import { useBoolean } from '@fluentui/react-hooks';
+import { ILabel } from '../Interface/ILabel';
+import { getUserIdFromLoginName } from "../../../../DAL/Commonfile";
+
+
 //import {WebPartContext} from '@microsoft/sp-webpart-base'
 //import type { IHomePageProps } from '../IHomePageProps';
 
 
 export default function Master({ props }: any): JSX.Element {
+
+  //const _spService = new HTTPServices();
   const [showModal, setShowModal] = useState(false);
   const [preview, setPreview] = useState(false);
   const [download, setDownload] = useState(false);
@@ -30,8 +39,89 @@ export default function Master({ props }: any): JSX.Element {
   const toggleModal = () => setShowModal(!showModal);
   //const [showDialog, setShowDialog] = useState(false);
   //const [dialogMessage, setDialogMessage] = useState('');
+  //const [isOpen, setIsOpen] = useState(false);
   const [isPopupVisible, { setTrue: showPopup, setFalse: hidePopup }] = useBoolean(false);
+  //const [isPopupVisible, { setFalse: hidePopup }] = useBoolean(false);
+  const [selectedUsers, setSelectedUsers] = useState<any[]>([]);
+  const [TileAdminselectedUsers, setTileAdminSelectedUsers] = useState<any[]>([]);
+  const [TileName, setTileName] = useState("");
+  const [TileError, setTileErr] = useState("");
+  const [DisplayLabel, setDisplayLabel] = useState<ILabel>();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  //const [attachments, setAttachments]: any = useState([]);
+  const [assignName, setAssignName] = useState<string>("");
+  const [assignID, setAssignID] = useState<string[]>([]);
+  const [TileAdminName, setTileAdminName] = useState<string>("");
+  const [TileAdminID, setTileAdminID] = useState<string[]>([]);
+  // const [selectedUsers, setSelectedUsers] = useState<any[]>([]);
 
+  //const [TileRefernceno, setTileRefernceNo] = useState("");
+
+  const [isTileStatus, setIsTileStatus] = React.useState<boolean>(false);
+  const [isAllowApprover, setIsAllowApprover] = React.useState<boolean>(false);
+  const [isDropdownVisible, setIsDropdownVisible] = React.useState<boolean>(false);
+
+  const [DynamicDataReference, setDynamicDataReference] = React.useState<boolean>(false);
+  const [IsArchiveAllowed, setArchiveAllowed] = React.useState<boolean>(false);
+  const [IsRequired, setIsRequired] = React.useState<boolean>(true);
+  const [Fieldstatus, setFieldstatus] = React.useState<boolean>(true);
+  const [FieldAllowinFile, setFieldAllowinFile] = React.useState<boolean>(true);
+  const [SearchFilterRequired, setSearchFilterRequired] = React.useState<boolean>(true);
+  //setTileRefernceNo("2024-00001");
+
+  // const addAttachment = useCallback((obj: any) => {
+  //   setAttachments([...attachments, obj]);
+  // }, [attachments]);
+  const handleTileStatusToggleChange = (checked: boolean): void => {
+    setIsTileStatus(checked);
+  };
+  const handleAllowApproverToggleChange = (checked: boolean): void => {
+    setIsAllowApprover(checked);
+  };
+  const handleToggleChange = (checked: boolean): void => {
+    setIsDropdownVisible(checked);
+  };
+  const handleIsRequiredToggleChange = (checked: boolean): void => {
+    setIsRequired(checked);
+  };
+  const handleFieldstatusToggleChange = (checked: boolean): void => {
+    setFieldstatus(checked);
+  };
+  const handleFieldAllowinFileToggleChange = (checked: boolean): void => {
+    setFieldAllowinFile(checked);
+  };
+  const handleSearchFilterRequiredToggleChange = (checked: boolean): void => {
+    setSearchFilterRequired(checked);
+  };
+  const ToggleChangeforrefernceno = (checked: boolean): void => {
+    setDynamicDataReference(checked);
+  };
+  const ToggleChangeforArchiveAllowed = (checked: boolean): void => {
+    setArchiveAllowed(checked);
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+      setSelectedFile(event.target.files[0]);
+    }
+    // const filesData = event.target.files; // FileList object
+    // if (filesData && filesData.length > 0) {
+    //   setSelectedFile(Array.from(filesData)); // Convert FileList to File[]
+    // } else {
+    //   setSelectedFile(null); // No files selected
+    // }
+  };
+
+
+  useEffect(() => {
+
+    let DisplayLabel: ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}'); //localStorage.getItem('DisplayLabel')|| null;
+    setDisplayLabel(DisplayLabel);
+    clearField();
+    //fetchData();
+    getAllData();
+
+  }, []);
 
   // const openDialog = () => {
   //   setDialogMessage('Save Data Successfully.');
@@ -63,6 +153,156 @@ export default function Master({ props }: any): JSX.Element {
   //   [],
   // );
 
+  const onPeoplePickerChange = (items: any[]) => {
+    //console.log("Selected users:", items);
+    setSelectedUsers(items);
+    console.log("Users to process:", selectedUsers);
+    let Users = Array.prototype.map.call(items, (item: any) => {
+      return item.id;
+    });
+
+    if (items.length > 0) {
+      setAssignName(items[0].text);
+      setAssignID(Users);
+    } else {
+      setAssignName("");
+      setAssignID([]);
+
+      console.log(assignName);
+      console.log(assignID);
+    }
+  };
+
+
+  const onTilePeoplePickerChange = (items: any[]) => {
+    //console.log("Selected users:", items);
+    setTileAdminSelectedUsers(items);
+    console.log("Users to process:", TileAdminselectedUsers);
+    let TileUsers = Array.prototype.map.call(items, (item: any) => {
+      return item.id;
+    });
+
+    if (items.length > 0) {
+      setTileAdminName(items[0].text);
+      setTileAdminID(TileUsers);
+    } else {
+      setTileAdminName("");
+      setTileAdminID([]);
+
+      console.log(TileAdminName);
+      console.log(TileAdminID);
+    }
+  };
+
+  const peoplePickerContext: IPeoplePickerContext = {
+    absoluteUrl: props.context.pageContext.web.absoluteUrl,
+    msGraphClientFactory: props.context.msGraphClientFactory,
+    spHttpClient: props.context.spHttpClient
+  };
+
+
+
+
+  const getAllData = async () => {
+    let data: any = await GetAllLabel(props.SiteURL, props.spHttpClient, "DefaultText");
+    console.log(data);
+  };
+
+
+  const clearField = () => {
+
+    setTileName("");
+    setAssignID([]);
+    setTileAdminID([]);
+    clearError();
+
+  };
+  const clearError = () => {
+
+    setTileErr('');
+  };
+
+
+  const submitTileData = () => {
+    clearError();
+    let valid = validation();
+    valid ? saveData() : "";
+  };
+
+  const validation = () => {
+    let isValidForm = true;
+    if (TileName === "" || TileName === undefined || TileName === null) {
+      setTileErr('Tile name is required');
+      isValidForm = false;
+
+    }
+    return isValidForm;
+  }
+
+
+  // const saveAttachment = async (MainTileID: any) => {
+
+  //   if (!selectedFile || selectedFile.length === 0) {
+  //     console.error("No files selected for upload.");
+  //     return;
+  //   }
+  //   selectedFile.map(async (el: any, index: any) => {
+
+
+  //     let obj = {
+  //       __metadata: { type: "SP.Data.SP.Data.DMS_x005f_TileDocumentItem" },
+  //       ActualName: el.ActualName,
+  //       LIDId: MainTileID,
+  //       DocumentType: el.DocumentType,
+  //     };
+  //     let displayName = el.ActualName;
+  //     await UploadFile(props.context, props.WebURL, "Attachment", el.File, displayName, obj);
+
+  //   });
+  // };
+
+
+  const saveData = async () => {
+
+    const userIds = await Promise.all(
+      assignID.map(async (person: any) => {
+        const user = await getUserIdFromLoginName(props.context, person);
+        return user.Id;
+      })
+    );
+
+    const TilesIds = await Promise.all(
+      TileAdminID.map(async (person: any) => {
+        const user = await getUserIdFromLoginName(props.context, person);
+        return user.Id;
+      })
+    );
+
+    let option = {
+      __metadata: { type: "SP.Data.DMS_x005f_Mas_x005f_TileListItem" },
+      TileName: TileName,
+      PermissionId: { results: userIds },
+      TileAdminId: TilesIds[0],
+      AllowApprover: isAllowApprover,
+      Active: isTileStatus,
+      IsDynamicReference: DynamicDataReference,
+      // ReferenceFormula: TileRefernceno,
+
+    }
+    let LID = await SaveTileSetting(props.SiteURL, props.spHttpClient, option);
+    { showPopup }
+    console.log(LID);
+    //let MainTileID = LID.Id;
+
+    if (LID != null) {
+
+
+      //saveAttachment(MainTileID);
+
+    }
+
+
+  };
 
 
 
@@ -103,6 +343,9 @@ export default function Master({ props }: any): JSX.Element {
 
   ];
 
+
+
+
   function _onChange(ev: React.FormEvent<HTMLInputElement>, option: IChoiceGroupOption): void {
     console.dir(option);
   }
@@ -111,62 +354,16 @@ export default function Master({ props }: any): JSX.Element {
     console.dir(option);
   }
 
-  const [isDropdownVisible, setIsDropdownVisible] = React.useState<boolean>(false);
-  const [DynamicDataReference, setDynamicDataReference] = React.useState<boolean>(false);
-  const [IsArchiveAllowed, setArchiveAllowed] = React.useState<boolean>(false);
-  const [IsRequired, setIsRequired] = React.useState<boolean>(true);
-  const [Fieldstatus, setFieldstatus] = React.useState<boolean>(true);
-  const [FieldAllowinFile, setFieldAllowinFile] = React.useState<boolean>(true);
-  const [SearchFilterRequired, setSearchFilterRequired] = React.useState<boolean>(true);
 
-
-  const handleToggleChange = (checked: boolean): void => {
-    setIsDropdownVisible(checked);
-
-
-  };
-
-  const handleIsRequiredToggleChange = (checked: boolean): void => {
-    setIsRequired(checked);
-
-
-  };
-  const handleFieldstatusToggleChange = (checked: boolean): void => {
-    setFieldstatus(checked);
-
-
-  };
-  const handleFieldAllowinFileToggleChange = (checked: boolean): void => {
-    setFieldAllowinFile(checked);
-
-
-  };
-  const handleSearchFilterRequiredToggleChange = (checked: boolean): void => {
-    setSearchFilterRequired(checked);
-
-
-  };
-
-
-
-
-
-
-  const ToggleChangeforrefernceno = (checked: boolean): void => {
-
-    setDynamicDataReference(checked);
-  };
-
-  const ToggleChangeforArchiveAllowed = (checked: boolean): void => {
-
-    setArchiveAllowed(checked);
-  };
 
   const dropdownStyles: Partial<IDropdownStyles> = {
     dropdown: { width: 250 },
   };
 
   const [tableData, setTableData] = useState<any[]>([]);
+
+
+
 
   // Adding a new row to the table
   const addRow = () => {
@@ -242,13 +439,13 @@ export default function Master({ props }: any): JSX.Element {
         <Stack horizontal styles={stackStyles} tokens={stackTokens}>
           <Stack.Item grow={2} styles={stackItemStyles}>
             <ReactTableComponent
-              tableClassName={styles.ReactTables}
-              columns={columns}
-              data={data}
-              defaultPageSize={10}
-              minRows={1}
-              showPagination={data.length > 10}
-              showFilter={true}
+              TableClassName={styles.ReactTables}
+              Tablecolumns={columns}
+              Tabledata={data}
+              PagedefaultSize={10}
+              TableRows={1}
+              TableshowPagination={data.length > 10}
+              TableshowFilter={true}
             />
           </Stack.Item>
         </Stack>
@@ -264,7 +461,7 @@ export default function Master({ props }: any): JSX.Element {
           type={PanelType.large}
           isFooterAtBottom={true}
         >
-          <h6 className={styles.Headerlabel}>Add Tile Management</h6><hr />
+          <h6 className={styles.Headerlabel}>{DisplayLabel?.AddTileManagement}</h6><hr />
 
           <Accordion alwaysOpen >
             <Accordion.Item eventKey="0">
@@ -275,10 +472,16 @@ export default function Master({ props }: any): JSX.Element {
                     <div className="col-md-3">
                       <div className="form-group">
                         <label className={styles.Headerlabel}>Tile Name</label>
+
+                        {/* <TextField label="Title" errorMessage={TileError} value={TileName} onChange={(e: any) => { setTileName(e.target.value); }} /> */}
                         <TextField
-                          placeholder=" "
-                          //errorMessage={"Please fill this field"}
-                          value={""}
+                          placeholder="Enter Tile Name"
+                          // onChange={(e: any) => { setTileName(e.target.value); }}
+                          //onChange={(e: any) => { setTileName(e.target.value); }}
+                          errorMessage={TileError}
+                          value={TileName}
+                          onChange={(el: React.ChangeEvent<HTMLInputElement>) => setTileName(el.target.value)}
+
                         />
                       </div>
                     </div>
@@ -288,9 +491,13 @@ export default function Master({ props }: any): JSX.Element {
                         <TextField
                           placeholder=" "
                           // errorMessage={"Please fill this field"}
-                          value={""}
+                          //value={selectedFile}
+                          onChange={handleFileChange}
+                          //onChange={(el: React.ChangeEvent<HTMLInputElement>) => setSelectedFile()}
                           type="file"
                         />
+                        {/* {attachments} */}
+                        {selectedFile}
                         {/* <FilePicker
                         bingAPIKey="<BING API KEY>"
                         accepts={[".doc", ".docx", ".xls", ".xlsm"]}
@@ -306,24 +513,18 @@ export default function Master({ props }: any): JSX.Element {
                     <div className="col-md-3">
                       <div className="form-group">
                         <label className={styles.Headerlabel}>Access To Tile</label>
-                        {/* <TextField
-                          placeholder=" "
-                          //errorMessage={"Please fill this field"}
-                          value={""}
-                        /> */}
-
                         <PeoplePicker
-                          context={props.context}
-                          //errorMessage={this.state.ErrorAssign}
-                          personSelectionLimit={1}
-                          required={false}
-                          // errorMessage={this.state.ErrorRequestor}
-                          // onChange={this._getPeoplePickerItems}
-                          //defaultSelectedUsers={[this.state.AssignID ? this.state.AssignName : ""]}
+                          context={peoplePickerContext}
+                          personSelectionLimit={5}
+                          showtooltip={true}
+                          required={true}
+                          // searchTextLimit={2}
+                          onChange={onPeoplePickerChange}
                           showHiddenInUI={false}
-                          resolveDelay={1000}
-                          ensureUser={true}
+                          principalTypes={[PrincipalType.User]}
+                        // resolveDelay={1000} 
                         />
+
                       </div>
                     </div>
 
@@ -333,13 +534,13 @@ export default function Master({ props }: any): JSX.Element {
                     <div className="col-md-2">
                       <div className="form-group">
                         <label className={styles.Headerlabel}>Tile Status</label>
-                        <Toggle />
+                        <Toggle checked={isTileStatus} onChange={(_, checked) => handleTileStatusToggleChange(checked!)} />
                       </div>
                     </div>
                     <div className="col-md-2">
                       <div className="form-group">
                         <label className={styles.Headerlabel}>Allow Approver</label>
-                        <Toggle />
+                        <Toggle checked={isAllowApprover} onChange={(_, checked) => handleAllowApproverToggleChange(checked!)} />
                       </div>
                     </div>
                     <div className="col-md-2">
@@ -352,11 +553,19 @@ export default function Master({ props }: any): JSX.Element {
                     <div className="col-md-3">
                       <div className="form-group">
                         <label className={styles.Headerlabel}>Tile Admin</label>
-                        <TextField
+                        <PeoplePicker
+                          context={peoplePickerContext}
+                          showtooltip={true}
+                          required={true}
+                          onChange={onTilePeoplePickerChange}
+                          showHiddenInUI={false}
+                          principalTypes={[PrincipalType.User]}
+                        />
+                        {/* <TextField
                           placeholder=" "
                           //errorMessage={"Please fill this field"}
                           value={""}
-                        />
+                        /> */}
                       </div>
                     </div>
 
@@ -479,7 +688,7 @@ export default function Master({ props }: any): JSX.Element {
                           <label className={styles.Headerlabel}>Default Reference Example</label>
                           <TextField
                             placeholder=" "
-                            value="2024-00001"
+                            value={"2024-0001"}
                             disabled
                           />
                         </div>
@@ -708,8 +917,10 @@ export default function Master({ props }: any): JSX.Element {
               {/* <DefaultButton text="Save" className={styles['sub-btn']} allowDisabledFocus onClick={showPopup} />
               {isDatapopvisible && (<MessageDialog />)} */}
 
-              <DefaultButton onClick={showPopup} text="Save" className={styles['sub-btn']} />
-              <MessageDialog isPopupVisible={isPopupVisible} hidePopup={hidePopup} />
+              {/* <DefaultButton onClick={submitTileData} text={DisplayLabel?.Draft} className={styles['sub-btn']} /> */}
+
+              <DefaultButton onClick={submitTileData} text="Save" className={styles['sub-btn']} />
+              <MessageDialog isPopupBoxVisible={isPopupVisible} hidePopup={hidePopup} />
 
 
               <DefaultButton text="Cancel" onClick={toggleModal} className={styles['can-btn']} allowDisabledFocus />
