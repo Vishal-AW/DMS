@@ -15,7 +15,7 @@ export async function GetAttachmentFile(WebUrl: any, spHttpClient: any, ID: stri
 async function getMethod(WebUrl: string, spHttpClient: SPHttpClient, filter: string) {
 
     var option = {
-        select: "ID,TileLID,Documentpath", //File/ServerRelativeUrl,LinkFilename,
+        select: "ID,TileLID,Documentpath,File", //File/ServerRelativeUrl,LinkFilename,
         expand: "File",
         filter: filter,
         orderby: 'ID desc',

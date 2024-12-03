@@ -129,26 +129,51 @@ export async function getUserIdFromLoginName(context: WebPartContext, loginName:
 
 
 
-export async function UploadFile(context: WebPartContext, WebUrl: string, DocumentLib: string, file: any, DisplayName: string, jsonBody: any) {
-  let spOpts: ISPHttpClientOptions = {
-    headers: {
-      "Accept": "application/json",
-      "Content-Type": "application/json"
-    },
-    body: file
-  };
-  const redirectionURL = WebUrl + "/_api/Web/GetFolderByServerRelativeUrl('" + DocumentLib + "')/Files/Add(url='" + DisplayName + "', overwrite=true)?$expand=ListItemAllFields";
+export async function UploadFile(WebUrl: string, spHttpClient: any, file: string, DisplayName: string | File, DocumentLib: string, jsonBody: { __metadata: { type: string; }; Name: string; TileLID: any; DocumentType: string; Documentpath: string; } | null): Promise<any> {
 
-  return await context.spHttpClient.post(redirectionURL, SPHttpClient.configurations.v1, spOpts).then((response: SPHttpClientResponse) => {
-    response.json().then(async (responseJSON: any) => {
-      if (jsonBody !== null) {
-        let metaData = await this.UpdateItem(context, WebUrl, DocumentLib, jsonBody, responseJSON.ListItemAllFields.ID);
-        return metaData;
-      }
+  // let fileupload = DocumentLib +"/"+FolderName;
+  return new Promise((resolve) => {
+    const spOpts: ISPHttpClientOptions = {
+      body: file
+    };
+    var redirectionURL = WebUrl + "/_api/Web/GetFolderByServerRelativeUrl('" + DocumentLib + "')/Files/Add(url='" + DisplayName + "', overwrite=true)?$expand=ListItemAllFields"
+    const responsedata = spHttpClient.post(redirectionURL, SPHttpClient.configurations.v1, spOpts).then((response: SPHttpClientResponse) => {
+      response.json().then(async (responseJSON: any) => {
+        // console.log(responseJSON.ListItemAllFields.ID);
+        var serverRelURL = await responseJSON.ServerRelativeUrl;
+        if (jsonBody != null) {
+          await UpdateItem(WebUrl, spHttpClient, DocumentLib, jsonBody, responseJSON.ListItemAllFields.ID)
+
+        }
+        resolve(responseJSON);
+        console.log(responsedata);
+        console.log(serverRelURL);
+      });
     });
   });
+
 }
 
+
+export async function UpdateFileItem(context: WebPartContext, webURL: string, ListName: string, jsonBody: any, ID: Number) {
+
+  const URL = webURL + "/_api/web/lists/getbytitle('" + ListName + "')/Items(" + ID + ")";
+  return await context.spHttpClient.post(URL,
+    SPHttpClient.configurations.v1, {
+    headers: {
+      'Accept': 'application/json;odata=nometadata',
+      'odata-version': '3.0',
+      'IF-MATCH': '*',
+      'X-HTTP-Method': 'MERGE'
+    },
+    body: JSON.stringify(jsonBody)
+  }).then((response: SPHttpClientResponse) => {
+    if (response.ok) {
+      return response;
+    }
+  });
+
+}
 export async function uuidv4() {
   let tday = new Date();
   let d: any = tday.getDate();
