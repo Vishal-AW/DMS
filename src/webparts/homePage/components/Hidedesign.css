@@ -208,4 +208,31 @@ body {
     border-bottom-width: 1px !important;
     border-bottom-style: solid !important;
     border-bottom-color: #eff2f5 !important;
+    padding: 5px 0px !important;
+}
+
+input {
+    width: 100%;
+    background-color: #f5f8fa !important;
+    border-color: #f5f8fa !important;
+    color: #5e6278 !important;
+    transition: color .2s ease, background-color .2s ease !important;
+    height: 40px !important;
+    /*padding: .75rem 1rem !important;
+    font-size: 1.1rem !important;*/
+    font-weight: 500 !important;
+    border-radius: .475rem !important;
+    border: 1px solid #e4e6ef !important;
+}
+
+.ms-Panel-main {
+    border-radius: 5px !important;
+}
+
+.ms-BasePicker-text {
+    border: none !important;
+}
+
+.ms-TextField-fieldGroup {
+    border: none !important;
 }
