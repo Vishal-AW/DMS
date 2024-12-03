@@ -18,7 +18,10 @@ import { Accordion, Form } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useBoolean } from '@fluentui/react-hooks';
 import { ILabel } from '../Interface/ILabel';
-import { getUserIdFromLoginName } from "../../../../DAL/Commonfile";
+import { getUserIdFromLoginName, uuidv4 } from "../../../../DAL/Commonfile";
+import { UploadDocument } from "../../../../Services/DMSTileDocumentService";
+import { getConfigActive } from "../../../../Services/ConfigService";
+//import { getConfigActive } from "../../../../Services/ConfigService";
 
 
 //import {WebPartContext} from '@microsoft/sp-webpart-base'
@@ -29,10 +32,10 @@ export default function Master({ props }: any): JSX.Element {
 
   //const _spService = new HTTPServices();
   const [showModal, setShowModal] = useState(false);
-  const [preview, setPreview] = useState(false);
-  const [download, setDownload] = useState(false);
-  const [rename, setRename] = useState(false);
-  const [versions, setVersions] = useState(false);
+  // const [preview, setPreview] = useState(false);
+  // const [download, setDownload] = useState(false);
+  // const [rename, setRename] = useState(false);
+  // const [versions, setVersions] = useState(false);
   const [Years, setYYYY] = useState(false);
   const [years1, setYYY] = useState(false);
   const [monthsdate, setMM] = useState(false);
@@ -53,6 +56,7 @@ export default function Master({ props }: any): JSX.Element {
   const [assignID, setAssignID] = useState<string[]>([]);
   const [TileAdminName, setTileAdminName] = useState<string>("");
   const [TileAdminID, setTileAdminID] = useState<string[]>([]);
+  const [configData, setConfigData] = useState([]);
   // const [selectedUsers, setSelectedUsers] = useState<any[]>([]);
 
   //const [TileRefernceno, setTileRefernceNo] = useState("");
@@ -67,6 +71,19 @@ export default function Master({ props }: any): JSX.Element {
   const [Fieldstatus, setFieldstatus] = React.useState<boolean>(true);
   const [FieldAllowinFile, setFieldAllowinFile] = React.useState<boolean>(true);
   const [SearchFilterRequired, setSearchFilterRequired] = React.useState<boolean>(true);
+  const [selectedcheckboxActions, setSelectedcheckboxActions] = useState<string[]>([]);
+  const actions = ["Preview", "Download", "Rename", "Versions"];
+
+
+  const handleCheckboxChange = (action: string, isChecked: boolean | undefined) => {
+    setSelectedcheckboxActions((prevActions) =>
+      isChecked
+        ? [...prevActions, action]
+        : prevActions.filter((item) => item !== action)
+    );
+  };
+
+
   //setTileRefernceNo("2024-00001");
 
   // const addAttachment = useCallback((obj: any) => {
@@ -120,6 +137,7 @@ export default function Master({ props }: any): JSX.Element {
     clearField();
     //fetchData();
     getAllData();
+    ConfigMasterData();
 
   }, []);
 
@@ -209,6 +227,32 @@ export default function Master({ props }: any): JSX.Element {
   };
 
 
+  const ConfigMasterData = async () => {
+
+    let ConfigData: any = await getConfigActive(props.SiteURL, props.spHttpClient);
+
+    let ConfigvalueData = ConfigData.value;
+
+    console.log(ConfigvalueData);
+
+
+    let options: any = [];
+
+    ConfigvalueData.forEach((InternalTitleNameData: { ID: any; InternalTitleName: any; }) => {
+
+      options.push({
+
+        key: InternalTitleNameData.ID,
+
+        text: InternalTitleNameData.InternalTitleName
+
+      });
+
+    });
+
+    setConfigData(options);
+  }
+
   const clearField = () => {
 
     setTileName("");
@@ -240,26 +284,24 @@ export default function Master({ props }: any): JSX.Element {
   }
 
 
-  // const saveAttachment = async (MainTileID: any) => {
+  const saveAttachment = async (MainTileID: any) => {
 
-  //   if (!selectedFile || selectedFile.length === 0) {
-  //     console.error("No files selected for upload.");
-  //     return;
-  //   }
-  //   selectedFile.map(async (el: any, index: any) => {
+    if (!selectedFile) {
+      console.error("No files selected for upload.");
+      return;
+    }
+    let obj = {
+      __metadata: { type: "SP.Data.DMS_x005f_TileDocumentItem" },
+      // Name: selectedFile.name,
+      TileLID: MainTileID,
+      //DocumentType: selectedFile.type,
+      Documentpath: selectedFile.name
+    };
+    let displayName = uuidv4() + selectedFile.name;
+    await UploadDocument(props.SiteURL, props.spHttpClient, selectedFile, displayName, obj);
 
 
-  //     let obj = {
-  //       __metadata: { type: "SP.Data.SP.Data.DMS_x005f_TileDocumentItem" },
-  //       ActualName: el.ActualName,
-  //       LIDId: MainTileID,
-  //       DocumentType: el.DocumentType,
-  //     };
-  //     let displayName = el.ActualName;
-  //     await UploadFile(props.context, props.WebURL, "Attachment", el.File, displayName, obj);
-
-  //   });
-  // };
+  };
 
 
   const saveData = async () => {
@@ -286,18 +328,19 @@ export default function Master({ props }: any): JSX.Element {
       AllowApprover: isAllowApprover,
       Active: isTileStatus,
       IsDynamicReference: DynamicDataReference,
+      ShowMoreActions: selectedcheckboxActions.join(";")
       // ReferenceFormula: TileRefernceno,
 
     }
     let LID = await SaveTileSetting(props.SiteURL, props.spHttpClient, option);
     { showPopup }
     console.log(LID);
-    //let MainTileID = LID.Id;
+    let MainTileID = LID.Id;
 
     if (LID != null) {
 
 
-      //saveAttachment(MainTileID);
+      saveAttachment(MainTileID);
 
     }
 
@@ -385,13 +428,13 @@ export default function Master({ props }: any): JSX.Element {
   //   setTableData(updatedData);
   //   };
 
-  const dropdownOptions: IDropdownOption[] = [
-    { key: 'Arbitration', text: 'Arbitration' },
-    { key: 'Brand Name', text: 'Brand Name' },
-    { key: 'City', text: 'City' },
-    { key: 'Confidentiality', text: 'Confidentiality' },
-    { key: 'Consequences on expiry', text: 'Consequences on expiry' },
-  ];
+  // const dropdownOptions: IDropdownOption[] = [
+  //   { key: 'Arbitration', text: 'Arbitration' },
+  //   { key: 'Brand Name', text: 'Brand Name' },
+  //   { key: 'City', text: 'City' },
+  //   { key: 'Confidentiality', text: 'Confidentiality' },
+  //   { key: 'Consequences on expiry', text: 'Consequences on expiry' },
+  // ];
 
   const SelectArchiveDaysoptions: IDropdownOption[] = [
 
@@ -497,7 +540,7 @@ export default function Master({ props }: any): JSX.Element {
                           type="file"
                         />
                         {/* {attachments} */}
-                        {selectedFile}
+                        {selectedFile && <p>Selected File:{selectedFile.name}</p>}
                         {/* <FilePicker
                         bingAPIKey="<BING API KEY>"
                         accepts={[".doc", ".docx", ".xls", ".xlsm"]}
@@ -608,10 +651,18 @@ export default function Master({ props }: any): JSX.Element {
                         border: '1px solid #f5f8fa',
                       }}
                     >
-                      <Checkbox label="Preview" checked={preview} onChange={(e, checked) => setPreview(!!checked)} />
+                      {/* <Checkbox label="Preview" checked={preview} onChange={(e, checked) => setPreview(!!checked)} />
                       <Checkbox label="Download" checked={download} onChange={(e, checked) => setDownload(!!checked)} />
                       <Checkbox label="Rename" checked={rename} onChange={(e, checked) => setRename(!!checked)} />
-                      <Checkbox label="Versions" checked={versions} onChange={(e, checked) => setVersions(!!checked)} />
+                      <Checkbox label="Versions" checked={versions} onChange={(e, checked) => setVersions(!!checked)} /> */}
+
+                      {actions.map((action) => (
+                        <Checkbox
+                          label={action}
+                          key={action}
+                          onChange={(e, isChecked) => handleCheckboxChange(action, isChecked)}
+                        />
+                      ))}
                     </div>
                   </div>
 
@@ -628,31 +679,33 @@ export default function Master({ props }: any): JSX.Element {
                           <th>Action</th>
                         </tr>
                       </thead>
+
+                      <tr style={{ borderBottom: '1px solid #ddd' }}>
+                        <th style={{ padding: '10px' }}></th>
+                        <th style={{ padding: '10px' }}>
+
+                          <Dropdown
+                            placeholder="Choose One"
+                            options={configData}
+                          />
+                        </th>
+                        <th style={{ padding: '10px' }}>
+                          <Toggle checked={IsRequired} onChange={(_, checked) => handleIsRequiredToggleChange(checked!)} />
+                        </th>
+                        <th style={{ padding: '10px' }}>
+                          <Toggle checked={Fieldstatus} onChange={(_, checked) => handleFieldstatusToggleChange(checked!)} />
+                        </th>
+                        <th style={{ padding: '10px' }}>
+                          <Toggle checked={FieldAllowinFile} onChange={(_, checked) => handleFieldAllowinFileToggleChange(checked!)} />
+                        </th>
+                        <th style={{ padding: '10px' }}>
+                          <Toggle checked={SearchFilterRequired} onChange={(_, checked) => handleSearchFilterRequiredToggleChange(checked!)} />
+                        </th>
+                        <th style={{ padding: '10px' }}>
+                          <Icon iconName="Add" onClick={addRow} style={{ color: '#009EF7', font: 'bold', cursor: 'pointer' }} />
+                        </th>
+                      </tr>
                       <tbody>
-                        <tr style={{ borderBottom: '1px solid #ddd' }}>
-                          <td style={{ padding: '10px' }}></td>
-                          <td style={{ padding: '10px' }}>
-                            <Dropdown
-                              placeholder="Choose One"
-                              options={dropdownOptions}
-                            />
-                          </td>
-                          <td style={{ padding: '10px' }}>
-                            <Toggle checked={IsRequired} onChange={(_, checked) => handleIsRequiredToggleChange(checked!)} />
-                          </td>
-                          <td style={{ padding: '10px' }}>
-                            <Toggle checked={Fieldstatus} onChange={(_, checked) => handleFieldstatusToggleChange(checked!)} />
-                          </td>
-                          <td style={{ padding: '10px' }}>
-                            <Toggle checked={FieldAllowinFile} onChange={(_, checked) => handleFieldAllowinFileToggleChange(checked!)} />
-                          </td>
-                          <td style={{ padding: '10px' }}>
-                            <Toggle checked={SearchFilterRequired} onChange={(_, checked) => handleSearchFilterRequiredToggleChange(checked!)} />
-                          </td>
-                          <td style={{ padding: '10px' }}>
-                            <Icon iconName="Add" onClick={addRow} style={{ color: '#009EF7', font: 'bold', cursor: 'pointer' }} />
-                          </td>
-                        </tr>
                       </tbody>
                     </table>
 
