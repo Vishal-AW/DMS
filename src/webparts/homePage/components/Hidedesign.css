@@ -148,3 +148,64 @@ body {
 .ps-menuitem-root:hover {
     color: #009ef7 !important;
 }
+
+/*Card CSS*/
+
+.ms-StackItem {
+    border-radius: .475rem !important;
+    box-shadow: 0 0 20px 0 rgba(76, 87, 125, .02) !important;
+    border: none !important;
+}
+
+
+/*Table CSS*/
+
+.rt-thead {
+    min-width: 500px;
+    color: #b5b5c3 !important;
+    text-transform: uppercase !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    text-align: left !important;
+}
+
+.ReactTable {
+    width: 100%;
+    margin: 0 auto;
+    clear: both;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-bottom: 1px solid #111;
+    text-align: left;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.ReactTable .rt-thead .rt-tr .rt-resizable-header-content {
+    text-align: left !important;
+}
+
+.ReactTable .rt-thead .rt-td {
+    border-right: none !important;
+    box-shadow: none !important;
+}
+
+.ReactTable .rt-thead .rt-th {
+    border-right: none !important;
+    box-shadow: none !important;
+}
+
+.ReactTable .rt-tbody .rt-td {
+    border-right: none !important;
+
+}
+
+.ReactTable .rt-thead {
+    box-shadow: none !important;
+}
+
+.rt-tr {
+    border-bottom-width: 1px !important;
+    border-bottom-style: solid !important;
+    border-bottom-color: #eff2f5 !important;
+}

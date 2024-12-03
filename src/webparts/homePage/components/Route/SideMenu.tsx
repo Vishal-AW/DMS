@@ -48,7 +48,6 @@ const SideMenu: React.FC<ISideMenu> = ({ onclickbutton }) => {
         </div>
 
         <Menu>
-
           <SubMenu icon={<Icon iconName="BarChartVertical" style={{ color: '#3f4254', fontSize: '18px' }} />} label="Charts">
             <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '11px' }} />}>Pie charts</MenuItem>
             <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '11px' }} />}>Line charts</MenuItem>
@@ -59,6 +58,7 @@ const SideMenu: React.FC<ISideMenu> = ({ onclickbutton }) => {
             <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '11px' }} />}>Google maps</MenuItem>
             <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '11px' }} />}>Open street maps</MenuItem>
           </SubMenu>
+
 
           <SubMenu icon={<Icon iconName="Color" style={{ color: '#3f4254', fontSize: '18px' }} />} label="Theme">
             <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '11px' }} />}>Dark</MenuItem>
