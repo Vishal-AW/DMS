@@ -235,4 +235,8 @@ input {
 
 .ms-TextField-fieldGroup {
     border: none !important;
+    height: 40px !important;
+    border-color: #f5f8fa !important;
+    border-radius: 5px !important;
+
 }
