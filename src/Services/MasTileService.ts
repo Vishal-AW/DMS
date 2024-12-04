@@ -1,7 +1,7 @@
 import { GetListItem, CreateItem, UpdateItem } from '../DAL/Commonfile';
 import { SPHttpClient } from '@microsoft/sp-http';
 
-export function getAllData(WebUrl: string, spHttpClient: SPHttpClient) {
+export function getTileAllData(WebUrl: string, spHttpClient: SPHttpClient) {
   let filter = "";
 
   return getMethod(WebUrl, spHttpClient, filter);

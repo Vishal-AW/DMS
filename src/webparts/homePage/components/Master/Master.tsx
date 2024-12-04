@@ -4,13 +4,15 @@ import styles from '../Master/Master.module.scss';
 //import { HTTPServices, _getListItem } from "../../../HTTPServices";
 import {
   DefaultButton, Panel, PanelType, TextField, Toggle, Dropdown, IDropdownStyles,
-  IDropdownOption, Checkbox, Icon, ChoiceGroup, IChoiceGroupOption
+  IDropdownOption, Checkbox, ChoiceGroup, IChoiceGroupOption,
+  IIconProps,
+  IconButton
 } from 'office-ui-fabric-react';
 import { PeoplePicker, PrincipalType, IPeoplePickerContext } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 import MessageDialog from '../ResuableComponents/PopupBox';
 import ReactTableComponent from '../ResuableComponents/ReusableDataTable';
 import { IStackItemStyles, IStackStyles, IStackTokens, Stack, FontIcon } from 'office-ui-fabric-react';
-import { SaveTileSetting } from "../../../../Services/MasTileService";
+import { getTileAllData, SaveTileSetting } from "../../../../Services/MasTileService";
 import { GetAllLabel } from "../../../../Services/ControlLabel";
 //import { FilePicker, IFilePickerResult } from '@pnp/spfx-controls-react/lib/FilePicker';
 //import MaterialTable from "material-table";
@@ -57,9 +59,10 @@ export default function Master({ props }: any): JSX.Element {
   const [TileAdminName, setTileAdminName] = useState<string>("");
   const [TileAdminID, setTileAdminID] = useState<string[]>([]);
   const [configData, setConfigData] = useState([]);
-  // const [selectedUsers, setSelectedUsers] = useState<any[]>([]);
 
-  //const [TileRefernceno, setTileRefernceNo] = useState("");
+  //const[GetMainTileData,setGetTileMAinData]= useState([]);
+
+
 
   const [isTileStatus, setIsTileStatus] = React.useState<boolean>(false);
   const [isAllowApprover, setIsAllowApprover] = React.useState<boolean>(false);
@@ -67,12 +70,19 @@ export default function Master({ props }: any): JSX.Element {
 
   const [DynamicDataReference, setDynamicDataReference] = React.useState<boolean>(false);
   const [IsArchiveAllowed, setArchiveAllowed] = React.useState<boolean>(false);
-  const [IsRequired, setIsRequired] = React.useState<boolean>(true);
-  const [Fieldstatus, setFieldstatus] = React.useState<boolean>(true);
-  const [FieldAllowinFile, setFieldAllowinFile] = React.useState<boolean>(true);
-  const [SearchFilterRequired, setSearchFilterRequired] = React.useState<boolean>(true);
+  // const [IsRequired, setIsRequired] = React.useState<boolean>(true);
+  // const [Fieldstatus, setFieldstatus] = React.useState<boolean>(true);
+  // const [FieldAllowinFile, setFieldAllowinFile] = React.useState<boolean>(true);
+  // const [SearchFilterRequired, setSearchFilterRequired] = React.useState<boolean>(true);
   const [selectedcheckboxActions, setSelectedcheckboxActions] = useState<string[]>([]);
   const actions = ["Preview", "Download", "Rename", "Versions"];
+  const addIcon: IIconProps = { iconName: 'Add' };
+  const saveIcon: IIconProps = { iconName: 'Save' };
+  const editIcon: IIconProps = { iconName: 'Edit' };
+  const deleteIcon: IIconProps = { iconName: 'Delete' };
+  //const cancelIcon: IIconProps = { iconName: 'Cancel' };
+
+
 
 
   const handleCheckboxChange = (action: string, isChecked: boolean | undefined) => {
@@ -82,6 +92,70 @@ export default function Master({ props }: any): JSX.Element {
         : prevActions.filter((item) => item !== action)
     );
   };
+
+
+  const [tableData, setTableData] = useState<any[]>([]);
+
+  // State for the form fields
+  const [formData, setFormData] = useState({
+    field: { key: '', text: '' },
+    isRequired: false,
+    fieldStatus: false,
+    isFieldAllowInFile: false,
+    searchFilterRequired: false,
+    editingIndex: -1,
+  });
+
+
+  // Handle input change
+  const handleInputChange = (key: string, value: any) => {
+    setFormData({ ...formData, [key]: value });
+  };
+
+  const handleInputChange1 = (event: any, option: any) => {
+    setFormData({ ...formData, field: option });
+  };
+
+  // Add or update row
+  const handleSave = () => {
+    if (formData.editingIndex >= 0) {
+      // Update existing row
+      const updatedData = [...tableData];
+      updatedData[formData.editingIndex] = { ...formData };
+      delete updatedData[formData.editingIndex].editingIndex;
+      setTableData(updatedData);
+    } else {
+      // Add new row
+      setTableData([...tableData, { ...formData }]);
+    }
+
+    // Reset form
+    setFormData({
+      field: { key: '', text: '' },
+      isRequired: false,
+      fieldStatus: false,
+      isFieldAllowInFile: false,
+      searchFilterRequired: false,
+      editingIndex: -1,
+    });
+  };
+
+  // Edit row
+  const handleEdit = (index: number) => {
+    setFormData({ ...tableData[index], editingIndex: index });
+
+
+  };
+
+  // Delete row
+  const handleDelete = (index: number) => {
+    const updatedData = tableData.filter((_, i) => i !== index);
+    setTableData(updatedData);
+  };
+
+
+
+
 
 
   //setTileRefernceNo("2024-00001");
@@ -98,18 +172,18 @@ export default function Master({ props }: any): JSX.Element {
   const handleToggleChange = (checked: boolean): void => {
     setIsDropdownVisible(checked);
   };
-  const handleIsRequiredToggleChange = (checked: boolean): void => {
-    setIsRequired(checked);
-  };
-  const handleFieldstatusToggleChange = (checked: boolean): void => {
-    setFieldstatus(checked);
-  };
-  const handleFieldAllowinFileToggleChange = (checked: boolean): void => {
-    setFieldAllowinFile(checked);
-  };
-  const handleSearchFilterRequiredToggleChange = (checked: boolean): void => {
-    setSearchFilterRequired(checked);
-  };
+  // const handleIsRequiredToggleChange = (checked: boolean): void => {
+  //   setIsRequired(checked);
+  // };
+  // const handleFieldstatusToggleChange = (checked: boolean): void => {
+  //   setFieldstatus(checked);
+  // };
+  // const handleFieldAllowinFileToggleChange = (checked: boolean): void => {
+  //   setFieldAllowinFile(checked);
+  // };
+  // const handleSearchFilterRequiredToggleChange = (checked: boolean): void => {
+  //   setSearchFilterRequired(checked);
+  // };
   const ToggleChangeforrefernceno = (checked: boolean): void => {
     setDynamicDataReference(checked);
   };
@@ -138,6 +212,7 @@ export default function Master({ props }: any): JSX.Element {
     //fetchData();
     getAllData();
     ConfigMasterData();
+    GetMainListData();
 
   }, []);
 
@@ -219,6 +294,13 @@ export default function Master({ props }: any): JSX.Element {
   };
 
 
+  const GetMainListData = async () => {
+    let GetTileMAinData: any = await getTileAllData(props.SiteURL, props.spHttpClient);
+    // let MainDataArray: any = [];
+    // MainDataArray = GetTileMAinData.value;
+
+    console.log(GetTileMAinData);
+  };
 
 
   const getAllData = async () => {
@@ -290,14 +372,13 @@ export default function Master({ props }: any): JSX.Element {
       console.error("No files selected for upload.");
       return;
     }
+    let Fileuniqueid = await uuidv4();
     let obj = {
       __metadata: { type: "SP.Data.DMS_x005f_TileDocumentItem" },
-      // Name: selectedFile.name,
       TileLID: MainTileID,
-      //DocumentType: selectedFile.type,
       Documentpath: selectedFile.name
     };
-    let displayName = uuidv4() + selectedFile.name;
+    let displayName = Fileuniqueid + '-' + selectedFile.name;
     await UploadDocument(props.SiteURL, props.spHttpClient, selectedFile, displayName, obj);
 
 
@@ -305,6 +386,21 @@ export default function Master({ props }: any): JSX.Element {
 
 
   const saveData = async () => {
+
+    let uniqueid = await uuidv4();
+
+    console.log(uniqueid);
+
+    let siteurl = "";
+
+    if (selectedFile) {
+      const backImageActualName = selectedFile.name.split(".")[0].replace(/[^a-zA-Z0-9]/g, "");
+      const backImageName = `${backImageActualName}.${selectedFile.name.split(".")[1]}`;
+      siteurl = `${props.SiteURL}/DMS_TileDocument/${uniqueid}-${backImageName}`;
+      console.log(siteurl);
+    } else {
+      console.log("No file selected.");
+    }
 
     const userIds = await Promise.all(
       assignID.map(async (person: any) => {
@@ -319,6 +415,24 @@ export default function Master({ props }: any): JSX.Element {
         return user.Id;
       })
     );
+    let orderData;
+    if (isDropdownVisible == true) {
+
+      orderData = isDropdownVisible;
+      console.log(orderData);
+    }
+    else {
+      const maindata = await getTileAllData(props.SiteURL, props.spHttpClient);
+      let Dataval = maindata.value.length;
+
+      if (Dataval == null) {
+        orderData = 1;
+      }
+      else {
+        orderData = Dataval + 1;
+      }
+
+    }
 
     let option = {
       __metadata: { type: "SP.Data.DMS_x005f_Mas_x005f_TileListItem" },
@@ -328,7 +442,9 @@ export default function Master({ props }: any): JSX.Element {
       AllowApprover: isAllowApprover,
       Active: isTileStatus,
       IsDynamicReference: DynamicDataReference,
-      ShowMoreActions: selectedcheckboxActions.join(";")
+      ShowMoreActions: selectedcheckboxActions.join(";"),
+      Order0: orderData,
+      Documentpath: siteurl
       // ReferenceFormula: TileRefernceno,
 
     }
@@ -403,38 +519,7 @@ export default function Master({ props }: any): JSX.Element {
     dropdown: { width: 250 },
   };
 
-  const [tableData, setTableData] = useState<any[]>([]);
 
-
-
-
-  // Adding a new row to the table
-  const addRow = () => {
-    setTableData([
-      ...tableData,
-      {
-        sequenceNo: tableData.length + 1,
-        field: '',
-        isRequired: true,
-        fieldStatus: true,
-        isFieldAllowed: true,
-        isSearchFilterRequired: true,
-      },
-    ]);
-  };
-
-  // const deleteRow = (index: number) => {
-  //   const updatedData = tableData.filter((_, i) => i !== index);
-  //   setTableData(updatedData);
-  //   };
-
-  // const dropdownOptions: IDropdownOption[] = [
-  //   { key: 'Arbitration', text: 'Arbitration' },
-  //   { key: 'Brand Name', text: 'Brand Name' },
-  //   { key: 'City', text: 'City' },
-  //   { key: 'Confidentiality', text: 'Confidentiality' },
-  //   { key: 'Consequences on expiry', text: 'Consequences on expiry' },
-  // ];
 
   const SelectArchiveDaysoptions: IDropdownOption[] = [
 
@@ -687,25 +772,79 @@ export default function Master({ props }: any): JSX.Element {
                           <Dropdown
                             placeholder="Choose One"
                             options={configData}
+                            selectedKey={formData.field?.key}
+                            onChange={handleInputChange1}
                           />
                         </th>
                         <th style={{ padding: '10px' }}>
-                          <Toggle checked={IsRequired} onChange={(_, checked) => handleIsRequiredToggleChange(checked!)} />
+                          <Toggle checked={formData.isRequired} onChange={(e, checked) => handleInputChange('isRequired', checked)} />
                         </th>
                         <th style={{ padding: '10px' }}>
-                          <Toggle checked={Fieldstatus} onChange={(_, checked) => handleFieldstatusToggleChange(checked!)} />
+                          <Toggle checked={formData.fieldStatus} onChange={(e, checked) => handleInputChange('fieldStatus', checked)} />
                         </th>
                         <th style={{ padding: '10px' }}>
-                          <Toggle checked={FieldAllowinFile} onChange={(_, checked) => handleFieldAllowinFileToggleChange(checked!)} />
+                          <Toggle checked={formData.isFieldAllowInFile} onChange={(e, checked) => handleInputChange('isFieldAllowInFile', checked)} />
                         </th>
                         <th style={{ padding: '10px' }}>
-                          <Toggle checked={SearchFilterRequired} onChange={(_, checked) => handleSearchFilterRequiredToggleChange(checked!)} />
+                          <Toggle checked={formData.searchFilterRequired} onChange={(e, checked) => handleInputChange('searchFilterRequired', checked)} />
                         </th>
                         <th style={{ padding: '10px' }}>
-                          <Icon iconName="Add" onClick={addRow} style={{ color: '#009EF7', font: 'bold', cursor: 'pointer' }} />
+                          {/* <Icon iconName="Add" onClick={handleSave} IIconProps={formData.editingIndex >= 0 ? saveIcon : addIcon} style={{ color: '#009EF7', font: 'bold', cursor: 'pointer' }} /> */}
+                          <IconButton
+                            iconProps={formData.editingIndex >= 0 ? saveIcon : addIcon}
+                            title={formData.editingIndex >= 0 ? 'Update' : 'Add'}
+                            ariaLabel={formData.editingIndex >= 0 ? 'Update' : 'Add'}
+                            onClick={handleSave}
+                            style={{ color: '#009EF7', font: 'bold', cursor: 'pointer' }}
+                          />
+                          {/* {formData.editingIndex >= 0 && (
+                            <IconButton
+                              iconProps={cancelIcon}
+                              title="Cancel"
+                              ariaLabel="Cancel"
+                              onClick={() =>
+                                setFormData({
+                                  field: '',
+                                  isRequired: false,
+                                  fieldStatus: false,
+                                  isFieldAllowInFile: false,
+                                  searchFilterRequired: false,
+                                  editingIndex: -1,
+                                })
+                              }
+                            />
+                          )} */}
                         </th>
                       </tr>
                       <tbody>
+                        {tableData.map((row, index) => (
+                          <tr key={index}>
+                            <td>{index + 1}</td>
+                            <td>{row.field.text}</td>
+                            <td>{row.isRequired ? 'Yes' : 'No'}</td>
+                            <td>{row.fieldStatus ? 'Yes' : 'No'}</td>
+                            <td>{row.isFieldAllowInFile ? 'Yes' : 'No'}</td>
+                            <td>{row.searchFilterRequired ? 'Yes' : 'No'}</td>
+                            <td>
+                              {/* Edit Button */}
+                              <IconButton
+                                iconProps={editIcon}
+                                title="Edit"
+                                ariaLabel="Edit"
+                                onClick={() => handleEdit(index)}
+                                style={{ color: '#009EF7', font: 'bold', cursor: 'pointer' }}
+                              />
+                              {/* Delete Button */}
+                              <IconButton
+                                iconProps={deleteIcon}
+                                title="Delete"
+                                ariaLabel="Delete"
+                                onClick={() => handleDelete(index)}
+                                style={{ color: 'red', font: 'bold', cursor: 'pointer' }}
+                              />
+                            </td>
+                          </tr>
+                        ))}
                       </tbody>
                     </table>
 
