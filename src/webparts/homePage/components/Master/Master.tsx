@@ -59,6 +59,8 @@ export default function Master({ props }: any): JSX.Element {
   const [TileAdminName, setTileAdminName] = useState<string>("");
   const [TileAdminID, setTileAdminID] = useState<string[]>([]);
   const [configData, setConfigData] = useState([]);
+  const [isToggleDisabled, setIsToggleDisabled] = useState(false);
+  //const [RefNoEx, setRefNoEx] = useState<string>("");
 
   //const[GetMainTileData,setGetTileMAinData]= useState([]);
 
@@ -71,9 +73,9 @@ export default function Master({ props }: any): JSX.Element {
   const [DynamicDataReference, setDynamicDataReference] = React.useState<boolean>(false);
   const [IsArchiveAllowed, setArchiveAllowed] = React.useState<boolean>(false);
   // const [IsRequired, setIsRequired] = React.useState<boolean>(true);
-  // const [Fieldstatus, setFieldstatus] = React.useState<boolean>(true);
+  // const [IsActiveControl, setIsActiveControl] = React.useState<boolean>(true);
   // const [FieldAllowinFile, setFieldAllowinFile] = React.useState<boolean>(true);
-  // const [SearchFilterRequired, setSearchFilterRequired] = React.useState<boolean>(true);
+  // const [isShowAsFilter, setisShowAsFilter] = React.useState<boolean>(true);
   const [selectedcheckboxActions, setSelectedcheckboxActions] = useState<string[]>([]);
   const actions = ["Preview", "Download", "Rename", "Versions"];
   const addIcon: IIconProps = { iconName: 'Add' };
@@ -83,7 +85,86 @@ export default function Master({ props }: any): JSX.Element {
   //const cancelIcon: IIconProps = { iconName: 'Cancel' };
 
 
+  const [tableData, setTableData] = useState<any[]>([]);
 
+  // State for the form fields
+  const [formData, setFormData] = useState<any>({
+    field: '',
+    IsRequired: false,
+    IsActiveControl: false,
+    IsFieldAllowInFile: false,
+    isShowAsFilter: false,
+    Flag: "New",
+    editingIndex: -1,
+  });
+
+
+  useEffect(() => {
+
+    let DisplayLabel: ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}'); //localStorage.getItem('DisplayLabel')|| null;
+    setDisplayLabel(DisplayLabel);
+    clearField();
+    //fetchData();
+    getAllData();
+    ConfigMasterData();
+    GetMainListData();
+
+
+  }, []);
+
+
+
+  const CheckboxData = (obj: any) => {
+
+
+    let icheckbox;
+    if (obj.ColumnType == 'Dropdown' && !obj.IsStaticValue && obj.IsRequired == true && obj.IsFieldAllowInFile != true && obj.IsActiveControl == true) {
+      icheckbox = <Checkbox label={obj.Title} />
+
+    }
+    return icheckbox;
+  }
+
+  const GetMainListData = async () => {
+    let GetTileMAinData: any = await getTileAllData(props.SiteURL, props.spHttpClient);
+    // let MainDataArray: any = [];
+    // MainDataArray = GetTileMAinData.value;
+
+    console.log(GetTileMAinData);
+  };
+
+
+  const getAllData = async () => {
+    let data: any = await GetAllLabel(props.SiteURL, props.spHttpClient, "DefaultText");
+    console.log(data);
+  };
+
+
+  const ConfigMasterData = async () => {
+
+    let ConfigData: any = await getConfigActive(props.SiteURL, props.spHttpClient);
+
+    let ConfigvalueData = ConfigData.value;
+
+    console.log(ConfigvalueData);
+
+
+    let options: any = [];
+
+    ConfigvalueData.forEach((InternalTitleNameData: { Title: any; ID: any; InternalTitleName: any; }) => {
+
+      options.push({
+
+        key: InternalTitleNameData.ID,
+
+        text: InternalTitleNameData.Title
+
+      });
+
+    });
+
+    setConfigData(options);
+  }
 
   const handleCheckboxChange = (action: string, isChecked: boolean | undefined) => {
     setSelectedcheckboxActions((prevActions) =>
@@ -94,17 +175,7 @@ export default function Master({ props }: any): JSX.Element {
   };
 
 
-  const [tableData, setTableData] = useState<any[]>([]);
 
-  // State for the form fields
-  const [formData, setFormData] = useState({
-    field: { key: '', text: '' },
-    isRequired: false,
-    fieldStatus: false,
-    isFieldAllowInFile: false,
-    searchFilterRequired: false,
-    editingIndex: -1,
-  });
 
 
   // Handle input change
@@ -112,30 +183,81 @@ export default function Master({ props }: any): JSX.Element {
     setFormData({ ...formData, [key]: value });
   };
 
-  const handleInputChange1 = (event: any, option: any) => {
-    setFormData({ ...formData, field: option });
+  const handleInputChange1 = async (event: any, option: any) => {
+    setFormData({ ...formData, field: option.key });
+
+    const TileDataforDropdown = await getConfigActive(props.SiteURL, props.spHttpClient);
+    const TileDataValueforDropdown = TileDataforDropdown.value;
+    const selectedOption = TileDataValueforDropdown.find((element: any) => element.ID === option.key);
+    console.log(selectedOption);
+
+    if (selectedOption) {
+      if (selectedOption.IsShowAsFilter) {
+        setIsToggleDisabled(false);
+      } else {
+        setIsToggleDisabled(true);
+      }
+    }
   };
 
   // Add or update row
-  const handleSave = () => {
+  const handleSave = async () => {
     if (formData.editingIndex >= 0) {
-      // Update existing row
+
+
+
       const updatedData = [...tableData];
       updatedData[formData.editingIndex] = { ...formData };
       delete updatedData[formData.editingIndex].editingIndex;
       setTableData(updatedData);
+
     } else {
       // Add new row
-      setTableData([...tableData, { ...formData }]);
+
+
+      if (formData.field != "") {
+
+        // setTableData([...tableData, { ...formData }]);
+
+        const TileDataforDropdown = await getConfigActive(props.SiteURL, props.spHttpClient);
+        const TileDataValueforDropdown = TileDataforDropdown.value;
+        const selectedOption: any = TileDataValueforDropdown.find((element: any) => element.ID === formData.field);
+        console.log(selectedOption);
+
+        const isDuplicate = tableData.find((element: any) => element.field === formData.field);
+
+        // setTableData((previewData: any) => ([...previewData, ...selectedOption, ...formData]))
+
+
+
+
+        console.log(isDuplicate);
+
+        if (isDuplicate == undefined) {
+
+          setTableData((prevData: any[]) => [
+            ...prevData,
+            { ...formData, ...selectedOption }, // Combine formData with selectedOption if necessary
+          ]);
+        }
+
+        else {
+          alert('duplicate');
+        }
+      }
+      else {
+        alert("Please Select");
+      }
     }
 
     // Reset form
     setFormData({
-      field: { key: '', text: '' },
-      isRequired: false,
-      fieldStatus: false,
-      isFieldAllowInFile: false,
-      searchFilterRequired: false,
+      field: '',
+      IsRequired: false,
+      IsActiveControl: false,
+      IsFieldAllowInFile: false,
+      isShowAsFilter: false,
+      Flag: "New",
       editingIndex: -1,
     });
   };
@@ -175,17 +297,25 @@ export default function Master({ props }: any): JSX.Element {
   // const handleIsRequiredToggleChange = (checked: boolean): void => {
   //   setIsRequired(checked);
   // };
-  // const handleFieldstatusToggleChange = (checked: boolean): void => {
-  //   setFieldstatus(checked);
+  // const handleIsActiveControlToggleChange = (checked: boolean): void => {
+  //   setIsActiveControl(checked);
   // };
   // const handleFieldAllowinFileToggleChange = (checked: boolean): void => {
   //   setFieldAllowinFile(checked);
   // };
-  // const handleSearchFilterRequiredToggleChange = (checked: boolean): void => {
-  //   setSearchFilterRequired(checked);
+  // const handleisShowAsFilterToggleChange = (checked: boolean): void => {
+  //   setisShowAsFilter(checked);
   // };
   const ToggleChangeforrefernceno = (checked: boolean): void => {
     setDynamicDataReference(checked);
+
+    // if (!checked) {
+
+    // }
+    // else {
+    //   let referenceno = "2024-0001";
+    //   setRefNoEx(referenceno);
+    // }
   };
   const ToggleChangeforArchiveAllowed = (checked: boolean): void => {
     setArchiveAllowed(checked);
@@ -204,17 +334,6 @@ export default function Master({ props }: any): JSX.Element {
   };
 
 
-  useEffect(() => {
-
-    let DisplayLabel: ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}'); //localStorage.getItem('DisplayLabel')|| null;
-    setDisplayLabel(DisplayLabel);
-    clearField();
-    //fetchData();
-    getAllData();
-    ConfigMasterData();
-    GetMainListData();
-
-  }, []);
 
   // const openDialog = () => {
   //   setDialogMessage('Save Data Successfully.');
@@ -294,46 +413,6 @@ export default function Master({ props }: any): JSX.Element {
   };
 
 
-  const GetMainListData = async () => {
-    let GetTileMAinData: any = await getTileAllData(props.SiteURL, props.spHttpClient);
-    // let MainDataArray: any = [];
-    // MainDataArray = GetTileMAinData.value;
-
-    console.log(GetTileMAinData);
-  };
-
-
-  const getAllData = async () => {
-    let data: any = await GetAllLabel(props.SiteURL, props.spHttpClient, "DefaultText");
-    console.log(data);
-  };
-
-
-  const ConfigMasterData = async () => {
-
-    let ConfigData: any = await getConfigActive(props.SiteURL, props.spHttpClient);
-
-    let ConfigvalueData = ConfigData.value;
-
-    console.log(ConfigvalueData);
-
-
-    let options: any = [];
-
-    ConfigvalueData.forEach((InternalTitleNameData: { ID: any; InternalTitleName: any; }) => {
-
-      options.push({
-
-        key: InternalTitleNameData.ID,
-
-        text: InternalTitleNameData.InternalTitleName
-
-      });
-
-    });
-
-    setConfigData(options);
-  }
 
   const clearField = () => {
 
@@ -444,8 +523,8 @@ export default function Master({ props }: any): JSX.Element {
       IsDynamicReference: DynamicDataReference,
       ShowMoreActions: selectedcheckboxActions.join(";"),
       Order0: orderData,
-      Documentpath: siteurl
-      // ReferenceFormula: TileRefernceno,
+      Documentpath: siteurl,
+      //ReferenceFormula: RefNoEx,
 
     }
     let LID = await SaveTileSetting(props.SiteURL, props.spHttpClient, option);
@@ -772,21 +851,21 @@ export default function Master({ props }: any): JSX.Element {
                           <Dropdown
                             placeholder="Choose One"
                             options={configData}
-                            selectedKey={formData.field?.key}
+                            selectedKey={formData.field}
                             onChange={handleInputChange1}
                           />
                         </th>
                         <th style={{ padding: '10px' }}>
-                          <Toggle checked={formData.isRequired} onChange={(e, checked) => handleInputChange('isRequired', checked)} />
+                          <Toggle checked={formData.IsRequired} onChange={(e, checked) => handleInputChange('IsRequired', checked)} />
                         </th>
                         <th style={{ padding: '10px' }}>
-                          <Toggle checked={formData.fieldStatus} onChange={(e, checked) => handleInputChange('fieldStatus', checked)} />
+                          <Toggle checked={formData.IsActiveControl} onChange={(e, checked) => handleInputChange('IsActiveControl', checked)} />
                         </th>
                         <th style={{ padding: '10px' }}>
-                          <Toggle checked={formData.isFieldAllowInFile} onChange={(e, checked) => handleInputChange('isFieldAllowInFile', checked)} />
+                          <Toggle checked={formData.IsFieldAllowInFile} onChange={(e, checked) => handleInputChange('IsFieldAllowInFile', checked)} />
                         </th>
                         <th style={{ padding: '10px' }}>
-                          <Toggle checked={formData.searchFilterRequired} onChange={(e, checked) => handleInputChange('searchFilterRequired', checked)} />
+                          <Toggle checked={formData.isShowAsFilter} onChange={(e, checked) => handleInputChange('isShowAsFilter', checked)} disabled={isToggleDisabled} />
                         </th>
                         <th style={{ padding: '10px' }}>
                           {/* <Icon iconName="Add" onClick={handleSave} IIconProps={formData.editingIndex >= 0 ? saveIcon : addIcon} style={{ color: '#009EF7', font: 'bold', cursor: 'pointer' }} /> */}
@@ -805,10 +884,10 @@ export default function Master({ props }: any): JSX.Element {
                               onClick={() =>
                                 setFormData({
                                   field: '',
-                                  isRequired: false,
-                                  fieldStatus: false,
-                                  isFieldAllowInFile: false,
-                                  searchFilterRequired: false,
+                                  IsRequired: false,
+                                  IsActiveControl: false,
+                                  IsFieldAllowInFile: false,
+                                  isShowAsFilter: false,
                                   editingIndex: -1,
                                 })
                               }
@@ -820,11 +899,11 @@ export default function Master({ props }: any): JSX.Element {
                         {tableData.map((row, index) => (
                           <tr key={index}>
                             <td>{index + 1}</td>
-                            <td>{row.field.text}</td>
-                            <td>{row.isRequired ? 'Yes' : 'No'}</td>
-                            <td>{row.fieldStatus ? 'Yes' : 'No'}</td>
-                            <td>{row.isFieldAllowInFile ? 'Yes' : 'No'}</td>
-                            <td>{row.searchFilterRequired ? 'Yes' : 'No'}</td>
+                            <td>{row.Title}</td>
+                            <td>{row.IsRequired ? 'Yes' : 'No'}</td>
+                            <td>{row.IsActiveControl ? 'Yes' : 'No'}</td>
+                            <td>{row.IsFieldAllowInFile ? 'Yes' : 'No'}</td>
+                            <td>{row.isShowAsFilter ? 'Yes' : 'No'}</td>
                             <td>
                               {/* Edit Button */}
                               <IconButton
@@ -880,7 +959,7 @@ export default function Master({ props }: any): JSX.Element {
                           <label className={styles.Headerlabel}>Default Reference Example</label>
                           <TextField
                             placeholder=" "
-                            value={"2024-0001"}
+                            value="2024-0001"
                             disabled
                           />
                         </div>
@@ -918,6 +997,9 @@ export default function Master({ props }: any): JSX.Element {
                           <Checkbox label="YYYY" checked={Years} onChange={(e, checked) => setYYYY(!!checked)} />
                           <Checkbox label="YY_YY" checked={years1} onChange={(e, checked) => setYYY(!!checked)} />
                           <Checkbox label="MM" checked={monthsdate} onChange={(e, checked) => setMM(!!checked)} />
+                          {
+                            tableData.map((el) => (CheckboxData(el)))
+                          }
 
                         </div>
 
@@ -1127,6 +1209,8 @@ export default function Master({ props }: any): JSX.Element {
     </div>
   )
 }
+
+
 
 
 
