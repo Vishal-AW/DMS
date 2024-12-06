@@ -1,10 +1,10 @@
 import * as React from "react";
 import { useState, useEffect } from 'react';
+import * as moment from "moment";
 import styles from '../Master/Master.module.scss';
 //import { HTTPServices, _getListItem } from "../../../HTTPServices";
 import {
-  DefaultButton, Panel, PanelType, TextField, Toggle, Dropdown, IDropdownStyles,
-  IDropdownOption, Checkbox, ChoiceGroup, IChoiceGroupOption,
+  DefaultButton, Panel, PanelType, TextField, Toggle, Dropdown, IDropdownStyles, Checkbox, ChoiceGroup,
   IIconProps,
   IconButton
 } from 'office-ui-fabric-react';
@@ -23,6 +23,8 @@ import { ILabel } from '../Interface/ILabel';
 import { getUserIdFromLoginName, uuidv4 } from "../../../../DAL/Commonfile";
 import { UploadDocument } from "../../../../Services/DMSTileDocumentService";
 import { getConfigActive } from "../../../../Services/ConfigService";
+import { getActiveRedundancyDays } from "../../../../Services/ArchiveRedundancyDaysService";
+
 //import { getConfigActive } from "../../../../Services/ConfigService";
 
 
@@ -32,15 +34,8 @@ import { getConfigActive } from "../../../../Services/ConfigService";
 
 export default function Master({ props }: any): JSX.Element {
 
-  //const _spService = new HTTPServices();
+
   const [showModal, setShowModal] = useState(false);
-  // const [preview, setPreview] = useState(false);
-  // const [download, setDownload] = useState(false);
-  // const [rename, setRename] = useState(false);
-  // const [versions, setVersions] = useState(false);
-  const [Years, setYYYY] = useState(false);
-  const [years1, setYYY] = useState(false);
-  const [monthsdate, setMM] = useState(false);
   const toggleModal = () => setShowModal(!showModal);
   //const [showDialog, setShowDialog] = useState(false);
   //const [dialogMessage, setDialogMessage] = useState('');
@@ -58,24 +53,23 @@ export default function Master({ props }: any): JSX.Element {
   const [assignID, setAssignID] = useState<string[]>([]);
   const [TileAdminName, setTileAdminName] = useState<string>("");
   const [TileAdminID, setTileAdminID] = useState<string[]>([]);
+  const [order0Data, setorder0Data] = useState([]);
   const [configData, setConfigData] = useState([]);
+  const [RedundancyData, setRedundancyData] = useState([]);
   const [isToggleDisabled, setIsToggleDisabled] = useState(false);
-  //const [RefNoEx, setRefNoEx] = useState<string>("");
-
-  //const[GetMainTileData,setGetTileMAinData]= useState([]);
-
-
 
   const [isTileStatus, setIsTileStatus] = React.useState<boolean>(false);
   const [isAllowApprover, setIsAllowApprover] = React.useState<boolean>(false);
   const [isDropdownVisible, setIsDropdownVisible] = React.useState<boolean>(false);
 
   const [DynamicDataReference, setDynamicDataReference] = React.useState<boolean>(false);
+
+  const [RefrenceNOData, setRefrenceNOData] = useState<string>('');
+  const [ArchiveTest, setArchiveTest] = useState<string>('');
+  const [ArchiveVersions, setArchiveVersions] = useState<string>("");
+
   const [IsArchiveAllowed, setArchiveAllowed] = React.useState<boolean>(false);
-  // const [IsRequired, setIsRequired] = React.useState<boolean>(true);
-  // const [IsActiveControl, setIsActiveControl] = React.useState<boolean>(true);
-  // const [FieldAllowinFile, setFieldAllowinFile] = React.useState<boolean>(true);
-  // const [isShowAsFilter, setisShowAsFilter] = React.useState<boolean>(true);
+
   const [selectedcheckboxActions, setSelectedcheckboxActions] = useState<string[]>([]);
   const actions = ["Preview", "Download", "Rename", "Versions"];
   const addIcon: IIconProps = { iconName: 'Add' };
@@ -85,9 +79,17 @@ export default function Master({ props }: any): JSX.Element {
   //const cancelIcon: IIconProps = { iconName: 'Cancel' };
 
 
+  const [refFormatData, setRefFormatData] = useState<string[]>([]);
+  const [prefix, setPrefix] = useState<string>("");
+  const [separator, setSeparator] = useState<string>("-");
+  const [increment, setIncrement] = useState<string>("Continue");
+  const [refExample, setRefExample] = useState<string>("");
+  const [customSeparators, setCustomSeparators] = useState<{ [key: number]: string }>({});
+
+
   const [tableData, setTableData] = useState<any[]>([]);
 
-  // State for the form fields
+
   const [formData, setFormData] = useState<any>({
     field: '',
     IsRequired: false,
@@ -108,6 +110,8 @@ export default function Master({ props }: any): JSX.Element {
     getAllData();
     ConfigMasterData();
     GetMainListData();
+    RedundancyDaysData();
+    setRefrenceNOData(`${moment().format('YYYY')}-00001`);
 
 
   }, []);
@@ -119,18 +123,165 @@ export default function Master({ props }: any): JSX.Element {
 
     let icheckbox;
     if (obj.ColumnType == 'Dropdown' && !obj.IsStaticValue && obj.IsRequired == true && obj.IsFieldAllowInFile != true && obj.IsActiveControl == true) {
-      icheckbox = <Checkbox label={obj.Title} />
+      icheckbox = <Checkbox label={obj.Title} onChange={(e, checked) => handleCheckboxToggle(obj.Title, checked!)} />
+
 
     }
     return icheckbox;
   }
 
+
+
+  const handleCheckboxToggle = (item: string, isChecked: boolean) => {
+    const updatedRefData = isChecked
+      ? [...refFormatData, item]
+      : refFormatData.filter((refItem) => refItem !== item);
+    setRefFormatData(updatedRefData);
+    generateFormula(updatedRefData, prefix, separator, increment);
+  };
+
+  // Handle prefix change
+  const handlePrefixChange = (value: string) => {
+    setPrefix(value);
+    generateFormula(refFormatData, value, separator, increment);
+  };
+
+  // Handle separator or increment change
+  const handleRadioChange = (type: string, value: string) => {
+    if (type === "separator") {
+      setSeparator(value);
+      generateFormula(refFormatData, prefix, value, increment);
+    } else if (type === "increment") {
+      setIncrement(value);
+      generateFormula(refFormatData, prefix, separator, value);
+    }
+  };
+
+  // Handle dropdown change for each row
+  const handleDropdownChange = (index: number, value: string) => {
+    const updatedSeparators = { ...customSeparators, [index]: value };
+    setCustomSeparators(updatedSeparators);
+    generateFormula(refFormatData, prefix, separator, increment, updatedSeparators);
+  };
+
+  // Generate formula
+  // const generateFormula = (
+  //   refData: string[],
+  //   prefixValue: string,
+  //   separatorValue: string,
+  //   incrementValue: string,
+  //   customSeparatorData: { [key: number]: string } = customSeparators
+  // ) => {
+  //   let formula = prefixValue ? `${prefixValue}${separatorValue}` : "";
+
+  //   refData.forEach((item, index) => {
+  //     formula += `{${item}}`;
+  //     // Add separator or concatenate based on dropdown selection
+  //     if (customSeparatorData[index] === "Separator") {
+  //       formula += separatorValue;
+  //     } else if (customSeparatorData[index] === "Concat") {
+  //       formula += ""; // No separator, concatenate directly
+  //     }
+  //   });
+
+  //   // Remove trailing separator if present before adding increment
+  //   if (formula.endsWith(separatorValue)) {
+  //     formula = formula.slice(0, -separatorValue.length);
+  //   }
+
+  //   // Append increment
+  //   formula += `{${incrementValue}}`;
+
+  //   setRefExample(formula);
+  // };
+
+  // const generateFormula = (
+  //   refData: string[],
+  //   prefixValue: string,
+  //   separatorValue: string,
+  //   incrementValue: string,
+  //   customSeparatorData: { [key: number]: string } = customSeparators
+  // ) => {
+  //   let formula = prefixValue ? `${prefixValue}${separatorValue}` : "";
+
+  //   refData.forEach((item, index) => {
+  //     formula += `{${item}}`;
+  //     // Add separator or concatenate based on dropdown selection
+  //     if ((customSeparatorData[index] || "Separator") === "Separator") {
+  //       formula += separatorValue;
+  //     }
+  //   });
+
+  //   // Remove trailing separator if present before adding increment
+  //   if (formula.endsWith(separatorValue)) {
+  //     formula = formula.slice(0, -separatorValue.length);
+  //   }
+
+  //   // Append increment
+  //   formula += `{${incrementValue}}`;
+  //   setRefExample(formula);
+  // };
+
+  const generateFormula = (
+    refData: string[],
+    prefixValue: string,
+    separatorValue: string,
+    incrementValue: string,
+    customSeparatorData: { [key: number]: string } = customSeparators
+  ) => {
+    let formula = prefixValue ? `${prefixValue}${separatorValue}` : "";
+
+    refData.forEach((item, index) => {
+      formula += `{${item}}`;
+
+      // Add separator or concatenate based on dropdown selection
+      if ((customSeparatorData[index] || "Separator") === "Separator") {
+        formula += separatorValue;
+      }
+    });
+
+    // Remove trailing separator before appending `{Continue}`
+    if (formula.endsWith(separatorValue)) {
+      formula = formula.slice(0, -separatorValue.length);
+    }
+
+    // Append separator between {City} and {Continue}
+    formula += separatorValue;
+
+    // Append increment
+    formula += `{${incrementValue}}`;
+
+    // Set the generated formula
+    setRefExample(formula);
+  };
+
+
+
   const GetMainListData = async () => {
     let GetTileMAinData: any = await getTileAllData(props.SiteURL, props.spHttpClient);
-    // let MainDataArray: any = [];
-    // MainDataArray = GetTileMAinData.value;
 
     console.log(GetTileMAinData);
+
+    let OrdervalueData = GetTileMAinData.value;
+
+    console.log(OrdervalueData);
+
+
+    let options: any = [];
+
+    OrdervalueData.forEach((Order0Data: { ID: any; Order0: any; }) => {
+
+      options.push({
+
+        key: Order0Data.ID,
+
+        text: Order0Data.Order0
+
+      });
+
+    });
+
+    setorder0Data(options);
   };
 
 
@@ -164,6 +315,32 @@ export default function Master({ props }: any): JSX.Element {
     });
 
     setConfigData(options);
+  }
+
+  const RedundancyDaysData = async () => {
+
+    let ActiveRedundancyDaysData: any = await getActiveRedundancyDays(props.SiteURL, props.spHttpClient);
+
+    let ActiveRedundancyDaysvalueData = ActiveRedundancyDaysData.value;
+
+    console.log(ActiveRedundancyDaysvalueData);
+
+
+    let options: any = [];
+
+    ActiveRedundancyDaysvalueData.forEach((RedundancyDaysData: { RedundancyDays: any; ID: any; RedundancyDaysData: any; }) => {
+
+      options.push({
+
+        key: RedundancyDaysData.ID,
+
+        text: RedundancyDaysData.RedundancyDays
+
+      });
+
+    });
+
+    setRedundancyData(options);
   }
 
   const handleCheckboxChange = (action: string, isChecked: boolean | undefined) => {
@@ -275,16 +452,6 @@ export default function Master({ props }: any): JSX.Element {
     setTableData(updatedData);
   };
 
-
-
-
-
-
-  //setTileRefernceNo("2024-00001");
-
-  // const addAttachment = useCallback((obj: any) => {
-  //   setAttachments([...attachments, obj]);
-  // }, [attachments]);
   const handleTileStatusToggleChange = (checked: boolean): void => {
     setIsTileStatus(checked);
   };
@@ -294,31 +461,32 @@ export default function Master({ props }: any): JSX.Element {
   const handleToggleChange = (checked: boolean): void => {
     setIsDropdownVisible(checked);
   };
-  // const handleIsRequiredToggleChange = (checked: boolean): void => {
-  //   setIsRequired(checked);
-  // };
-  // const handleIsActiveControlToggleChange = (checked: boolean): void => {
-  //   setIsActiveControl(checked);
-  // };
-  // const handleFieldAllowinFileToggleChange = (checked: boolean): void => {
-  //   setFieldAllowinFile(checked);
-  // };
-  // const handleisShowAsFilterToggleChange = (checked: boolean): void => {
-  //   setisShowAsFilter(checked);
-  // };
+
   const ToggleChangeforrefernceno = (checked: boolean): void => {
     setDynamicDataReference(checked);
 
-    // if (!checked) {
-
-    // }
-    // else {
-    //   let referenceno = "2024-0001";
-    //   setRefNoEx(referenceno);
-    // }
+    if (checked) {
+      setRefExample(refExample);
+    }
+    else {
+      setRefExample(RefrenceNOData);
+    }
   };
   const ToggleChangeforArchiveAllowed = (checked: boolean): void => {
     setArchiveAllowed(checked);
+
+    if (checked) {
+      let ArchiveTestData = "Archive";
+      let NewArchiveName = ArchiveTestData + " " + TileName;
+      setArchiveTest(NewArchiveName);
+    }
+    else {
+      let NewArchiveName = " ";
+      setArchiveTest(NewArchiveName);
+    }
+
+
+
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -332,8 +500,6 @@ export default function Master({ props }: any): JSX.Element {
     //   setSelectedFile(null); // No files selected
     // }
   };
-
-
 
   // const openDialog = () => {
   //   setDialogMessage('Save Data Successfully.');
@@ -411,6 +577,74 @@ export default function Master({ props }: any): JSX.Element {
     msGraphClientFactory: props.context.msGraphClientFactory,
     spHttpClient: props.context.spHttpClient
   };
+
+  const columns = [
+    { Header: 'TILES', accessor: 'TILES' },
+    { Header: 'ALLOW APPROVER', accessor: 'ALLOWAPPROVER' },
+    { Header: 'LAST MODIFIED', accessor: 'uploadedOn' },
+    { Header: 'ACTIVE', accessor: 'ACTIVE' },
+    { Header: 'ACTION', accessor: 'ACTION' },
+
+  ];
+
+  const data = [
+    {
+      TILES: 1,
+      ALLOWAPPROVER: 'No',
+      uploadedOn: 'AscenWork-Prajesh Borkar 04-09-2024 at 03:02:25 PM',
+      ACTIVE: 'Yes',
+      ACTION: <FontIcon aria-label="Edit" onClick={toggleModal} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer' }}></FontIcon>,
+
+    },
+  ];
+
+
+
+  // const choiceoptions: IChoiceGroupOption[] = [
+  //   { key: '-', text: 'Hyphens ( - )' },
+  //   { key: '/', text: 'Slash ( / )' },
+
+  // ];
+
+  // const InitialIncrementoptions: IChoiceGroupOption[] = [
+  //   { key: 'Continue ', text: 'Continue' },
+  //   { key: 'Monthly', text: 'Monthly' },
+  //   { key: 'Yearly', text: 'Yearly' },
+  //   { key: 'Financial Year', text: 'Financial Year' },
+  //   { key: 'Manual', text: 'Manual' },
+
+  // ];
+
+
+
+
+  // function _onChange(ev: React.FormEvent<HTMLInputElement>, option: IChoiceGroupOption): void {
+  //   console.dir(option);
+  // }
+
+  // function _onChangeInitialIncrement(ev: React.FormEvent<HTMLInputElement>, option: IChoiceGroupOption): void {
+  //   console.dir(option);
+  // }
+
+
+
+  const dropdownStyles: Partial<IDropdownStyles> = {
+    dropdown: { width: 250 },
+  };
+
+
+
+  const stackStyles: IStackStyles = { root: { height: "100vh", marginTop: 15 } };
+  const stackItemStyles: IStackItemStyles = {
+    root: {
+      padding: 10,
+      border: "1px solid #ddd",
+      overflow: "auto",
+      background: "#fff",
+      boxShadow: "0 10px 30px 0 rgba(82, 63, 105, .05)"
+    },
+  };
+  const stackTokens: IStackTokens = { childrenGap: 10 };
 
 
 
@@ -524,7 +758,12 @@ export default function Master({ props }: any): JSX.Element {
       ShowMoreActions: selectedcheckboxActions.join(";"),
       Order0: orderData,
       Documentpath: siteurl,
-      //ReferenceFormula: RefNoEx,
+      ReferenceFormula: refExample,
+      Separator: separator,
+      DynamicControl: JSON.stringify(tableData),
+      IsArchiveRequired: IsArchiveAllowed,
+      //RetentionDays: RedundancyData,
+      ArchiveVersionCount: parseInt(ArchiveVersions)
 
     }
     let LID = await SaveTileSetting(props.SiteURL, props.spHttpClient, option);
@@ -542,96 +781,6 @@ export default function Master({ props }: any): JSX.Element {
 
   };
 
-
-
-  const columns = [
-    { Header: 'TILES', accessor: 'TILES' },
-    { Header: 'ALLOW APPROVER', accessor: 'ALLOWAPPROVER' },
-    { Header: 'LAST MODIFIED', accessor: 'uploadedOn' },
-    { Header: 'ACTIVE', accessor: 'ACTIVE' },
-    { Header: 'ACTION', accessor: 'ACTION' },
-
-  ];
-
-  const data = [
-    {
-      TILES: 1,
-      ALLOWAPPROVER: 'No',
-      uploadedOn: 'AscenWork-Prajesh Borkar 04-09-2024 at 03:02:25 PM',
-      ACTIVE: 'Yes',
-      ACTION: <FontIcon aria-label="Edit" onClick={toggleModal} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer' }}></FontIcon>,
-
-    },
-  ];
-
-
-
-  const choiceoptions: IChoiceGroupOption[] = [
-    { key: 'Hyphens ( - )', text: 'Hyphens ( - )' },
-    { key: 'Slash ( / )', text: 'Slash ( / )' },
-
-  ];
-
-  const InitialIncrementoptions: IChoiceGroupOption[] = [
-    { key: 'Continue ', text: 'Continue' },
-    { key: 'Monthly', text: 'Monthly' },
-    { key: 'Yearly', text: 'Yearly' },
-    { key: 'Financial Year', text: 'Financial Year' },
-    { key: 'Manual', text: 'Manual' },
-
-  ];
-
-
-
-
-  function _onChange(ev: React.FormEvent<HTMLInputElement>, option: IChoiceGroupOption): void {
-    console.dir(option);
-  }
-
-  function _onChangeInitialIncrement(ev: React.FormEvent<HTMLInputElement>, option: IChoiceGroupOption): void {
-    console.dir(option);
-  }
-
-
-
-  const dropdownStyles: Partial<IDropdownStyles> = {
-    dropdown: { width: 250 },
-  };
-
-
-
-  const SelectArchiveDaysoptions: IDropdownOption[] = [
-
-    { key: '15', text: '15' },
-    { key: '30', text: '30' },
-    { key: '60', text: '60' },
-    { key: '90', text: '90' },
-    { key: '120', text: '120' },
-
-  ];
-
-  const options: IDropdownOption[] = [
-
-    { key: '1', text: '1' },
-    { key: '2', text: '2' },
-    { key: '3', text: '3' },
-    { key: '4', text: '4' },
-    { key: '5', text: '5' },
-    { key: '6', text: '6' },
-    { key: '7', text: '7' },
-  ];
-
-  const stackStyles: IStackStyles = { root: { height: "100vh", marginTop: 15 } };
-  const stackItemStyles: IStackItemStyles = {
-    root: {
-      padding: 10,
-      border: "1px solid #ddd",
-      overflow: "auto",
-      background: "#fff",
-      boxShadow: "0 10px 30px 0 rgba(82, 63, 105, .05)"
-    },
-  };
-  const stackTokens: IStackTokens = { childrenGap: 10 };
 
 
   return (
@@ -688,6 +837,8 @@ export default function Master({ props }: any): JSX.Element {
                           errorMessage={TileError}
                           value={TileName}
                           onChange={(el: React.ChangeEvent<HTMLInputElement>) => setTileName(el.target.value)}
+
+
 
                         />
                       </div>
@@ -785,7 +936,7 @@ export default function Master({ props }: any): JSX.Element {
                         {isDropdownVisible && (
                           <><label className={styles.Headerlabel}>Select Order</label><Dropdown
                             placeholder="Select an option"
-                            options={options}
+                            options={order0Data}
                             styles={dropdownStyles} /></>
                         )}
                       </div>
@@ -815,11 +966,6 @@ export default function Master({ props }: any): JSX.Element {
                         border: '1px solid #f5f8fa',
                       }}
                     >
-                      {/* <Checkbox label="Preview" checked={preview} onChange={(e, checked) => setPreview(!!checked)} />
-                      <Checkbox label="Download" checked={download} onChange={(e, checked) => setDownload(!!checked)} />
-                      <Checkbox label="Rename" checked={rename} onChange={(e, checked) => setRename(!!checked)} />
-                      <Checkbox label="Versions" checked={versions} onChange={(e, checked) => setVersions(!!checked)} /> */}
-
                       {actions.map((action) => (
                         <Checkbox
                           label={action}
@@ -959,7 +1105,7 @@ export default function Master({ props }: any): JSX.Element {
                           <label className={styles.Headerlabel}>Default Reference Example</label>
                           <TextField
                             placeholder=" "
-                            value="2024-0001"
+                            value={RefrenceNOData}
                             disabled
                           />
                         </div>
@@ -970,7 +1116,7 @@ export default function Master({ props }: any): JSX.Element {
                           <label className={styles.Headerlabel}>Dynamic Reference Example</label>
                           <TextField
                             placeholder=" "
-                            value=""
+                            value={refExample}
                             disabled
                           />
                         </div>
@@ -994,11 +1140,12 @@ export default function Master({ props }: any): JSX.Element {
                           }}
                         >
 
-                          <Checkbox label="YYYY" checked={Years} onChange={(e, checked) => setYYYY(!!checked)} />
-                          <Checkbox label="YY_YY" checked={years1} onChange={(e, checked) => setYYY(!!checked)} />
-                          <Checkbox label="MM" checked={monthsdate} onChange={(e, checked) => setMM(!!checked)} />
+                          <Checkbox label="YYYY" onChange={(e, checked) => handleCheckboxToggle("YYYY", checked!)} />
+                          <Checkbox label="YY_YY" onChange={(e, checked) => handleCheckboxToggle("YY_YY", checked!)} />
+                          <Checkbox label="MM" onChange={(e, checked) => handleCheckboxToggle("MM", checked!)} />
                           {
                             tableData.map((el) => (CheckboxData(el)))
+
                           }
 
                         </div>
@@ -1030,17 +1177,39 @@ export default function Master({ props }: any): JSX.Element {
                             }}
                           >
                             <label className={styles.Headerlabel} style={{ display: 'block' }}>Separator</label>
-                            <ChoiceGroup
+                            {/* <ChoiceGroup
                               options={choiceoptions}
-                              onChange={_onChange}
+                              onChange={(e, option) => handleRadioChange("separator", option?.key!)}
                               required={true}
-                              defaultSelectedKey="Hyphens ( - )"
+                              selectedKey={separator}
+                              //defaultSelectedKey="Hyphens ( - )"
                               styles={{
                                 flexContainer: {
                                   display: 'flex',
                                   flexDirection: 'row', // Arrange radio buttons horizontally
                                   gap: '10px',
                                   backgroundColor: '#f5f8fa',
+                                },
+                              }}
+                            /> */}
+
+                            <ChoiceGroup
+                              options={[
+                                { key: "-", text: "Hyphens ( - )" },
+                                { key: "/", text: "Slash ( / )" },
+                              ]}
+                              selectedKey={separator}
+                              onChange={(e, option) => {
+                                handleRadioChange("separator", option?.key!);
+                                setSeparator(option?.key!);
+                              }}
+                              required={true}
+                              styles={{
+                                flexContainer: {
+                                  display: "flex",
+                                  flexDirection: "row",
+                                  gap: "10px",
+                                  backgroundColor: "#f5f8fa",
                                 },
                               }}
                             />
@@ -1051,27 +1220,49 @@ export default function Master({ props }: any): JSX.Element {
                             className="col-md-8"
                             style={{
                               display: 'flex',
-                              flexDirection: 'column', // Arrange label and ChoiceGroup vertically
+                              flexDirection: 'column',
                               gap: '10px',
-                              // backgroundColor: '#f5f8fa',
-                              //color: '#5e6278',
                               padding: '10px',
-                              //border: '1px solid #f5f8fa',
-                              flex: 1, // Make both sections take equal width
+                              flex: 1,
                             }}
                           >
                             <label className={styles.Headerlabel} style={{ display: 'block' }}>Initial Increment</label>
-                            <ChoiceGroup
+                            {/* <ChoiceGroup
                               options={InitialIncrementoptions}
-                              onChange={_onChangeInitialIncrement}
+                              selectedKey={increment}
+                              onChange={(e, option) => handleRadioChange("increment", option?.key!)}
                               required={true}
-                              defaultSelectedKey="Continue"
+                              //defaultSelectedKey="Continue"
                               styles={{
                                 flexContainer: {
                                   display: 'flex',
                                   flexDirection: 'row', // Arrange radio buttons horizontally
                                   gap: '10px',
                                   backgroundColor: '#f5f8fa',
+                                },
+                              }}
+                            /> */}
+
+                            <ChoiceGroup
+                              options={[
+                                { key: "Continue", text: "Continue" },
+                                { key: "Monthly", text: "Monthly" },
+                                { key: "Yearly", text: "Yearly" },
+                                { key: "Financial Year", text: "Financial Year" },
+                                { key: "Manual", text: "Manual" },
+                              ]}
+                              selectedKey={increment}
+                              onChange={(e, option) => {
+                                handleRadioChange("increment", option?.key!);
+                                setIncrement(option?.key!);
+                              }}
+                              required={true}
+                              styles={{
+                                flexContainer: {
+                                  display: "flex",
+                                  flexDirection: "row",
+                                  gap: "10px",
+                                  backgroundColor: "#f5f8fa",
                                 },
                               }}
                             />
@@ -1086,6 +1277,39 @@ export default function Master({ props }: any): JSX.Element {
 
                         <div>
                           <label className={styles.Headerlabel} style={{ display: 'block' }}>Change Setting</label>
+
+                          <div style={{ display: 'none' }}>
+                            <TextField
+                              label="Prefix"
+                              value={prefix}
+                              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handlePrefixChange(e.target.value)}
+                            />
+
+                          </div>
+
+                          <div style={{ display: "flex", flexDirection: "row", gap: "10px", alignItems: "center" }}>
+                            {refFormatData.map((item, index) => (
+                              <div key={index} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
+                                <span>{item}</span>
+                                <Dropdown
+                                  options={[
+                                    { key: "Separator", text: "Separator" },
+                                    { key: "Concat", text: "Concat" },
+                                  ]}
+                                  onChange={(e, option) => handleDropdownChange(index, option?.key?.toString() || "Separator")}
+                                  selectedKey={customSeparators[index] || "Separator"} // Default to Separator
+                                />
+                              </div>
+                            ))}
+
+
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
+                              <span>{increment}</span>
+                            </div>
+                          </div>
+
+
+
 
                         </div>
                       </div>
@@ -1120,7 +1344,7 @@ export default function Master({ props }: any): JSX.Element {
                           <label className={styles.Headerlabel}>Archive Document Library Name</label>
                           <TextField
                             placeholder=" "
-                            value="Archive"
+                            value={ArchiveTest}
                             disabled
                           />
                         </div>
@@ -1151,8 +1375,8 @@ export default function Master({ props }: any): JSX.Element {
                           >
                             <label className={styles.Headerlabel} style={{ display: 'block' }}>Select Archive Days</label>
                             <Dropdown
-                              placeholder="Choose One"
-                              options={SelectArchiveDaysoptions}
+                              placeholder="Select an Option"
+                              options={RedundancyData}
                             />
                           </div>
 
@@ -1161,19 +1385,17 @@ export default function Master({ props }: any): JSX.Element {
                             className="col-md-6"
                             style={{
                               display: 'flex',
-                              flexDirection: 'column', // Arrange label and ChoiceGroup vertically
+                              flexDirection: 'column',
                               gap: '10px',
-                              // backgroundColor: '#f5f8fa',
-                              //color: '#5e6278',
                               padding: '10px',
-                              //border: '1px solid #f5f8fa',
-                              flex: 1, // Make both sections take equal width
+                              flex: 1,
                             }}
                           >
                             <label className={styles.Headerlabel} style={{ display: 'block' }}>Archive Versions</label>
                             <TextField
                               placeholder=" "
-                              value=""
+                              value={ArchiveVersions}
+                              onChange={(el: React.ChangeEvent<HTMLInputElement>) => setArchiveVersions(el.target.value)}
                             />
                           </div>
                         </div>
