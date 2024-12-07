@@ -211,18 +211,50 @@ body {
     padding: 5px 0px !important;
 }
 
-input {
+.rt-th input {
     width: 100%;
     background-color: #f5f8fa !important;
     border-color: #f5f8fa !important;
     color: #5e6278 !important;
     transition: color .2s ease, background-color .2s ease !important;
-    height: 40px !important;
+    height: 35px !important;
     /*padding: .75rem 1rem !important;
     font-size: 1.1rem !important;*/
     font-weight: 500 !important;
     border-radius: .475rem !important;
     border: 1px solid #e4e6ef !important;
+    padding: 7px !important;
+}
+
+.ms-BasePicker-input:active {
+    width: 100%;
+    background-color: #f5f8fa !important;
+    border-color: #f5f8fa !important;
+    color: #5e6278 !important;
+    transition: color .2s ease, background-color .2s ease !important;
+    height: 35px !important;
+    /*padding: .75rem 1rem !important;
+    font-size: 1.1rem !important;*/
+    font-weight: 500 !important;
+    border-radius: .475rem !important;
+    border: 1px solid #e4e6ef !important;
+    padding: 7px !important;
+}
+
+.ms-BasePicker-input,
+.ms-TextField-fieldGroup {
+    width: 100%;
+    background-color: #f5f8fa !important;
+    border-color: #f5f8fa !important;
+    color: #5e6278 !important;
+    transition: color .2s ease, background-color .2s ease !important;
+    height: 35px !important;
+    /*padding: .75rem 1rem !important;
+    font-size: 1.1rem !important;*/
+    font-weight: 500 !important;
+    border-radius: .475rem !important;
+    border: 1px solid #e4e6ef !important;
+    padding: 6px !important;
 }
 
 .ms-Panel-main {
@@ -239,4 +271,44 @@ input {
     border-color: #f5f8fa !important;
     border-radius: 5px !important;
 
+}
+
+.ms-Toggle-background {
+    background-color: #eff2f5 !important;
+    width: 3.25rem !important;
+    border: none !important;
+    height: 29px !important;
+    border-radius: 20px !important;
+
+
+}
+
+.ms-Toggle-thumb {
+    width: 20px !important;
+    height: 20px !important;
+    transition: 0.1s !important;
+    background-color: #fff !important;
+}
+
+.pill-320,
+.pill-340 {
+    background-color: #009ef7 !important;
+    border-color: transparent !important;
+}
+
+.ms-Dropdown-title {
+    background-color: #f5f8fa !important;
+    border-color: #f5f8fa !important;
+    color: #5e6278 !important;
+    transition: color .2s ease, background-color .2s ease !important;
+    border: 1px solid #e4e6ef !important;
+    border-radius: .475rem !important;
+    height: 35px !important;
+}
+
+.ms-Checkbox-checkbox {
+    background-color: #009ef7 !important;
+    width: 1.75rem !important;
+    height: 1.75rem !important;
+    border-radius: .45em !important;
 }
