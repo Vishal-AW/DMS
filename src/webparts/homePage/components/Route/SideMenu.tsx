@@ -1,7 +1,6 @@
 import * as React from "react";
 import { Sidebar, Menu, MenuItem, SubMenu, } from 'react-pro-sidebar';
 import { Icon } from 'office-ui-fabric-react';
-
 //import styles from '../GlobalCSS/global.module.scss';
 //import 'react-pro-sidebar/dist/css/styles.css'; // Import styles for react-pro-sidebar
 import { Link } from 'react-router-dom';
@@ -96,5 +95,5 @@ const SideMenu: React.FC<ISideMenu> = ({ onclickbutton }) => {
 
 }
 
-export default SideMenu;
 
+export default SideMenu;
