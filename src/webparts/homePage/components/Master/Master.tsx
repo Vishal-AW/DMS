@@ -6,7 +6,8 @@ import styles from '../Master/Master.module.scss';
 import {
   DefaultButton, Panel, PanelType, TextField, Toggle, Dropdown, IDropdownStyles, Checkbox, ChoiceGroup,
   IIconProps,
-  IconButton
+  IconButton,
+  IDropdownOption
 } from 'office-ui-fabric-react';
 import { PeoplePicker, PrincipalType, IPeoplePickerContext } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 import MessageDialog from '../ResuableComponents/PopupBox';
@@ -56,6 +57,8 @@ export default function Master({ props }: any): JSX.Element {
   const [order0Data, setorder0Data] = useState([]);
   const [configData, setConfigData] = useState([]);
   const [RedundancyData, setRedundancyData] = useState([]);
+  const [RedundancyDataID, setRedundancyDataID] = useState('');
+  const [RedundancyDataText, setRedundancyDataText] = useState('');
   const [isToggleDisabled, setIsToggleDisabled] = useState(false);
 
   const [isTileStatus, setIsTileStatus] = React.useState<boolean>(false);
@@ -342,6 +345,13 @@ export default function Master({ props }: any): JSX.Element {
 
     setRedundancyData(options);
   }
+
+
+  const handleArchiveDropdownChange = (
+    event: React.FormEvent<HTMLDivElement>, option?: IDropdownOption) => {
+    setRedundancyDataID(option?.key as string);
+    setRedundancyDataText(option?.text as string);
+  };
 
   const handleCheckboxChange = (action: string, isChecked: boolean | undefined) => {
     setSelectedcheckboxActions((prevActions) =>
@@ -762,7 +772,8 @@ export default function Master({ props }: any): JSX.Element {
       Separator: separator,
       DynamicControl: JSON.stringify(tableData),
       IsArchiveRequired: IsArchiveAllowed,
-      //RetentionDays: RedundancyData,
+      ArchiveLibraryName: ArchiveTest,
+      RetentionDays: parseInt(RedundancyDataText),
       ArchiveVersionCount: parseInt(ArchiveVersions)
 
     }
@@ -1377,6 +1388,10 @@ export default function Master({ props }: any): JSX.Element {
                             <Dropdown
                               placeholder="Select an Option"
                               options={RedundancyData}
+                              onChange={handleArchiveDropdownChange}
+                              selectedKey={RedundancyDataID}
+
+                            //selectedKey={}
                             />
                           </div>
 
