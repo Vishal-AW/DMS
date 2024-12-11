@@ -960,10 +960,10 @@ export default function Master({ props }: any): JSX.Element {
                         display: 'flex',
                         gap: '15px',
                         alignItems: 'center',
-                        backgroundColor: '#f5f8fa',
+                        /*backgroundColor: '#f5f8fa',*/
                         color: '#5e6278',
                         padding: '10px',
-                        border: '1px solid #f5f8fa',
+                        /*border: '1px solid #f5f8fa',*/
                       }}
                     >
                       {actions.map((action) => (
@@ -1133,10 +1133,10 @@ export default function Master({ props }: any): JSX.Element {
                             display: 'flex',
                             gap: '15px',
                             alignItems: 'center',
-                            backgroundColor: '#f5f8fa',
+                            /* backgroundColor: '#f5f8fa',*/
                             color: '#5e6278',
                             padding: '10px',
-                            border: '1px solid #f5f8fa',
+                            /* border: '1px solid #f5f8fa',*/
                           }}
                         >
 
@@ -1209,7 +1209,7 @@ export default function Master({ props }: any): JSX.Element {
                                   display: "flex",
                                   flexDirection: "row",
                                   gap: "10px",
-                                  backgroundColor: "#f5f8fa",
+                                  /* backgroundColor: "#f5f8fa",*/
                                 },
                               }}
                             />
@@ -1262,7 +1262,7 @@ export default function Master({ props }: any): JSX.Element {
                                   display: "flex",
                                   flexDirection: "row",
                                   gap: "10px",
-                                  backgroundColor: "#f5f8fa",
+                                  /*backgroundColor: "#f5f8fa",*/
                                 },
                               }}
                             />
@@ -1361,8 +1361,7 @@ export default function Master({ props }: any): JSX.Element {
                           }}
                         >
                           {/* Separator Choice Group */}
-                          <div
-                            className="col-md-3"
+                          <div className="col-md-3"
                             style={{
                               display: 'flex',
                               flexDirection: 'column', // Arrange label and ChoiceGroup vertically
