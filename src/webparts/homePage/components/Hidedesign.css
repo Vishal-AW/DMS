@@ -241,6 +241,10 @@ body {
     padding: 7px !important;
 }
 
+.ms-TooltipHost:focus-visible .ms-BasePicker-text:focus-visible {
+    outline: None !important;
+}
+
 .ms-BasePicker-input,
 .ms-TextField-fieldGroup {
     width: 100%;
@@ -290,8 +294,7 @@ body {
     background-color: #fff !important;
 }
 
-.pill-320,
-.pill-340 {
+.is-checked .ms-Toggle-background {
     background-color: #009ef7 !important;
     border-color: transparent !important;
 }
@@ -307,8 +310,86 @@ body {
 }
 
 .ms-Checkbox-checkbox {
-    background-color: #009ef7 !important;
+    background-color: #eff2f5 !important;
+    /* background-color: #eff2f5 !important;*/
     width: 1.75rem !important;
     height: 1.75rem !important;
     border-radius: .45em !important;
+}
+
+.ms-Checkbox:hover {
+    color: #fff !important;
+}
+
+.ms-Checkbox input {
+    border-radius: .45em !important;
+    height: 1.75rem !important;
+    width: 1.75rem !important;
+}
+
+.is-checked .ms-Checkbox-checkbox {
+    background-color: #009ef7 !important;
+    /* background-color: #eff2f5 !important;*/
+    width: 1.75rem !important;
+    height: 1.75rem !important;
+    border-radius: .45em !important;
+}
+
+.ms-Checkbox-checkbox {
+    border: none !important;
+}
+
+.ms-Checkbox-checkmark {
+    font-size: 20px !important;
+}
+
+.ms-Checkbox-text {
+    margin-top: 4px !important;
+}
+
+.ms-ChoiceField-field::before {
+    width: 1.75rem !important;
+    height: 1.75rem !important;
+    background-color: #eff2f5 !important;
+    border: none !important;
+
+}
+
+.ms-ChoiceField-field:hover::before {
+    width: 1.75rem !important;
+    height: 1.75rem !important;
+    background-color: #009ef7 !important;
+    border: none !important;
+}
+
+.ms-ChoiceField-field:hover::after {
+    background-color: #fff !important;
+    border: none !important;
+    height: 14px !important;
+    left: 7px !important;
+    top: 7px !important;
+    width: 14px !important;
+}
+
+.is-checked::before {
+    width: 1.75rem !important;
+    height: 1.75rem !important;
+    background-color: #009ef7 !important;
+    border: none !important;
+}
+
+.is-checked::after {
+    width: 14px !important;
+    height: 14px !important;
+    left: 7px !important;
+    top: 7px !important;
+    border-width: 1px !important;
+    /*background-color: #eff2f5 !important;*/
+    border: none !important;
+    background-color: #fff !important;
+}
+
+.ms-ChoiceFieldLabel {
+    padding-left: 35px !important;
+    padding-top: 3px !important;
 }

@@ -46,6 +46,8 @@ export default function HomePage(props: IHomePageProps): JSX.Element {
           <Header></Header>
 
         </div>
+
+
         <section>
           <div className={styles.nav}>
             <SideMenu onclickbutton={toggleSidebar}></SideMenu>
