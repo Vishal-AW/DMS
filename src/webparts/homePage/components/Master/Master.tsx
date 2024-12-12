@@ -49,6 +49,17 @@ export default function Master({ props }: any): JSX.Element {
   const [TileAdminselectedUsers, setTileAdminSelectedUsers] = useState<any[]>([]);
   const [TileName, setTileName] = useState("");
   const [TileError, setTileErr] = useState("");
+  const [attachmentErr, setAttachmentErr] = useState("");
+  const [AccessTileUserErr, setAccessTileUserErr] = useState("");
+  const [TileAdminUserErr, setTileAdminUserErr] = useState("");
+  const [TileSelectorderErr, setTileSelectorderErr] = useState("");
+  const [TileReferenceNoErr, setTileReferenceNoErr] = useState("");
+  const [TileRedundancyDaysErr, setTileRedundancyDaysErr] = useState("");
+  const [TileArchiveVersionErr, setTileArchiveVersionErr] = useState("");
+  const [MainTableSetdata, setData] = useState<any[]>([]);
+
+  // const [DuplicateTileError, setDuplicateTileError] = useState("");
+  // const [TileLowerUpperError, setTileLowerUpperError] = useState("");
   const [DisplayLabel, setDisplayLabel] = useState<ILabel>();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   //const [attachments, setAttachments]: any = useState([]);
@@ -57,10 +68,12 @@ export default function Master({ props }: any): JSX.Element {
   const [TileAdminName, setTileAdminName] = useState<string>("");
   const [TileAdminID, setTileAdminID] = useState<string[]>([]);
   const [order0Data, setorder0Data] = useState([]);
-  const [configData, setConfigData] = useState([]);
-  const [RedundancyData, setRedundancyData] = useState([]);
   const [RedundancyDataID, setRedundancyDataID] = useState('');
   const [RedundancyDataText, setRedundancyDataText] = useState('');
+  const [configData, setConfigData] = useState([]);
+  const [RedundancyData, setRedundancyData] = useState([]);
+  const [order0DataDataID, setorder0DataDataID] = useState('');
+  const [order0DataDataText, setorder0DataText] = useState('');
   const [isToggleDisabled, setIsToggleDisabled] = useState(false);
 
   const [isTileStatus, setIsTileStatus] = React.useState<boolean>(false);
@@ -108,6 +121,7 @@ export default function Master({ props }: any): JSX.Element {
 
   useEffect(() => {
 
+    fetchData();
     let DisplayLabel: ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}'); //localStorage.getItem('DisplayLabel')|| null;
     setDisplayLabel(DisplayLabel);
     clearField();
@@ -282,6 +296,13 @@ export default function Master({ props }: any): JSX.Element {
     setorder0Data(options);
   };
 
+
+  const handleorder0DataDropdownChange = (
+    event: React.FormEvent<HTMLDivElement>, option?: IDropdownOption) => {
+    setorder0DataDataID(option?.key as string);
+    setorder0DataText(option?.text as string);
+    console.log(order0DataDataText);
+  };
 
   const getAllData = async () => {
     let data: any = await GetAllLabel(props.SiteURL, props.spHttpClient, "DefaultText");
@@ -583,16 +604,27 @@ export default function Master({ props }: any): JSX.Element {
     spHttpClient: props.context.spHttpClient
   };
 
+
+
+  const fetchData = async () => {
+
+    const fetchedData = await getTileAllData(props.SiteURL, props.spHttpClient);
+    setData(fetchedData);
+
+    console.log(MainTableSetdata);
+  };
+
   const columns = [
-    { Header: 'TILES', accessor: 'TILES' },
-    { Header: 'ALLOW APPROVER', accessor: 'ALLOWAPPROVER' },
-    { Header: 'LAST MODIFIED', accessor: 'uploadedOn' },
-    { Header: 'ACTIVE', accessor: 'ACTIVE' },
+    { Header: 'TILES', accessor: 'TileName' },
+    { Header: 'ALLOW APPROVER', accessor: 'AllowApprover' },
+    { Header: 'LAST MODIFIED', accessor: 'Modified | Date:HH:mm:ss' },
+    { Header: 'ACTIVE', accessor: 'Active' },
     { Header: 'ACTION', accessor: 'ACTION' },
 
   ];
 
   const data = [
+
     {
       TILES: 1,
       ALLOWAPPROVER: 'No',
@@ -625,7 +657,7 @@ export default function Master({ props }: any): JSX.Element {
 
 
 
-  const TileLibrary = (Internal: any, TileLID: any) => {
+  const TileLibrary = async (Internal: any, TileLID: any, ArchiveInternal: any) => {
     const Columns: any = [{
       ListName: Internal,
       ListType: "101",
@@ -680,144 +712,64 @@ export default function Master({ props }: any): JSX.Element {
       })
     }
 
-    _spService.CreateList(props.context, props.SiteURL, Columns, TileLID)
-    // const listName = Columns;
-    // let Listguid: { Title: string; Id: string }[] = [];
-    // let count = 0;
-    // let outoff = '0/' + Columns.length;
+    if (IsArchiveAllowed == true) {
+      const obj = {
+        ListName: ArchiveInternal,
+        ListType: "101",
+        Columns: Columns[0].Columns
+        // Columns: [
+        //   { ColName: "DefineRole", ColType: 8 },
+        //   { ColName: "ProjectmanagerAllow", ColType: 8 },
+        //   { ColName: "Projectmanager", ColType: 20 },
+        //   { ColName: "ProjectmanagerEmail", ColType: 2 },
+        //   { ColName: "PublisherAllow", ColType: 8 },
+        //   { ColName: "Publisher", ColType: 20 },
+        //   { ColName: "PublisherEmail", ColType: 2 },
+        //   { ColName: "CurrentApprover", ColType: 2 },
+        //   {
+        //     ColName: "Status",
+        //     ColType: 7,
+        //     LookupField: "StatusName",
+        //     LookupList: "DMS_Mas_Status",
+        //   },
+        //   { ColName: "InternalStatus", ColType: 2 },
+        //   { ColName: "ProjectMasterLID", ColType: 2 },
+        //   { ColName: "LatestRemark", ColType: 3 },
+        //   { ColName: "AllowApprover", ColType: 8 },
+        //   { ColName: "Active", ColType: 8 },
+        //   { ColName: "DisplayStatus", ColType: 2 },
+        //   { ColName: "ReferenceNo", ColType: 2 },
+        //   { ColName: "RefSequence", ColType: 9 },
+        //   { ColName: "Level", ColType: 2 },
+        //   { ColName: "Revision", ColType: 2 },
+        //   { ColName: "DocStatus", ColType: 2 },
+        //   { ColName: "Template", ColType: 2 },
+        //   { ColName: "CreateFolder", ColType: 8 },
+        //   { ColName: "Company", ColType: 2 },
+        //   { ColName: "ActualName", ColType: 2 },
+        //   { ColName: "DocumentSuffix", ColType: 2 },
+        //   { ColName: "OtherSuffix", ColType: 2 },
+        //   { ColName: "PSType", ColType: 2 },
+        //   { ColName: "IsArchiveFlag", ColType: 8 },
+        //   { ColName: "IsExistingRefID", ColType: 9 },
+        //   { ColName: "IsExistingFlag", ColType: 2 },
+        //   { ColName: "OCRText", ColType: 3 },
+        //   { ColName: "DeleteFlag", ColType: 2 },
+        //   { ColName: "OCRStatus", ColType: 2 },
+        //   { ColName: "UploadFlag", ColType: 2, DefaultValue: "Backend" },
+        //   { ColName: "NewFolderAccess", ColType: 2 },
+        // ],
 
-    // setTimeout(function () {
-    //   for (let i = 0; i < Columns.length; i++) {
-    //     let listName = Columns[i].ListName;
-    //     let template = Number(Columns[i].ListType);
-    //     CreateList(listName, template).then(function (response) {
-    //       let obj = { LibGuidName: response.Id }
-    //       UpdateTileSetting(props.SiteURL, props.spHttpClient, obj, TileLID).then(function (response) { });
-    //       Listguid.push(response);
-    //       count++;
-    //       if (count == Columns.length) {
-    //         let listCount = 0;
-    //         for (let list = 0; list < Columns.length; list++) {
-    //           listCount++;
-    //           //let columnCount = 0;
-    //           let Count = 0;
-    //           let ColumnsObj: any = Columns[list].Columns;
-    //           for (let col = 0; col < ColumnsObj.length; col++) {
-    //             // columnCount++;
-    //             if (ColumnsObj[col].ColType == 6) {
-    //               let returnedData = Listguid.filter(function (element, index) {
-    //                 return element.Title == Columns[list].ListName;
-    //               });
-    //               let obj = {
-    //                 '__metadata': { 'type': 'SP.FieldChoice' },
-    //                 'FieldTypeKind': 6,
-    //                 'Title': ColumnsObj[col].ColName,
-    //                 'Choices': { '__metadata': { 'type': 'Collection(Edm.String)' }, 'results': ColumnsObj[col].Choices }
-    //               } //, 'EditFormat': 1 
-    //               CreateChoiceCloumn(returnedData[0].Id, obj).then(function (response) {
-    //                 Count++;
-    //                 if (Count == ColumnsObj.length && listCount == Columns.length) {
-    //                   DefaultView(Columns);
-    //                 }
-    //                 //deferred.resolve(response);
-    //               });
-    //             } else if (ColumnsObj[col].ColType == 7) {
-    //               let listID = Listguid.filter(function (element, index) {
-    //                 return element.Title == Columns[list].ListName;
-    //               });
-    //               let query = props.SiteURL + "/_api/web/lists/getByTitle('" + ColumnsObj[col].LookupList + "')/Id";
-    //               GetListData(query).then(function (response) {
-    //                 let listGuID = response.d.Id;
-    //                 let obj = {
-    //                   'parameters': {
-    //                     '__metadata': { 'type': 'SP.FieldCreationInformation' },
-    //                     'FieldTypeKind': 7,
-    //                     'Title': ColumnsObj[col].ColName,
-    //                     'LookupListId': listGuID,
-    //                     'LookupFieldName': ColumnsObj[col].LookupField
-    //                   }
-    //                 }
-    //                 Createlookup(listID[0].Id, obj).then(function (response) {
-    //                   Count++;
-    //                   if (Count == ColumnsObj.length && listCount == Columns.length) {
-    //                     DefaultView(Columns);
-    //                   }
-    //                   // deferred.resolve(response);
-    //                 });
-    //               })
-    //             } else {
-    //               createColumn(Columns[list].ListName, ColumnsObj[col].ColName, ColumnsObj[col].ColType).then(function (response) {
-    //                 Count++
-    //                 if (Count == ColumnsObj.length && listCount == Columns.length) {
-    //                   DefaultView(Columns);
-    //                 }
-    //               });
-    //             }
-    //           }
-    //         }
-    //       }
-    //     })
-    //   }
-    // }, 5000);
-  };
-
-
-  const ArchiveTileLibrary = (ArchiveInternal: any, TileLID: any) => {
-    const Columns: any = [{
-      ListName: ArchiveInternal,
-      ListType: "101",
-      Columns: [
-        { ColName: "DefineRole", ColType: 8 },
-        { ColName: "ProjectmanagerAllow", ColType: 8 },
-        { ColName: "Projectmanager", ColType: 20 },
-        { ColName: "ProjectmanagerEmail", ColType: 2 },
-        { ColName: "PublisherAllow", ColType: 8 },
-        { ColName: "Publisher", ColType: 20 },
-        { ColName: "PublisherEmail", ColType: 2 },
-        { ColName: "CurrentApprover", ColType: 2 },
-        {
-          ColName: "Status",
-          ColType: 7,
-          LookupField: "StatusName",
-          LookupList: "DMS_Mas_Status",
-        },
-        { ColName: "InternalStatus", ColType: 2 },
-        { ColName: "ProjectMasterLID", ColType: 2 },
-        { ColName: "LatestRemark", ColType: 3 },
-        { ColName: "AllowApprover", ColType: 8 },
-        { ColName: "Active", ColType: 8 },
-        { ColName: "DisplayStatus", ColType: 2 },
-        { ColName: "ReferenceNo", ColType: 2 },
-        { ColName: "RefSequence", ColType: 9 },
-        { ColName: "Level", ColType: 2 },
-        { ColName: "Revision", ColType: 2 },
-        { ColName: "DocStatus", ColType: 2 },
-        { ColName: "Template", ColType: 2 },
-        { ColName: "CreateFolder", ColType: 8 },
-        { ColName: "Company", ColType: 2 },
-        { ColName: "ActualName", ColType: 2 },
-        { ColName: "DocumentSuffix", ColType: 2 },
-        { ColName: "OtherSuffix", ColType: 2 },
-        { ColName: "PSType", ColType: 2 },
-        { ColName: "IsArchiveFlag", ColType: 8 },
-        { ColName: "IsExistingRefID", ColType: 9 },
-        { ColName: "IsExistingFlag", ColType: 2 },
-        { ColName: "OCRText", ColType: 3 },
-        { ColName: "DeleteFlag", ColType: 2 },
-        { ColName: "OCRStatus", ColType: 2 },
-        { ColName: "UploadFlag", ColType: 2, DefaultValue: "Backend" },
-        { ColName: "NewFolderAccess", ColType: 2 },
-      ],
-    }]
-
-    if (tableData.length > 0) {
-      tableData.map(function (el) {
-        let colType = getColumnType(el.ColumnType);
-        Columns[0].Columns.push({ "ColName": el.InternalTitleName, "ColType": colType });
-      })
+      }
+      Columns.push(obj);
     }
-
-    _spService.ArchieveCreateList(props.context, props.SiteURL, Columns)
+    // if (tableData.length > 0) {
+    //   tableData.map(function (el) {
+    //     let colType = getColumnType(el.ColumnType);
+    //     Columns[1].Columns.push({ "ColName": el.InternalTitleName, "ColType": colType });
+    //   })
+    // }
+    _spService.CreateList(props.context, props.SiteURL, Columns, TileLID, false)
     // const listName = Columns;
     // let Listguid: { Title: string; Id: string }[] = [];
     // let count = 0;
@@ -897,6 +849,143 @@ export default function Master({ props }: any): JSX.Element {
     //   }
     // }, 5000);
   };
+
+
+  // const ArchiveTileLibrary = async (ArchiveInternal: any, TileLID: any) => {
+  //   const Columns: any = [{
+  //     ListName: ArchiveInternal,
+  //     ListType: "101",
+  //     Columns: [
+  //       { ColName: "DefineRole", ColType: 8 },
+  //       { ColName: "ProjectmanagerAllow", ColType: 8 },
+  //       { ColName: "Projectmanager", ColType: 20 },
+  //       { ColName: "ProjectmanagerEmail", ColType: 2 },
+  //       { ColName: "PublisherAllow", ColType: 8 },
+  //       { ColName: "Publisher", ColType: 20 },
+  //       { ColName: "PublisherEmail", ColType: 2 },
+  //       { ColName: "CurrentApprover", ColType: 2 },
+  //       {
+  //         ColName: "Status",
+  //         ColType: 7,
+  //         LookupField: "StatusName",
+  //         LookupList: "DMS_Mas_Status",
+  //       },
+  //       { ColName: "InternalStatus", ColType: 2 },
+  //       { ColName: "ProjectMasterLID", ColType: 2 },
+  //       { ColName: "LatestRemark", ColType: 3 },
+  //       { ColName: "AllowApprover", ColType: 8 },
+  //       { ColName: "Active", ColType: 8 },
+  //       { ColName: "DisplayStatus", ColType: 2 },
+  //       { ColName: "ReferenceNo", ColType: 2 },
+  //       { ColName: "RefSequence", ColType: 9 },
+  //       { ColName: "Level", ColType: 2 },
+  //       { ColName: "Revision", ColType: 2 },
+  //       { ColName: "DocStatus", ColType: 2 },
+  //       { ColName: "Template", ColType: 2 },
+  //       { ColName: "CreateFolder", ColType: 8 },
+  //       { ColName: "Company", ColType: 2 },
+  //       { ColName: "ActualName", ColType: 2 },
+  //       { ColName: "DocumentSuffix", ColType: 2 },
+  //       { ColName: "OtherSuffix", ColType: 2 },
+  //       { ColName: "PSType", ColType: 2 },
+  //       { ColName: "IsArchiveFlag", ColType: 8 },
+  //       { ColName: "IsExistingRefID", ColType: 9 },
+  //       { ColName: "IsExistingFlag", ColType: 2 },
+  //       { ColName: "OCRText", ColType: 3 },
+  //       { ColName: "DeleteFlag", ColType: 2 },
+  //       { ColName: "OCRStatus", ColType: 2 },
+  //       { ColName: "UploadFlag", ColType: 2, DefaultValue: "Backend" },
+  //       { ColName: "NewFolderAccess", ColType: 2 },
+  //     ],
+  //   }]
+
+  //   if (tableData.length > 0) {
+  //     tableData.map(function (el) {
+  //       let colType = getColumnType(el.ColumnType);
+  //       Columns[0].Columns.push({ "ColName": el.InternalTitleName, "ColType": colType });
+  //     })
+  //   }
+  //   _spService.CreateList(props.context, props.SiteURL, Columns, TileLID, true)
+  //   // _spService.ArchieveCreateList(props.context, props.SiteURL, Columns)
+  //   // const listName = Columns;
+  //   // let Listguid: { Title: string; Id: string }[] = [];
+  //   // let count = 0;
+  //   // let outoff = '0/' + Columns.length;
+
+  //   // setTimeout(function () {
+  //   //   for (let i = 0; i < Columns.length; i++) {
+  //   //     let listName = Columns[i].ListName;
+  //   //     let template = Number(Columns[i].ListType);
+  //   //     CreateList(listName, template).then(function (response) {
+  //   //       let obj = { LibGuidName: response.Id }
+  //   //       UpdateTileSetting(props.SiteURL, props.spHttpClient, obj, TileLID).then(function (response) { });
+  //   //       Listguid.push(response);
+  //   //       count++;
+  //   //       if (count == Columns.length) {
+  //   //         let listCount = 0;
+  //   //         for (let list = 0; list < Columns.length; list++) {
+  //   //           listCount++;
+  //   //           //let columnCount = 0;
+  //   //           let Count = 0;
+  //   //           let ColumnsObj: any = Columns[list].Columns;
+  //   //           for (let col = 0; col < ColumnsObj.length; col++) {
+  //   //             // columnCount++;
+  //   //             if (ColumnsObj[col].ColType == 6) {
+  //   //               let returnedData = Listguid.filter(function (element, index) {
+  //   //                 return element.Title == Columns[list].ListName;
+  //   //               });
+  //   //               let obj = {
+  //   //                 '__metadata': { 'type': 'SP.FieldChoice' },
+  //   //                 'FieldTypeKind': 6,
+  //   //                 'Title': ColumnsObj[col].ColName,
+  //   //                 'Choices': { '__metadata': { 'type': 'Collection(Edm.String)' }, 'results': ColumnsObj[col].Choices }
+  //   //               } //, 'EditFormat': 1 
+  //   //               CreateChoiceCloumn(returnedData[0].Id, obj).then(function (response) {
+  //   //                 Count++;
+  //   //                 if (Count == ColumnsObj.length && listCount == Columns.length) {
+  //   //                   DefaultView(Columns);
+  //   //                 }
+  //   //                 //deferred.resolve(response);
+  //   //               });
+  //   //             } else if (ColumnsObj[col].ColType == 7) {
+  //   //               let listID = Listguid.filter(function (element, index) {
+  //   //                 return element.Title == Columns[list].ListName;
+  //   //               });
+  //   //               let query = props.SiteURL + "/_api/web/lists/getByTitle('" + ColumnsObj[col].LookupList + "')/Id";
+  //   //               GetListData(query).then(function (response) {
+  //   //                 let listGuID = response.d.Id;
+  //   //                 let obj = {
+  //   //                   'parameters': {
+  //   //                     '__metadata': { 'type': 'SP.FieldCreationInformation' },
+  //   //                     'FieldTypeKind': 7,
+  //   //                     'Title': ColumnsObj[col].ColName,
+  //   //                     'LookupListId': listGuID,
+  //   //                     'LookupFieldName': ColumnsObj[col].LookupField
+  //   //                   }
+  //   //                 }
+  //   //                 Createlookup(listID[0].Id, obj).then(function (response) {
+  //   //                   Count++;
+  //   //                   if (Count == ColumnsObj.length && listCount == Columns.length) {
+  //   //                     DefaultView(Columns);
+  //   //                   }
+  //   //                   // deferred.resolve(response);
+  //   //                 });
+  //   //               })
+  //   //             } else {
+  //   //               createColumn(Columns[list].ListName, ColumnsObj[col].ColName, ColumnsObj[col].ColType).then(function (response) {
+  //   //                 Count++
+  //   //                 if (Count == ColumnsObj.length && listCount == Columns.length) {
+  //   //                   DefaultView(Columns);
+  //   //                 }
+  //   //               });
+  //   //             }
+  //   //           }
+  //   //         }
+  //   //       }
+  //   //     })
+  //   //   }
+  //   // }, 5000);
+  // };
 
   const getColumnType = (val: any) => {
     switch (val) {
@@ -1071,14 +1160,34 @@ export default function Master({ props }: any): JSX.Element {
   const clearField = () => {
 
     setTileName("");
-    setAssignID([]);
-    setTileAdminID([]);
+    setSelectedFile(null);
+    setAssignName("");
+    setTileAdminName("");
+    setorder0DataDataID("");
+    setIsTileStatus(false);
+    setIsAllowApprover(false);
+    setIsDropdownVisible(false);
+    setDynamicDataReference(false);
+    setRefrenceNOData("");
+    setArchiveVersions("");
+    setArchiveTest("");
+    setRedundancyDataID("");
+    setArchiveAllowed(false);
+    setSelectedcheckboxActions([]);
+    setTableData([]);
     clearError();
 
   };
   const clearError = () => {
 
-    setTileErr('');
+    setTileErr("");
+    setAttachmentErr("");
+    setAccessTileUserErr("");
+    setTileAdminUserErr("");
+    setTileSelectorderErr("");
+    setTileReferenceNoErr("");
+    setTileRedundancyDaysErr("");
+    setTileArchiveVersionErr("");
   };
 
 
@@ -1093,8 +1202,73 @@ export default function Master({ props }: any): JSX.Element {
     if (TileName === "" || TileName === undefined || TileName === null) {
       setTileErr('Tile name is required');
       isValidForm = false;
-
     }
+    if (selectedFile === null) {
+      setAttachmentErr("Enter Tile ImageURL");
+      isValidForm = false;
+    }
+
+    if (selectedUsers.length === 0) {
+      setAccessTileUserErr("Please Enter Access Details");
+      isValidForm = false;
+    }
+
+    if (TileAdminselectedUsers.length === 0) {
+      setTileAdminUserErr("Please add Tile Admin");
+      isValidForm = false;
+    }
+
+    if (isDropdownVisible == true) {
+      if (order0DataDataID === "" || order0DataDataID === undefined || order0DataDataID === null) {
+        setTileSelectorderErr("Enter Order");
+        isValidForm = false;
+      }
+    }
+
+    if (DynamicDataReference == true) {
+      if (refExample === "" || refExample === undefined || refExample === null) {
+        setTileReferenceNoErr("Select Reference No");
+        isValidForm = false;
+      }
+    }
+
+    if (IsArchiveAllowed == true) {
+      if (RedundancyDataID === "" || RedundancyDataID === undefined || RedundancyDataID === null) {
+        setTileRedundancyDaysErr("Select Redundancy Days");
+        isValidForm = false;
+      }
+      if (ArchiveVersions === "" || ArchiveVersions === undefined || ArchiveVersions === null) {
+        setTileArchiveVersionErr("Enter Archive Version");
+        isValidForm = false;
+      }
+    }
+    //const maindata = await getTileAllData(props.SiteURL, props.spHttpClient);
+
+    //   if(Action=="Add"){
+    //     if(TileName != "" || TileName != undefined || TileName != null){
+
+
+
+    //         for(var i=0; i<maindata.value; i++)
+    //         { 
+    //             if(maindata[i].TileName.toLowerCase() == maindata.toLowerCase())
+    //             {
+    //               setDuplicateTileError("<label class='error'>Tile Name you entered is already exists</label>");
+
+    //             }
+    //             else if($scope.GetData[i].LibraryName.toLowerCase() == Internal.toLowerCase())
+    //             {
+    //                     $("#txtTile").parent().append("<label class='error'>Tile Name you entered is already exists</label>");
+    //                     $("#txtTile").focus();
+    //                     $("#txtTile").prop("disabled",false);
+    //                     rv = false;
+    //                     return false;
+
+    //             }
+    //         }
+    //     }
+
+    // }
     return isValidForm;
   }
 
@@ -1212,17 +1386,20 @@ export default function Master({ props }: any): JSX.Element {
     if (LID != null) {
       saveAttachment(MainTileID);
 
-      const TileLibraryData = await TileLibrary(Internal, MainTileLID);
+      const TileLibraryData = TileLibrary(Internal, MainTileLID, ArchiveInternal).then(function (response) {
+        console.log(TileLibraryData);
 
-      console.log(TileLibraryData);
+        // if (IsArchiveAllowed == true) {
 
-      if (IsArchiveAllowed == true) {
+        //   const ArchiveTileLibraryData = ArchiveTileLibrary(ArchiveInternal, MainTileLID);
 
-        const ArchiveTileLibraryData = await ArchiveTileLibrary(ArchiveInternal, MainTileLID)
+        //   console.log(ArchiveTileLibraryData);
 
-        console.log(ArchiveTileLibraryData);
+        // }
+      });
 
-      }
+      clearField();
+
 
     }
 
@@ -1275,7 +1452,7 @@ export default function Master({ props }: any): JSX.Element {
                   <div className={`ms-Grid ${styles.inlineFormContainer}`}>
                     <div className="col-md-3">
                       <div className="form-group">
-                        <label className={styles.Headerlabel}>Tile Name</label>
+                        <label className={styles.Headerlabel}>Tile Name <span style={{ color: "red" }}>*</span></label>
 
                         {/* <TextField label="Title" errorMessage={TileError} value={TileName} onChange={(e: any) => { setTileName(e.target.value); }} /> */}
                         <TextField
@@ -1293,7 +1470,7 @@ export default function Master({ props }: any): JSX.Element {
                     </div>
                     <div className="col-md-3">
                       <div className="form-group">
-                        <label className={styles.Headerlabel}>Display Picture</label>
+                        <label className={styles.Headerlabel}>Display Picture <span style={{ color: "red" }}>*</span></label>
                         <TextField
                           placeholder=" "
                           // errorMessage={"Please fill this field"}
@@ -1301,6 +1478,7 @@ export default function Master({ props }: any): JSX.Element {
                           onChange={handleFileChange}
                           //onChange={(el: React.ChangeEvent<HTMLInputElement>) => setSelectedFile()}
                           type="file"
+                          errorMessage={attachmentErr}
                         />
                         {/* {attachments} */}
                         {selectedFile && <p>Selected File:{selectedFile.name}</p>}
@@ -1318,12 +1496,13 @@ export default function Master({ props }: any): JSX.Element {
                     </div>
                     <div className="col-md-3">
                       <div className="form-group">
-                        <label className={styles.Headerlabel}>Access To Tile</label>
+                        <label className={styles.Headerlabel}>Access To Tile <span style={{ color: "red" }}>*</span></label>
                         <PeoplePicker
                           context={peoplePickerContext}
                           personSelectionLimit={5}
                           showtooltip={true}
                           required={true}
+                          errorMessage={AccessTileUserErr}
                           // searchTextLimit={2}
                           onChange={onPeoplePickerChange}
                           showHiddenInUI={false}
@@ -1358,11 +1537,12 @@ export default function Master({ props }: any): JSX.Element {
                     </div>
                     <div className="col-md-3">
                       <div className="form-group">
-                        <label className={styles.Headerlabel}>Tile Admin</label>
+                        <label className={styles.Headerlabel}>Tile Admin <span style={{ color: "red" }}>*</span></label>
                         <PeoplePicker
                           context={peoplePickerContext}
                           showtooltip={true}
                           required={true}
+                          errorMessage={TileAdminUserErr}
                           onChange={onTilePeoplePickerChange}
                           showHiddenInUI={false}
                           principalTypes={[PrincipalType.User]}
@@ -1382,9 +1562,12 @@ export default function Master({ props }: any): JSX.Element {
                     <div className="col-md-3">
                       <div className="form-group">
                         {isDropdownVisible && (
-                          <><label className={styles.Headerlabel}>Select Order</label><Dropdown
+                          <><label className={styles.Headerlabel}>Select Order <span style={{ color: "red" }}>*</span></label><Dropdown
                             placeholder="Select an option"
                             options={order0Data}
+                            onChange={handleorder0DataDropdownChange}
+                            selectedKey={order0DataDataID}
+                            errorMessage={TileSelectorderErr}
                             styles={dropdownStyles} /></>
                         )}
                       </div>
@@ -1429,7 +1612,7 @@ export default function Master({ props }: any): JSX.Element {
                       <thead>
                         <tr>
                           <th>Sr. No.</th>
-                          <th>Field</th>
+                          <th>Field <span style={{ color: "red" }}>*</span></th>
                           <th>Is Required</th>
                           <th>Field Status</th>
                           <th>Is Field Allow in File</th>
@@ -1540,7 +1723,7 @@ export default function Master({ props }: any): JSX.Element {
                     <div style={{ display: 'flex', gap: '10px' }}>
                       {/* Dynamic Reference Toggle */}
                       <div className="col-md-3">
-                        <label className={styles.Headerlabel}>Is Dynamic Reference</label>
+                        <label className={styles.Headerlabel}>Is Dynamic Reference <span style={{ color: "red" }}>*</span></label>
                         <Toggle
                           checked={DynamicDataReference}
                           onChange={(_, checked) => ToggleChangeforrefernceno(checked!)}
@@ -1565,6 +1748,7 @@ export default function Master({ props }: any): JSX.Element {
                           <TextField
                             placeholder=" "
                             value={refExample}
+                            errorMessage={TileReferenceNoErr}
                             disabled
                           />
                         </div>
@@ -1772,7 +1956,7 @@ export default function Master({ props }: any): JSX.Element {
             </Accordion.Item>
             <br />
             <Accordion.Item eventKey="3">
-              <Accordion.Header className={styles.Accodordianherder}>Archive Section</Accordion.Header>
+              <Accordion.Header className={styles.Accodordianherder}>Archive Section </Accordion.Header>
               <Accordion.Body>
                 <Form>
                   <div style={{ marginBottom: '20px' }}>
@@ -1780,7 +1964,7 @@ export default function Master({ props }: any): JSX.Element {
                     <div style={{ display: 'flex', gap: '10px' }}>
                       {/* Dynamic Reference Toggle */}
                       <div className="col-md-3">
-                        <label className={styles.Headerlabel}>Is Archive Allowed</label>
+                        <label className={styles.Headerlabel}>Is Archive Allowed <span style={{ color: "red" }}>*</span></label>
                         <Toggle
                           checked={IsArchiveAllowed}
                           onChange={(_, checked) => ToggleChangeforArchiveAllowed(checked!)}
@@ -1826,6 +2010,7 @@ export default function Master({ props }: any): JSX.Element {
                               options={RedundancyData}
                               onChange={handleArchiveDropdownChange}
                               selectedKey={RedundancyDataID}
+                              errorMessage={TileRedundancyDaysErr}
 
                             //selectedKey={}
                             />
@@ -1846,6 +2031,7 @@ export default function Master({ props }: any): JSX.Element {
                             <TextField
                               placeholder=" "
                               value={ArchiveVersions}
+                              errorMessage={TileArchiveVersionErr}
                               onChange={(el: React.ChangeEvent<HTMLInputElement>) => setArchiveVersions(el.target.value)}
                             />
                           </div>

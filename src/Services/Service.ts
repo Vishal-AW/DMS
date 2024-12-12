@@ -12,16 +12,15 @@ export class service {
     props: any;
 
 
-    public CreateList(context: WebPartContext, webURL: string, IListItem: [], TileLID: number) {
-        debugger;
+    public CreateList(context: WebPartContext, webURL: string, IListItem: [], TileLID: number, isArchive: boolean) {
         this.count = 0;
         this.ListGuid = [];
         for (let i = 0; i < IListItem.length; i++) {
-            this.httpServiceForCreateList(context, webURL, IListItem[i]["ListName"], IListItem[i]["ListType"], IListItem, TileLID);
+            this.httpServiceForCreateList(context, webURL, IListItem[i]["ListName"], IListItem[i]["ListType"], IListItem, TileLID, isArchive);
         }
     }
 
-    private httpServiceForCreateList(context: WebPartContext, webURL: string, listName: string, Template: string, IListItem: any, TileLID: number) {
+    private httpServiceForCreateList(context: WebPartContext, webURL: string, listName: string, Template: string, IListItem: any, TileLID: number, isArchive: boolean) {
         const url: string = webURL + "/_api/web/lists";
         const listDefinition: any = {
             "Title": listName,
@@ -34,13 +33,13 @@ export class service {
         };
         context.spHttpClient.post(url, SPHttpClient.configurations.v1, spHttpClientOptions)
             .then((response: SPHttpClientResponse) => {
-                response.json().then((results: any) => {
+                response.json().then(async (results: any) => {
                     this.ListGuid.push(results);
                     let obj = { LibGuidName: this.ListGuid[0].Id }
 
                     console.log(obj);
 
-                    UpdateTileSetting(webURL, context.spHttpClient, obj, TileLID).then(function (response) { });
+                    isArchive ? "" : await UpdateTileSetting(webURL, context.spHttpClient, obj, TileLID);
                     this.count++;
                     if (this.count == IListItem.length) {
                         this.createAllColumns(context, webURL, IListItem)
@@ -51,7 +50,7 @@ export class service {
     }
 
     public ArchieveCreateList(context: WebPartContext, webURL: string, IListItem: []) {
-        debugger;
+
         this.count = 0;
         this.ListGuid = [];
         for (let i = 0; i < IListItem.length; i++) {
@@ -184,7 +183,7 @@ export class service {
     }
 
     private async CreateChoiceCloumn(context: WebPartContext, webURL: string, listID: string, obj: any) {
-        debugger;
+
         const url = webURL + "/_api/web/lists(guid'" + listID + "')/Fields";
         const spHttpClientOptions: ISPHttpClientOptions = {
             headers: {
@@ -313,7 +312,7 @@ export class service {
                 // Count++;
                 let obj = { 'strField': ColumnsObj[colName]["ColName"] }
                 var resURL = webURL + "/_api/web/lists/getbytitle('" + IListItem[listName]["ListName"] + "')/Views/getbyId('" + defaultView[listName] + "')/ViewFields/AddViewField";
-                debugger;
+
                 await this.addDefaultViewColumn(context, resURL, obj).then((r) => {
                     columnCount++;
                     if (columnCount == ColumnsObj.length && listCount == IListItem.length) {
@@ -335,6 +334,14 @@ export class service {
                 body: JSON.stringify(obj)
             })
     }
+
+    // private async LibraryPermission(PermissionID:number,TilepermissionID:number,ExistingTileAdminID:number,AdminID:[],LibraryName:string,PermissionUserType:string,TileType:string){
+
+
+    // }
+
+
+
 
 
 
