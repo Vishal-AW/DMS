@@ -8,12 +8,13 @@ import {
   DefaultButton, Panel, PanelType, TextField, Toggle, Dropdown, IDropdownStyles, Checkbox, ChoiceGroup,
   IIconProps,
   IconButton,
-  IDropdownOption
+  IDropdownOption,
+  FontIcon
 } from 'office-ui-fabric-react';
 import { PeoplePicker, PrincipalType, IPeoplePickerContext } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 import MessageDialog from '../ResuableComponents/PopupBox';
 import ReactTableComponent from '../ResuableComponents/ReusableDataTable';
-import { IStackItemStyles, IStackStyles, IStackTokens, Stack, FontIcon } from 'office-ui-fabric-react';
+import { IStackItemStyles, IStackStyles, IStackTokens, Stack } from 'office-ui-fabric-react';
 import { getTileAllData, SaveTileSetting } from "../../../../Services/MasTileService";
 import { GetAllLabel } from "../../../../Services/ControlLabel";
 //import { FilePicker, IFilePickerResult } from '@pnp/spfx-controls-react/lib/FilePicker';
@@ -125,15 +126,92 @@ export default function Master({ props }: any): JSX.Element {
     let DisplayLabel: ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}'); //localStorage.getItem('DisplayLabel')|| null;
     setDisplayLabel(DisplayLabel);
     clearField();
-    //fetchData();
+    fetchData();
     getAllData();
     ConfigMasterData();
     GetMainListData();
     RedundancyDaysData();
     setRefrenceNOData(`${moment().format('YYYY')}-00001`);
-
+    setRefExample(RefrenceNOData);
+    //DashboardDataEdit();
 
   }, []);
+
+
+
+  const fetchData = async () => {
+    let FetchallTileData: any = await getTileAllData(props.SiteURL, props.spHttpClient);
+
+    let TilesData = FetchallTileData.value;
+
+    setData(TilesData);
+
+    console.log(TilesData);
+  };
+
+
+  const Tablecolumns = [
+    { Header: "TILES", accessor: "TileName" },
+    {
+      Header: "ALLOW APPROVER",
+      accessor: "AllowApprover",
+      Cell: ({ row }: { row: any }) => (row.AllowApprover == true ? "Yes" : "No")
+    },
+    {
+      Header: "LAST MODIFIED",
+      Cell: ({ row }: { row: any }) => {
+        const rowData = row._original;
+        const formattedDate = new Date(rowData.Modified).toLocaleDateString("en-US", {
+          month: "2-digit",
+          day: "2-digit",
+          year: "numeric"
+        });
+        const formattedTime = new Date(rowData.Modified).toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true
+        });
+        return `${rowData.Editor?.Title || "Unknown"} ${formattedDate} at ${formattedTime}`;
+      }
+    },
+    {
+      Header: "ACTIVE",
+      accessor: "Active",
+      Cell: ({ row }: { row: any }) => (row.Active == true ? "Yes" : "No")
+    },
+    {
+      Header: "ACTION",
+      Cell: ({ row }: { row: any }) => (
+        <FontIcon aria-label="Edit" onClick={() => DashboardDataEdit(row._original)} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer' }}></FontIcon>
+      )
+    }
+  ];
+
+  const DashboardDataEdit = (rowData: any) => {
+    console.log("Edit clicked for: ", rowData);
+    toggleModal
+  };
+
+  // const Tablecolumns = [
+  //   { Header: "TILES", accessor: "TileName" },
+  //   { Header: "ALLOW APPROVER", accessor: "AllowApprover==true ? Yes : No" },
+  //   { Header: "LAST MODIFIED", accessor: "Editor.Title <br/> Modified |date:hh:mm:ss a" },
+  //   { Header: "ACTIVE", accessor: "Active==true ? Yes : No" }
+
+  // ];
+
+  // const data = [
+
+  //   {
+  //     TILES: 1,
+  //     ALLOWAPPROVER: 'No',
+  //     uploadedOn: 'AscenWork-Prajesh Borkar 04-09-2024 at 03:02:25 PM',
+  //     ACTIVE: 'Yes',
+  //     ACTION: <FontIcon aria-label="Edit" onClick={toggleModal} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer' }}></FontIcon>,
+
+  //   },
+  // ];
 
 
 
@@ -606,34 +684,7 @@ export default function Master({ props }: any): JSX.Element {
 
 
 
-  const fetchData = async () => {
 
-    const fetchedData = await getTileAllData(props.SiteURL, props.spHttpClient);
-    setData(fetchedData);
-
-    console.log(MainTableSetdata);
-  };
-
-  const columns = [
-    { Header: 'TILES', accessor: 'TileName' },
-    { Header: 'ALLOW APPROVER', accessor: 'AllowApprover' },
-    { Header: 'LAST MODIFIED', accessor: 'Modified | Date:HH:mm:ss' },
-    { Header: 'ACTIVE', accessor: 'Active' },
-    { Header: 'ACTION', accessor: 'ACTION' },
-
-  ];
-
-  const data = [
-
-    {
-      TILES: 1,
-      ALLOWAPPROVER: 'No',
-      uploadedOn: 'AscenWork-Prajesh Borkar 04-09-2024 at 03:02:25 PM',
-      ACTIVE: 'Yes',
-      ACTION: <FontIcon aria-label="Edit" onClick={toggleModal} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer' }}></FontIcon>,
-
-    },
-  ];
 
 
 
@@ -717,275 +768,16 @@ export default function Master({ props }: any): JSX.Element {
         ListName: ArchiveInternal,
         ListType: "101",
         Columns: Columns[0].Columns
-        // Columns: [
-        //   { ColName: "DefineRole", ColType: 8 },
-        //   { ColName: "ProjectmanagerAllow", ColType: 8 },
-        //   { ColName: "Projectmanager", ColType: 20 },
-        //   { ColName: "ProjectmanagerEmail", ColType: 2 },
-        //   { ColName: "PublisherAllow", ColType: 8 },
-        //   { ColName: "Publisher", ColType: 20 },
-        //   { ColName: "PublisherEmail", ColType: 2 },
-        //   { ColName: "CurrentApprover", ColType: 2 },
-        //   {
-        //     ColName: "Status",
-        //     ColType: 7,
-        //     LookupField: "StatusName",
-        //     LookupList: "DMS_Mas_Status",
-        //   },
-        //   { ColName: "InternalStatus", ColType: 2 },
-        //   { ColName: "ProjectMasterLID", ColType: 2 },
-        //   { ColName: "LatestRemark", ColType: 3 },
-        //   { ColName: "AllowApprover", ColType: 8 },
-        //   { ColName: "Active", ColType: 8 },
-        //   { ColName: "DisplayStatus", ColType: 2 },
-        //   { ColName: "ReferenceNo", ColType: 2 },
-        //   { ColName: "RefSequence", ColType: 9 },
-        //   { ColName: "Level", ColType: 2 },
-        //   { ColName: "Revision", ColType: 2 },
-        //   { ColName: "DocStatus", ColType: 2 },
-        //   { ColName: "Template", ColType: 2 },
-        //   { ColName: "CreateFolder", ColType: 8 },
-        //   { ColName: "Company", ColType: 2 },
-        //   { ColName: "ActualName", ColType: 2 },
-        //   { ColName: "DocumentSuffix", ColType: 2 },
-        //   { ColName: "OtherSuffix", ColType: 2 },
-        //   { ColName: "PSType", ColType: 2 },
-        //   { ColName: "IsArchiveFlag", ColType: 8 },
-        //   { ColName: "IsExistingRefID", ColType: 9 },
-        //   { ColName: "IsExistingFlag", ColType: 2 },
-        //   { ColName: "OCRText", ColType: 3 },
-        //   { ColName: "DeleteFlag", ColType: 2 },
-        //   { ColName: "OCRStatus", ColType: 2 },
-        //   { ColName: "UploadFlag", ColType: 2, DefaultValue: "Backend" },
-        //   { ColName: "NewFolderAccess", ColType: 2 },
-        // ],
 
       }
       Columns.push(obj);
     }
-    // if (tableData.length > 0) {
-    //   tableData.map(function (el) {
-    //     let colType = getColumnType(el.ColumnType);
-    //     Columns[1].Columns.push({ "ColName": el.InternalTitleName, "ColType": colType });
-    //   })
-    // }
-    _spService.CreateList(props.context, props.SiteURL, Columns, TileLID, false)
-    // const listName = Columns;
-    // let Listguid: { Title: string; Id: string }[] = [];
-    // let count = 0;
-    // let outoff = '0/' + Columns.length;
 
-    // setTimeout(function () {
-    //   for (let i = 0; i < Columns.length; i++) {
-    //     let listName = Columns[i].ListName;
-    //     let template = Number(Columns[i].ListType);
-    //     CreateList(listName, template).then(function (response) {
-    //       let obj = { LibGuidName: response.Id }
-    //       UpdateTileSetting(props.SiteURL, props.spHttpClient, obj, TileLID).then(function (response) { });
-    //       Listguid.push(response);
-    //       count++;
-    //       if (count == Columns.length) {
-    //         let listCount = 0;
-    //         for (let list = 0; list < Columns.length; list++) {
-    //           listCount++;
-    //           //let columnCount = 0;
-    //           let Count = 0;
-    //           let ColumnsObj: any = Columns[list].Columns;
-    //           for (let col = 0; col < ColumnsObj.length; col++) {
-    //             // columnCount++;
-    //             if (ColumnsObj[col].ColType == 6) {
-    //               let returnedData = Listguid.filter(function (element, index) {
-    //                 return element.Title == Columns[list].ListName;
-    //               });
-    //               let obj = {
-    //                 '__metadata': { 'type': 'SP.FieldChoice' },
-    //                 'FieldTypeKind': 6,
-    //                 'Title': ColumnsObj[col].ColName,
-    //                 'Choices': { '__metadata': { 'type': 'Collection(Edm.String)' }, 'results': ColumnsObj[col].Choices }
-    //               } //, 'EditFormat': 1 
-    //               CreateChoiceCloumn(returnedData[0].Id, obj).then(function (response) {
-    //                 Count++;
-    //                 if (Count == ColumnsObj.length && listCount == Columns.length) {
-    //                   DefaultView(Columns);
-    //                 }
-    //                 //deferred.resolve(response);
-    //               });
-    //             } else if (ColumnsObj[col].ColType == 7) {
-    //               let listID = Listguid.filter(function (element, index) {
-    //                 return element.Title == Columns[list].ListName;
-    //               });
-    //               let query = props.SiteURL + "/_api/web/lists/getByTitle('" + ColumnsObj[col].LookupList + "')/Id";
-    //               GetListData(query).then(function (response) {
-    //                 let listGuID = response.d.Id;
-    //                 let obj = {
-    //                   'parameters': {
-    //                     '__metadata': { 'type': 'SP.FieldCreationInformation' },
-    //                     'FieldTypeKind': 7,
-    //                     'Title': ColumnsObj[col].ColName,
-    //                     'LookupListId': listGuID,
-    //                     'LookupFieldName': ColumnsObj[col].LookupField
-    //                   }
-    //                 }
-    //                 Createlookup(listID[0].Id, obj).then(function (response) {
-    //                   Count++;
-    //                   if (Count == ColumnsObj.length && listCount == Columns.length) {
-    //                     DefaultView(Columns);
-    //                   }
-    //                   // deferred.resolve(response);
-    //                 });
-    //               })
-    //             } else {
-    //               createColumn(Columns[list].ListName, ColumnsObj[col].ColName, ColumnsObj[col].ColType).then(function (response) {
-    //                 Count++
-    //                 if (Count == ColumnsObj.length && listCount == Columns.length) {
-    //                   DefaultView(Columns);
-    //                 }
-    //               });
-    //             }
-    //           }
-    //         }
-    //       }
-    //     })
-    //   }
-    // }, 5000);
+    _spService.CreateList(props.context, props.SiteURL, Columns, TileLID, false)
+
   };
 
 
-  // const ArchiveTileLibrary = async (ArchiveInternal: any, TileLID: any) => {
-  //   const Columns: any = [{
-  //     ListName: ArchiveInternal,
-  //     ListType: "101",
-  //     Columns: [
-  //       { ColName: "DefineRole", ColType: 8 },
-  //       { ColName: "ProjectmanagerAllow", ColType: 8 },
-  //       { ColName: "Projectmanager", ColType: 20 },
-  //       { ColName: "ProjectmanagerEmail", ColType: 2 },
-  //       { ColName: "PublisherAllow", ColType: 8 },
-  //       { ColName: "Publisher", ColType: 20 },
-  //       { ColName: "PublisherEmail", ColType: 2 },
-  //       { ColName: "CurrentApprover", ColType: 2 },
-  //       {
-  //         ColName: "Status",
-  //         ColType: 7,
-  //         LookupField: "StatusName",
-  //         LookupList: "DMS_Mas_Status",
-  //       },
-  //       { ColName: "InternalStatus", ColType: 2 },
-  //       { ColName: "ProjectMasterLID", ColType: 2 },
-  //       { ColName: "LatestRemark", ColType: 3 },
-  //       { ColName: "AllowApprover", ColType: 8 },
-  //       { ColName: "Active", ColType: 8 },
-  //       { ColName: "DisplayStatus", ColType: 2 },
-  //       { ColName: "ReferenceNo", ColType: 2 },
-  //       { ColName: "RefSequence", ColType: 9 },
-  //       { ColName: "Level", ColType: 2 },
-  //       { ColName: "Revision", ColType: 2 },
-  //       { ColName: "DocStatus", ColType: 2 },
-  //       { ColName: "Template", ColType: 2 },
-  //       { ColName: "CreateFolder", ColType: 8 },
-  //       { ColName: "Company", ColType: 2 },
-  //       { ColName: "ActualName", ColType: 2 },
-  //       { ColName: "DocumentSuffix", ColType: 2 },
-  //       { ColName: "OtherSuffix", ColType: 2 },
-  //       { ColName: "PSType", ColType: 2 },
-  //       { ColName: "IsArchiveFlag", ColType: 8 },
-  //       { ColName: "IsExistingRefID", ColType: 9 },
-  //       { ColName: "IsExistingFlag", ColType: 2 },
-  //       { ColName: "OCRText", ColType: 3 },
-  //       { ColName: "DeleteFlag", ColType: 2 },
-  //       { ColName: "OCRStatus", ColType: 2 },
-  //       { ColName: "UploadFlag", ColType: 2, DefaultValue: "Backend" },
-  //       { ColName: "NewFolderAccess", ColType: 2 },
-  //     ],
-  //   }]
-
-  //   if (tableData.length > 0) {
-  //     tableData.map(function (el) {
-  //       let colType = getColumnType(el.ColumnType);
-  //       Columns[0].Columns.push({ "ColName": el.InternalTitleName, "ColType": colType });
-  //     })
-  //   }
-  //   _spService.CreateList(props.context, props.SiteURL, Columns, TileLID, true)
-  //   // _spService.ArchieveCreateList(props.context, props.SiteURL, Columns)
-  //   // const listName = Columns;
-  //   // let Listguid: { Title: string; Id: string }[] = [];
-  //   // let count = 0;
-  //   // let outoff = '0/' + Columns.length;
-
-  //   // setTimeout(function () {
-  //   //   for (let i = 0; i < Columns.length; i++) {
-  //   //     let listName = Columns[i].ListName;
-  //   //     let template = Number(Columns[i].ListType);
-  //   //     CreateList(listName, template).then(function (response) {
-  //   //       let obj = { LibGuidName: response.Id }
-  //   //       UpdateTileSetting(props.SiteURL, props.spHttpClient, obj, TileLID).then(function (response) { });
-  //   //       Listguid.push(response);
-  //   //       count++;
-  //   //       if (count == Columns.length) {
-  //   //         let listCount = 0;
-  //   //         for (let list = 0; list < Columns.length; list++) {
-  //   //           listCount++;
-  //   //           //let columnCount = 0;
-  //   //           let Count = 0;
-  //   //           let ColumnsObj: any = Columns[list].Columns;
-  //   //           for (let col = 0; col < ColumnsObj.length; col++) {
-  //   //             // columnCount++;
-  //   //             if (ColumnsObj[col].ColType == 6) {
-  //   //               let returnedData = Listguid.filter(function (element, index) {
-  //   //                 return element.Title == Columns[list].ListName;
-  //   //               });
-  //   //               let obj = {
-  //   //                 '__metadata': { 'type': 'SP.FieldChoice' },
-  //   //                 'FieldTypeKind': 6,
-  //   //                 'Title': ColumnsObj[col].ColName,
-  //   //                 'Choices': { '__metadata': { 'type': 'Collection(Edm.String)' }, 'results': ColumnsObj[col].Choices }
-  //   //               } //, 'EditFormat': 1 
-  //   //               CreateChoiceCloumn(returnedData[0].Id, obj).then(function (response) {
-  //   //                 Count++;
-  //   //                 if (Count == ColumnsObj.length && listCount == Columns.length) {
-  //   //                   DefaultView(Columns);
-  //   //                 }
-  //   //                 //deferred.resolve(response);
-  //   //               });
-  //   //             } else if (ColumnsObj[col].ColType == 7) {
-  //   //               let listID = Listguid.filter(function (element, index) {
-  //   //                 return element.Title == Columns[list].ListName;
-  //   //               });
-  //   //               let query = props.SiteURL + "/_api/web/lists/getByTitle('" + ColumnsObj[col].LookupList + "')/Id";
-  //   //               GetListData(query).then(function (response) {
-  //   //                 let listGuID = response.d.Id;
-  //   //                 let obj = {
-  //   //                   'parameters': {
-  //   //                     '__metadata': { 'type': 'SP.FieldCreationInformation' },
-  //   //                     'FieldTypeKind': 7,
-  //   //                     'Title': ColumnsObj[col].ColName,
-  //   //                     'LookupListId': listGuID,
-  //   //                     'LookupFieldName': ColumnsObj[col].LookupField
-  //   //                   }
-  //   //                 }
-  //   //                 Createlookup(listID[0].Id, obj).then(function (response) {
-  //   //                   Count++;
-  //   //                   if (Count == ColumnsObj.length && listCount == Columns.length) {
-  //   //                     DefaultView(Columns);
-  //   //                   }
-  //   //                   // deferred.resolve(response);
-  //   //                 });
-  //   //               })
-  //   //             } else {
-  //   //               createColumn(Columns[list].ListName, ColumnsObj[col].ColName, ColumnsObj[col].ColType).then(function (response) {
-  //   //                 Count++
-  //   //                 if (Count == ColumnsObj.length && listCount == Columns.length) {
-  //   //                   DefaultView(Columns);
-  //   //                 }
-  //   //               });
-  //   //             }
-  //   //           }
-  //   //         }
-  //   //       }
-  //   //     })
-  //   //   }
-  //   // }, 5000);
-  // };
 
   const getColumnType = (val: any) => {
     switch (val) {
@@ -1021,137 +813,7 @@ export default function Master({ props }: any): JSX.Element {
         return 2
     }
   }
-  // const createList = async (listName: string, Template: number) => {
-  //   let siteUrl = props.SiteURL + "/_api/web/lists";
 
-
-  //   const listDefinition: any = {
-  //     "Title": listName,
-  //     "AllowContentTypes": true,
-  //     "BaseTemplate": Template,
-  //     "ContentTypesEnabled": true,
-  //   };
-  //   const spHttpClientOptions: ISPHttpClientOptions = {
-  //     "body": JSON.stringify(listDefinition)
-  //   };
-  //   return await props.context.spHttpClient.post(siteUrl, SPHttpClient.configurations.v1, spHttpClientOptions)
-  //     .then((response: SPHttpClientResponse) => {
-  //       return response.json();
-  //     });
-  // }
-
-  // const GetListData = async (query: string) => {
-  //   const response = await props.spHttpClient.get(query, SPHttpClient.configurations.v1, {
-  //     headers: {
-  //       'Accept': 'application/json;odata=verbose',
-  //       'odata-version': '',
-  //     },
-  //   });
-  //   return await response.json();
-  // };
-
-  // const CreateChoiceCloumn = async (listID: string, obj: any) => {
-  //   debugger;
-  //   const url = props.SiteURL + "/_api/web/lists(guid'" + listID + "')/Fields";
-  //   const spHttpClientOptions: ISPHttpClientOptions = {
-  //     headers: {
-  //       'Accept': 'application/json;odata=verbose',
-  //       'Content-type': 'application/json;odata=verbose',
-  //       'odata-version': ''
-  //     },
-  //     "body": JSON.stringify(obj)
-  //   };
-  //   return await props.context.spHttpClient.post(url, SPHttpClient.configurations.v1, spHttpClientOptions)
-  // }
-
-  // const Createlookup = async (listID: string, obj: any) => {
-  //   const url = props.SiteURL + "/_api/web/lists(guid'" + listID + "')/fields/addfield";
-  //   const spHttpClientOptions: ISPHttpClientOptions = {
-  //     headers: {
-  //       'Accept': 'application/json;odata=nometadata',
-  //       'Content-type': 'application/json;odata=nometadata',
-  //       'odata-version': ''
-  //     },
-  //     "body": JSON.stringify(obj)
-  //   };
-  //   return await props.context.spHttpClient.post(url, SPHttpClient.configurations.v1, spHttpClientOptions)
-  // }
-
-  // const createColumn = async (listName: string, ColumnName: string, ColumnType: number) => {
-  //   const url = props.SiteURL + "/_api/web/lists/GetByTitle('" + listName + "')/Fields";
-  //   const spHttpClientOptions: ISPHttpClientOptions = {
-  //     headers: {
-  //       'Accept': 'application/json;odata=nometadata',
-  //       'Content-type': 'application/json;odata=nometadata',
-  //       'odata-version': ''
-
-  //       // 'Accept': 'application/json;odata=verbose',
-  //       // 'Content-Type': 'application/json;odata=verbose',
-  //     },
-  //     "body": JSON.stringify({
-  //       'FieldTypeKind': ColumnType,
-  //       'Title': ColumnName,
-  //     })
-  //   };
-
-  //   return await props.context.spHttpClient.post(url, SPHttpClient.configurations.v1, spHttpClientOptions);
-  // }
-
-  // const DefaultView = async (IListItem: { ListName: string; ListType: string; Columns: { ColName: string; ColType: number }[] }[]) => {
-  //   console.log(IListItem);
-  //   //for (let list = 0; list < IListItem.length; list++) {
-  //   const url = props.SiteURL + "/_api/Web/Lists/getByTitle('" + IListItem[0]["ListName"] + "')/DefaultView";
-  //   await props.spHttpClient.get(url, SPHttpClient.configurations.v1, {
-  //     headers: {
-  //       'Accept': 'application/json;odata=verbose',
-  //       'odata-version': '',
-  //     },
-  //   }).then((response: SPHttpClientResponse) => {
-  //     response.json().then((result: any) => {
-  //       const defaulttViewID = result["d"]["Id"];
-
-  //       console.log(defaulttViewID);
-  //       addColumnOnView(IListItem, defaulttViewID)
-
-  //     })
-  //   });
-  //   //}
-  // };
-
-
-  // const addColumnOnView = async (IListItem: any, defaultView: string) => {
-  //   let listCount = 0;
-  //   for (let listName = 0; listName < IListItem.length; listName++) {
-  //     listCount++;
-  //     let columnCount = 0;
-  //     // let Count = 0;
-  //     let ColumnsObj: any = IListItem[listName]["Columns"];
-  //     for (let colName = 0; colName < ColumnsObj.length; colName++) {
-  //       // Count++;
-  //       let obj = { 'strField': ColumnsObj[colName]["ColName"] }
-  //       var resURL = props.SiteURL + "/_api/web/lists/getbytitle('" + IListItem[listName]["ListName"] + "')/Views/getbyId('" + defaultView + "')/ViewFields/AddViewField";
-  //       debugger;
-  //       await addDefaultViewColumn(resURL, obj).then((r: any) => {
-  //         columnCount++;
-  //         if (columnCount == ColumnsObj.length && listCount == IListItem.length) {
-  //           alert("Added");
-  //         }
-  //       })
-  //     }
-  //   }
-  // }
-
-  // const addDefaultViewColumn = async (resURL: string, obj: any) => {
-  //   return await props.context.spHttpClient.post(resURL, SPHttpClient.configurations.v1,
-  //     {
-  //       headers: {
-  //         'Accept': 'application/json;odata=nometadata',
-  //         'Content-type': 'application/json;odata=nometadata',
-  //         'odata-version': '',
-  //       },
-  //       body: JSON.stringify(obj)
-  //     })
-  // }
 
 
 
@@ -1421,11 +1083,11 @@ export default function Master({ props }: any): JSX.Element {
           <Stack.Item grow={2} styles={stackItemStyles}>
             <ReactTableComponent
               TableClassName={styles.ReactTables}
-              Tablecolumns={columns}
-              Tabledata={data}
+              Tablecolumns={Tablecolumns}
+              Tabledata={MainTableSetdata}
               PagedefaultSize={10}
               TableRows={1}
-              TableshowPagination={data.length > 10}
+              TableshowPagination={MainTableSetdata.length > 10}
               TableshowFilter={true}
             />
           </Stack.Item>
