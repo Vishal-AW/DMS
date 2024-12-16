@@ -39,8 +39,8 @@ import { service } from "../../../../Services/Service";
 export default function Master({ props }: any): JSX.Element {
   const _spService: service = new service();
 
-  const [showModal, setShowModal] = useState(false);
-  const toggleModal = () => setShowModal(!showModal);
+  //const [showModal, setShowModal] = useState(false);
+  //const toggleModal = () => setShowModal(!showModal);
   //const [showDialog, setShowDialog] = useState(false);
   //const [dialogMessage, setDialogMessage] = useState('');
   //const [isOpen, setIsOpen] = useState(false);
@@ -62,7 +62,7 @@ export default function Master({ props }: any): JSX.Element {
   // const [DuplicateTileError, setDuplicateTileError] = useState("");
   // const [TileLowerUpperError, setTileLowerUpperError] = useState("");
   const [DisplayLabel, setDisplayLabel] = useState<ILabel>();
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | { name: string } | null>(null);
   //const [attachments, setAttachments]: any = useState([]);
   const [assignName, setAssignName] = useState<string>("");
   const [assignID, setAssignID] = useState([]);
@@ -118,6 +118,22 @@ export default function Master({ props }: any): JSX.Element {
     Flag: "New",
     editingIndex: -1,
   });
+
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+
+  const openAddPanel = () => {
+    setIsEditMode(false);
+    setIsPanelOpen(true);
+  };
+
+
+
+
+
+  const closePanel = () => {
+    setIsPanelOpen(false);
+  };
 
 
   useEffect(() => {
@@ -184,13 +200,16 @@ export default function Master({ props }: any): JSX.Element {
     {
       Header: "ACTION",
       Cell: ({ row }: { row: any }) => (
-        <FontIcon aria-label="Edit" onClick={() => DashboardDataEdit(row._original.Id)} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer' }}></FontIcon>
+        <FontIcon aria-label="Edit" onClick={() => openEditPanel(row._original.Id)} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer' }}></FontIcon>
       )
     }
   ];
 
-  const DashboardDataEdit = async (rowData: any) => {
-    setShowModal(true);
+  const openEditPanel = async (rowData: any) => {
+
+    setIsEditMode(true);
+    setIsPanelOpen(true);
+
     let GetEditData = await getDataById(props.SiteURL, props.spHttpClient, rowData);
     const EditSettingData = GetEditData.value;
 
@@ -199,8 +218,12 @@ export default function Master({ props }: any): JSX.Element {
 
 
     await setTileName(EditSettingData[0].TileName);
-    const a: any = EditSettingData[0].TileAdmin ? ([EditSettingData[0].TileAdmin.EMail]) : []
-    await setTileAdminID(a);
+
+    const AccessTileData: any = EditSettingData[0].Permission ? EditSettingData[0].Permission.map((person: any) => person.EMail) : [];
+    await setAssignID(AccessTileData);
+
+    const TileAdminData: any = EditSettingData[0].TileAdmin ? ([EditSettingData[0].TileAdmin.EMail]) : []
+    await setTileAdminID(TileAdminData);
 
     await setIsTileStatus(EditSettingData[0].Active);
     await setIsAllowApprover(EditSettingData[0].AllowApprover);
@@ -273,16 +296,15 @@ export default function Master({ props }: any): JSX.Element {
 
     console.log(GetAttachmentDataValue);
 
-    if (GetAttachmentDataValue != null) {
+    if (GetAttachmentDataValue && GetAttachmentDataValue.length > 0) {
 
+      const existingFile = { name: GetAttachmentData.value[0].Documentpath };
+      setSelectedFile(existingFile);
 
-      // var temp = {};
-      // temp.ID = $scope.TileDoc.ID;
-      // temp.Name = $scope.TileDoc.Documentpath;
-      // temp.LID = $scope.TileDoc.TileLID;
-      // temp.DocumentPath = $scope.TileDoc.Documentpath;
+      // setSelectedFile(GetAttachmentData.value[0].File.Name);
 
-      setSelectedFile(GetAttachmentDataValue[0].ServerRelativeUrl)
+    } else {
+      setSelectedFile(null);
     }
 
 
@@ -1137,21 +1159,11 @@ export default function Master({ props }: any): JSX.Element {
 
       const TileLibraryData = TileLibrary(Internal, MainTileLID, ArchiveInternal).then(function (response) {
         console.log(TileLibraryData);
-
-        // if (IsArchiveAllowed == true) {
-
-        //   const ArchiveTileLibraryData = ArchiveTileLibrary(ArchiveInternal, MainTileLID);
-
-        //   console.log(ArchiveTileLibraryData);
-
-        // }
       });
 
-      clearField();
-
-
     }
-
+    clearField();
+    closePanel();
 
   };
 
@@ -1163,7 +1175,7 @@ export default function Master({ props }: any): JSX.Element {
       <div>
 
         <div className={styles.alignbutton} >
-          <DefaultButton id="requestButton" className={styles.submit} text="+ ADD" onClick={toggleModal}  ></DefaultButton>
+          <DefaultButton id="requestButton" className={styles.submit} text={DisplayLabel?.Add} onClick={openAddPanel}  ></DefaultButton>
         </div>
 
         <Stack horizontal styles={stackStyles} tokens={stackTokens}>
@@ -1184,24 +1196,32 @@ export default function Master({ props }: any): JSX.Element {
 
         <Panel
           headerText=""
-          isOpen={showModal}
-          onDismiss={toggleModal}
+          isOpen={isPanelOpen}
+          onDismiss={closePanel}
           // You MUST provide this prop! Otherwise screen readers will just say "button" with no label.
           closeButtonAriaLabel="Close"
           type={PanelType.large}
           isFooterAtBottom={true}
+        //headerText={isEditMode ? "Edit Item" : "Add New Item"}
         >
-          <h6 className={styles.Headerlabel}>{DisplayLabel?.AddTileManagement}</h6><hr />
+
+          {!isEditMode ? (
+            <h6 className={styles.Headerlabel}>{DisplayLabel?.AddTileManagement}</h6>
+          ) :
+            <h6 className={styles.Headerlabel}>{DisplayLabel?.EditTileManagement}</h6>
+          }
+          <hr />
+
 
           <Accordion alwaysOpen >
             <Accordion.Item eventKey="0">
-              <Accordion.Header className={styles.Accodordianherder}>Tile Details</Accordion.Header>
+              <Accordion.Header className={styles.Accodordianherder}>{DisplayLabel?.TileDetails}</Accordion.Header>
               <Accordion.Body>
                 <Form>
                   <div className={`ms-Grid ${styles.inlineFormContainer}`}>
                     <div className="col-md-3">
                       <div className="form-group">
-                        <label className={styles.Headerlabel}>Tile Name <span style={{ color: "red" }}>*</span></label>
+                        <label className={styles.Headerlabel}>{DisplayLabel?.TileName}<span style={{ color: "red" }}>*</span></label>
 
                         {/* <TextField label="Title" errorMessage={TileError} value={TileName} onChange={(e: any) => { setTileName(e.target.value); }} /> */}
                         <TextField
@@ -1219,7 +1239,7 @@ export default function Master({ props }: any): JSX.Element {
                     </div>
                     <div className="col-md-3">
                       <div className="form-group">
-                        <label className={styles.Headerlabel}>Display Picture <span style={{ color: "red" }}>*</span></label>
+                        <label className={styles.Headerlabel}>{DisplayLabel?.DisplayPicture}<span style={{ color: "red" }}>*</span></label>
                         <TextField
                           placeholder=" "
                           // errorMessage={"Please fill this field"}
@@ -1228,6 +1248,7 @@ export default function Master({ props }: any): JSX.Element {
                           //onChange={(el: React.ChangeEvent<HTMLInputElement>) => setSelectedFile()}
                           type="file"
                           errorMessage={attachmentErr}
+
                         />
                         {/* {attachments} */}
                         {selectedFile && <p>Selected File:{selectedFile.name}</p>}
@@ -1245,7 +1266,7 @@ export default function Master({ props }: any): JSX.Element {
                     </div>
                     <div className="col-md-3">
                       <div className="form-group">
-                        <label className={styles.Headerlabel}>Access To Tile <span style={{ color: "red" }}>*</span></label>
+                        <label className={styles.Headerlabel}>{DisplayLabel?.AccessToTile}<span style={{ color: "red" }}>*</span></label>
                         <PeoplePicker
                           context={peoplePickerContext}
                           personSelectionLimit={5}
@@ -1268,26 +1289,26 @@ export default function Master({ props }: any): JSX.Element {
                   <div className={`ms-Grid ${styles.inlineFormContainer2}`}>
                     <div className="col-md-2">
                       <div className="form-group">
-                        <label className={styles.Headerlabel}>Tile Status</label>
+                        <label className={styles.Headerlabel}>{DisplayLabel?.TileStatus}</label>
                         <Toggle checked={isTileStatus} onChange={(_, checked) => handleTileStatusToggleChange(checked!)} />
                       </div>
                     </div>
                     <div className="col-md-2">
                       <div className="form-group">
-                        <label className={styles.Headerlabel}>Allow Approver</label>
+                        <label className={styles.Headerlabel}>{DisplayLabel?.AllowApprover}</label>
                         <Toggle checked={isAllowApprover} onChange={(_, checked) => handleAllowApproverToggleChange(checked!)} />
                       </div>
                     </div>
                     <div className="col-md-2">
                       <div className="form-group">
-                        <label className={styles.Headerlabel}>Order</label>
+                        <label className={styles.Headerlabel}>{DisplayLabel?.Order}</label>
                         <Toggle checked={isDropdownVisible} onChange={(_, checked) => handleToggleChange(checked!)}
                         />
                       </div>
                     </div>
                     <div className="col-md-3">
                       <div className="form-group">
-                        <label className={styles.Headerlabel}>Tile Admin <span style={{ color: "red" }}>*</span></label>
+                        <label className={styles.Headerlabel}>{DisplayLabel?.TileAdmin1}<span style={{ color: "red" }}>*</span></label>
                         <PeoplePicker
                           context={peoplePickerContext}
                           showtooltip={true}
@@ -1313,7 +1334,7 @@ export default function Master({ props }: any): JSX.Element {
                     <div className="col-md-3">
                       <div className="form-group">
                         {isDropdownVisible && (
-                          <><label className={styles.Headerlabel}>Select Order <span style={{ color: "red" }}>*</span></label><Dropdown
+                          <><label className={styles.Headerlabel}>{DisplayLabel?.SelectOrder}<span style={{ color: "red" }}>*</span></label><Dropdown
                             placeholder="Select an option"
                             options={order0Data}
                             onChange={handleorder0DataDropdownChange}
@@ -1331,12 +1352,12 @@ export default function Master({ props }: any): JSX.Element {
             </Accordion.Item>
             <br />
             <Accordion.Item eventKey="1">
-              <Accordion.Header className={styles.Accodordianherder}>Fields</Accordion.Header>
+              <Accordion.Header className={styles.Accodordianherder}>{DisplayLabel?.Fields}</Accordion.Header>
               <Accordion.Body>
 
                 <form>
                   <div style={{ marginBottom: '20px' }}>
-                    <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Select More Actions</label>
+                    <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>{DisplayLabel?.SelectMoreActions}</label>
                     <div
                       style={{
                         display: 'flex',
@@ -1363,13 +1384,13 @@ export default function Master({ props }: any): JSX.Element {
                     <table style={{ width: '100%', marginTop: '20px', borderCollapse: 'collapse' }}>
                       <thead>
                         <tr>
-                          <th>Sr. No.</th>
-                          <th>Field <span style={{ color: "red" }}>*</span></th>
-                          <th>Is Required</th>
-                          <th>Field Status</th>
-                          <th>Is Field Allow in File</th>
-                          <th>Search Filter Required</th>
-                          <th>Action</th>
+                          <th>{DisplayLabel?.SrNo}</th>
+                          <th>{DisplayLabel?.Field} <span style={{ color: "red" }}>*</span></th>
+                          <th>{DisplayLabel?.IsRequired}</th>
+                          <th>{DisplayLabel?.FieldStatus}</th>
+                          <th>{DisplayLabel?.IsFieldAllowinFile}</th>
+                          <th>{DisplayLabel?.SearchFilterRequired}</th>
+                          <th>{DisplayLabel?.Action}</th>
                         </tr>
                       </thead>
 
@@ -1443,14 +1464,17 @@ export default function Master({ props }: any): JSX.Element {
                                 style={{ color: '#009EF7', font: 'bold', cursor: 'pointer' }}
                               />
                               {/* Delete Button */}
-                              <IconButton
-                                iconProps={deleteIcon}
-                                title="Delete"
-                                ariaLabel="Delete"
-                                onClick={() => handleDelete(index)}
-                                style={{ color: 'red', font: 'bold', cursor: 'pointer' }}
-                              />
+                              {row.Flag && (
+                                <IconButton
+                                  iconProps={deleteIcon}
+                                  title="Delete"
+                                  ariaLabel="Delete"
+                                  onClick={() => handleDelete(index)}
+                                  style={{ color: 'red', font: 'bold', cursor: 'pointer' }}
+                                />
+                              )}
                             </td>
+
                           </tr>
                         ))}
                       </tbody>
@@ -1466,7 +1490,7 @@ export default function Master({ props }: any): JSX.Element {
 
             <br />
             <Accordion.Item eventKey="2">
-              <Accordion.Header className={styles.Accodordianherder}>Reference No. Details</Accordion.Header>
+              <Accordion.Header className={styles.Accodordianherder}>{DisplayLabel?.ReferenceNoDetails}</Accordion.Header>
               <Accordion.Body>
                 <Form>
 
@@ -1475,7 +1499,7 @@ export default function Master({ props }: any): JSX.Element {
                     <div style={{ display: 'flex', gap: '10px' }}>
                       {/* Dynamic Reference Toggle */}
                       <div className="col-md-3">
-                        <label className={styles.Headerlabel}>Is Dynamic Reference <span style={{ color: "red" }}>*</span></label>
+                        <label className={styles.Headerlabel}>{DisplayLabel?.IsDynamicReference}<span style={{ color: "red" }}>*</span></label>
                         <Toggle
                           checked={DynamicDataReference}
                           onChange={(_, checked) => ToggleChangeforrefernceno(checked!)}
@@ -1485,7 +1509,7 @@ export default function Master({ props }: any): JSX.Element {
                       {/* Dynamic Reference Example TextField */}
                       {!DynamicDataReference && (
                         <div className="col-md-6">
-                          <label className={styles.Headerlabel}>Default Reference Example</label>
+                          <label className={styles.Headerlabel}>{DisplayLabel?.DefaultReferenceExample}</label>
                           <TextField
                             placeholder=" "
                             value={RefrenceNOData}
@@ -1496,7 +1520,7 @@ export default function Master({ props }: any): JSX.Element {
 
                       {DynamicDataReference && (
                         <div className="col-md-6">
-                          <label className={styles.Headerlabel}>Dynamic Reference Example</label>
+                          <label className={styles.Headerlabel}>{DisplayLabel?.DynamicReferenceExample}</label>
                           <TextField
                             placeholder=" "
                             value={refExample}
@@ -1511,7 +1535,7 @@ export default function Master({ props }: any): JSX.Element {
                     {DynamicDataReference && (
                       <div style={{ marginBottom: '20px' }}>
 
-                        <label className={styles.Headerlabel} style={{ marginBottom: '10px', display: 'block' }}>Choose Fields</label>
+                        <label className={styles.Headerlabel} style={{ marginBottom: '10px', display: 'block' }}>{DisplayLabel?.ChooseFields}</label>
                         <div
                           style={{
                             display: 'flex',
@@ -1560,7 +1584,7 @@ export default function Master({ props }: any): JSX.Element {
                               flex: 1, // Make both sections take equal width
                             }}
                           >
-                            <label className={styles.Headerlabel} style={{ display: 'block' }}>Separator</label>
+                            <label className={styles.Headerlabel} style={{ display: 'block' }}>{DisplayLabel?.Separator}</label>
                             {/* <ChoiceGroup
                               options={choiceoptions}
                               onChange={(e, option) => handleRadioChange("separator", option?.key!)}
@@ -1610,7 +1634,7 @@ export default function Master({ props }: any): JSX.Element {
                               flex: 1,
                             }}
                           >
-                            <label className={styles.Headerlabel} style={{ display: 'block' }}>Initial Increment</label>
+                            <label className={styles.Headerlabel} style={{ display: 'block' }}>{DisplayLabel?.InitialIncrement}</label>
                             {/* <ChoiceGroup
                               options={InitialIncrementoptions}
                               selectedKey={increment}
@@ -1660,7 +1684,7 @@ export default function Master({ props }: any): JSX.Element {
                         {/* Choose Fields Section */}
 
                         <div>
-                          <label className={styles.Headerlabel} style={{ display: 'block' }}>Change Setting</label>
+                          <label className={styles.Headerlabel} style={{ display: 'block' }}>{DisplayLabel?.ChangeSetting}</label>
 
                           <div style={{ display: 'none' }}>
                             <TextField
@@ -1708,7 +1732,7 @@ export default function Master({ props }: any): JSX.Element {
             </Accordion.Item>
             <br />
             <Accordion.Item eventKey="3">
-              <Accordion.Header className={styles.Accodordianherder}>Archive Section </Accordion.Header>
+              <Accordion.Header className={styles.Accodordianherder}>{DisplayLabel?.ArchiveSection}</Accordion.Header>
               <Accordion.Body>
                 <Form>
                   <div style={{ marginBottom: '20px' }}>
@@ -1716,7 +1740,7 @@ export default function Master({ props }: any): JSX.Element {
                     <div style={{ display: 'flex', gap: '10px' }}>
                       {/* Dynamic Reference Toggle */}
                       <div className="col-md-3">
-                        <label className={styles.Headerlabel}>Is Archive Allowed <span style={{ color: "red" }}>*</span></label>
+                        <label className={styles.Headerlabel}>{DisplayLabel?.IsArchiveAllowed}<span style={{ color: "red" }}>*</span></label>
                         <Toggle
                           checked={IsArchiveAllowed}
                           onChange={(_, checked) => ToggleChangeforArchiveAllowed(checked!)}
@@ -1725,7 +1749,7 @@ export default function Master({ props }: any): JSX.Element {
 
                       {IsArchiveAllowed && (
                         <div className="col-md-6">
-                          <label className={styles.Headerlabel}>Archive Document Library Name</label>
+                          <label className={styles.Headerlabel}>{DisplayLabel?.ArchiveDocumentLibraryName}</label>
                           <TextField
                             placeholder=" "
                             value={ArchiveTest}
@@ -1756,7 +1780,7 @@ export default function Master({ props }: any): JSX.Element {
                               flex: 1, // Make both sections take equal width
                             }}
                           >
-                            <label className={styles.Headerlabel} style={{ display: 'block' }}>Select Archive Days</label>
+                            <label className={styles.Headerlabel} style={{ display: 'block' }}>{DisplayLabel?.SelectArchiveDays}</label>
                             <Dropdown
                               placeholder="Select an Option"
                               options={RedundancyData}
@@ -1779,7 +1803,7 @@ export default function Master({ props }: any): JSX.Element {
                               flex: 1,
                             }}
                           >
-                            <label className={styles.Headerlabel} style={{ display: 'block' }}>Archive Versions</label>
+                            <label className={styles.Headerlabel} style={{ display: 'block' }}>{DisplayLabel?.ArchiveVersions}</label>
                             <TextField
                               placeholder=" "
                               value={ArchiveVersions}
@@ -1804,11 +1828,16 @@ export default function Master({ props }: any): JSX.Element {
 
               {/* <DefaultButton onClick={submitTileData} text={DisplayLabel?.Draft} className={styles['sub-btn']} /> */}
 
-              <DefaultButton onClick={submitTileData} text="Save" className={styles['sub-btn']} />
+              {!isEditMode ? (
+                <DefaultButton onClick={submitTileData} text={DisplayLabel?.Submit} className={styles['sub-btn']} />
+              ) :
+                <DefaultButton onClick={submitTileData} text={DisplayLabel?.Update} className={styles['sub-btn']} />
+              }
+
               <MessageDialog isPopupBoxVisible={isPopupVisible} hidePopup={hidePopup} />
 
 
-              <DefaultButton text="Cancel" onClick={toggleModal} className={styles['can-btn']} allowDisabledFocus />
+              <DefaultButton text={DisplayLabel?.Cancel} onClick={closePanel} className={styles['can-btn']} allowDisabledFocus />
 
             </div>
 
