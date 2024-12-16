@@ -15,7 +15,7 @@ import { PeoplePicker, PrincipalType, IPeoplePickerContext } from "@pnp/spfx-con
 import MessageDialog from '../ResuableComponents/PopupBox';
 import ReactTableComponent from '../ResuableComponents/ReusableDataTable';
 import { IStackItemStyles, IStackStyles, IStackTokens, Stack } from 'office-ui-fabric-react';
-import { getTileAllData, SaveTileSetting } from "../../../../Services/MasTileService";
+import { getDataById, getTileAllData, SaveTileSetting } from "../../../../Services/MasTileService";
 import { GetAllLabel } from "../../../../Services/ControlLabel";
 //import { FilePicker, IFilePickerResult } from '@pnp/spfx-controls-react/lib/FilePicker';
 //import MaterialTable from "material-table";
@@ -24,7 +24,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { useBoolean } from '@fluentui/react-hooks';
 import { ILabel } from '../Interface/ILabel';
 import { getUserIdFromLoginName, uuidv4 } from "../../../../DAL/Commonfile";
-import { UploadDocument } from "../../../../Services/DMSTileDocumentService";
+import { GetAttachmentFile, UploadDocument } from "../../../../Services/DMSTileDocumentService";
 import { getConfigActive } from "../../../../Services/ConfigService";
 import { getActiveRedundancyDays } from "../../../../Services/ArchiveRedundancyDaysService";
 import { service } from "../../../../Services/Service";
@@ -65,9 +65,9 @@ export default function Master({ props }: any): JSX.Element {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   //const [attachments, setAttachments]: any = useState([]);
   const [assignName, setAssignName] = useState<string>("");
-  const [assignID, setAssignID] = useState<string[]>([]);
+  const [assignID, setAssignID] = useState([]);
   const [TileAdminName, setTileAdminName] = useState<string>("");
-  const [TileAdminID, setTileAdminID] = useState<string[]>([]);
+  const [TileAdminID, setTileAdminID] = useState([]);
   const [order0Data, setorder0Data] = useState([]);
   const [RedundancyDataID, setRedundancyDataID] = useState('');
   const [RedundancyDataText, setRedundancyDataText] = useState('');
@@ -133,6 +133,7 @@ export default function Master({ props }: any): JSX.Element {
     RedundancyDaysData();
     setRefrenceNOData(`${moment().format('YYYY')}-00001`);
     setRefExample(RefrenceNOData);
+
     //DashboardDataEdit();
 
   }, []);
@@ -183,44 +184,130 @@ export default function Master({ props }: any): JSX.Element {
     {
       Header: "ACTION",
       Cell: ({ row }: { row: any }) => (
-        <FontIcon aria-label="Edit" onClick={() => DashboardDataEdit(row._original)} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer' }}></FontIcon>
+        <FontIcon aria-label="Edit" onClick={() => DashboardDataEdit(row._original.Id)} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer' }}></FontIcon>
       )
     }
   ];
 
-  const DashboardDataEdit = (rowData: any) => {
-    console.log("Edit clicked for: ", rowData);
-    toggleModal
+  const DashboardDataEdit = async (rowData: any) => {
+    setShowModal(true);
+    let GetEditData = await getDataById(props.SiteURL, props.spHttpClient, rowData);
+    const EditSettingData = GetEditData.value;
+
+    const str: string = EditSettingData[0].ID.toString();
+    console.log(EditSettingData);
+
+
+    await setTileName(EditSettingData[0].TileName);
+    const a: any = EditSettingData[0].TileAdmin ? ([EditSettingData[0].TileAdmin.EMail]) : []
+    await setTileAdminID(a);
+
+    await setIsTileStatus(EditSettingData[0].Active);
+    await setIsAllowApprover(EditSettingData[0].AllowApprover);
+    await setIsDropdownVisible(EditSettingData[0].AllowOrder);
+    if (EditSettingData[0].AllowOrder == true) {
+      setorder0DataDataID(EditSettingData[0].Order0);
+    }
+    else {
+      setorder0DataDataID("");
+    }
+    const actionsData = (EditSettingData[0].ShowMoreActions == null ? [] : EditSettingData[0].ShowMoreActions.split(';'));
+    await setSelectedcheckboxActions(actionsData);
+
+    await setTableData(EditSettingData[0].DynamicControl == null ? [] : JSON.parse(EditSettingData[0].DynamicControl));
+
+    await setArchiveAllowed(EditSettingData[0].IsArchiveRequired);
+
+
+    if (EditSettingData[0].IsArchiveRequired == true) {
+      let ActiveRedundancyDaysData: any = await getActiveRedundancyDays(props.SiteURL, props.spHttpClient);
+      let ActiveRedundancyDaysvalueData = ActiveRedundancyDaysData.value;
+      const FilterRetentionDays = ActiveRedundancyDaysvalueData.filter((item: any) => item.RedundancyDays === EditSettingData[0].RetentionDays);
+      const RetentiondaysData = FilterRetentionDays[0].ID;
+
+      await setArchiveTest(EditSettingData[0].ArchiveLibraryName);
+      await setArchiveVersions(EditSettingData[0].ArchiveVersionCount);
+      await setRedundancyDataID(RetentiondaysData);
+    }
+    else {
+      setArchiveTest("");
+      setArchiveVersions("");
+      setRedundancyDataID("");
+    }
+    await setDynamicDataReference(EditSettingData[0].IsDynamicReference);
+
+    if (EditSettingData[0].IsDynamicReference == true) {
+
+      const formula = EditSettingData[0].ReferenceFormula;
+      await setRefExample(EditSettingData[0].ReferenceFormula);
+      //await setCustomSeparators(EditSettingData[0].Separator);
+
+      const fields = [];
+      if (formula.includes("{YYYY}")) fields.push("YYYY");
+      if (formula.includes("{YY_YY}")) fields.push("YY_YY");
+      if (formula.includes("{MM}")) fields.push("MM");
+
+      const dynamicFieldPattern = /\{([^}]+)\}/g;
+      let match;
+      while ((match = dynamicFieldPattern.exec(formula)) !== null) {
+        const fieldName = (match[1]);
+
+        if (!["YYYY", "YY_YY", "MM", "Continue"].includes(fieldName)) {
+          fields.push(fieldName);
+        }
+      }
+
+      setRefFormatData(fields);
+
+
+      setSeparator(EditSettingData[0].Separator || "-");
+      setIncrement(EditSettingData[0].InitialIncrement || "Continue");
+    }
+    else {
+      await setRefExample(EditSettingData[0].ReferenceFormula);
+    }
+
+    let GetAttachmentData: any = await GetAttachmentFile(props.SiteURL, props.spHttpClient, str);
+
+    const GetAttachmentDataValue = GetAttachmentData.value;
+
+    console.log(GetAttachmentDataValue);
+
+    if (GetAttachmentDataValue != null) {
+
+
+      // var temp = {};
+      // temp.ID = $scope.TileDoc.ID;
+      // temp.Name = $scope.TileDoc.Documentpath;
+      // temp.LID = $scope.TileDoc.TileLID;
+      // temp.DocumentPath = $scope.TileDoc.Documentpath;
+
+      setSelectedFile(GetAttachmentDataValue[0].ServerRelativeUrl)
+    }
+
+
+
+
+
+
   };
 
-  // const Tablecolumns = [
-  //   { Header: "TILES", accessor: "TileName" },
-  //   { Header: "ALLOW APPROVER", accessor: "AllowApprover==true ? Yes : No" },
-  //   { Header: "LAST MODIFIED", accessor: "Editor.Title <br/> Modified |date:hh:mm:ss a" },
-  //   { Header: "ACTIVE", accessor: "Active==true ? Yes : No" }
-
-  // ];
-
-  // const data = [
-
-  //   {
-  //     TILES: 1,
-  //     ALLOWAPPROVER: 'No',
-  //     uploadedOn: 'AscenWork-Prajesh Borkar 04-09-2024 at 03:02:25 PM',
-  //     ACTIVE: 'Yes',
-  //     ACTION: <FontIcon aria-label="Edit" onClick={toggleModal} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer' }}></FontIcon>,
-
-  //   },
-  // ];
 
 
+  //   const getAllColumns() {
+  //     var query = props.SiteURL+ "/_api/web/lists/getbytitle('" + EditSettingData.LibraryName + "')/Fields?$filter=(CanBeDeleted eq true)";
+  //     GetListData(query).done(function(response) {
+  //         $scope.allLibColumn = response.d.results;
+
+  //     })
+  // }
 
   const CheckboxData = (obj: any) => {
 
 
     let icheckbox;
     if (obj.ColumnType == 'Dropdown' && !obj.IsStaticValue && obj.IsRequired == true && obj.IsFieldAllowInFile != true && obj.IsActiveControl == true) {
-      icheckbox = <Checkbox label={obj.Title} onChange={(e, checked) => handleCheckboxToggle(obj.Title, checked!)} />
+      icheckbox = <Checkbox label={obj.Title} checked={refFormatData.includes(obj.Title)} onChange={(e, checked) => handleCheckboxToggle(obj.Title, checked!)} />
 
 
     }
@@ -518,7 +605,7 @@ export default function Master({ props }: any): JSX.Element {
 
           setTableData((prevData: any[]) => [
             ...prevData,
-            { ...formData, ...selectedOption }, // Combine formData with selectedOption if necessary
+            { ...formData, ...selectedOption },
           ]);
         }
 
@@ -1169,6 +1256,7 @@ export default function Master({ props }: any): JSX.Element {
                           onChange={onPeoplePickerChange}
                           showHiddenInUI={false}
                           principalTypes={[PrincipalType.User]}
+                          defaultSelectedUsers={assignID}
                         // resolveDelay={1000} 
                         />
 
@@ -1208,6 +1296,7 @@ export default function Master({ props }: any): JSX.Element {
                           onChange={onTilePeoplePickerChange}
                           showHiddenInUI={false}
                           principalTypes={[PrincipalType.User]}
+                          defaultSelectedUsers={TileAdminID}
                         />
                         {/* <TextField
                           placeholder=" "
@@ -1264,6 +1353,7 @@ export default function Master({ props }: any): JSX.Element {
                           label={action}
                           key={action}
                           onChange={(e, isChecked) => handleCheckboxChange(action, isChecked)}
+                          checked={selectedcheckboxActions.includes(action)}
                         />
                       ))}
                     </div>
@@ -1434,9 +1524,9 @@ export default function Master({ props }: any): JSX.Element {
                           }}
                         >
 
-                          <Checkbox label="YYYY" onChange={(e, checked) => handleCheckboxToggle("YYYY", checked!)} />
-                          <Checkbox label="YY_YY" onChange={(e, checked) => handleCheckboxToggle("YY_YY", checked!)} />
-                          <Checkbox label="MM" onChange={(e, checked) => handleCheckboxToggle("MM", checked!)} />
+                          <Checkbox label="YYYY" checked={refFormatData.includes("YYYY")} onChange={(e, checked) => handleCheckboxToggle("YYYY", checked!)} />
+                          <Checkbox label="YY_YY" checked={refFormatData.includes("YY_YY")} onChange={(e, checked) => handleCheckboxToggle("YY_YY", checked!)} />
+                          <Checkbox label="MM" checked={refFormatData.includes("MM")} onChange={(e, checked) => handleCheckboxToggle("MM", checked!)} />
                           {
                             tableData.map((el) => (CheckboxData(el)))
 

@@ -9,7 +9,7 @@ export function UploadDocument(WebUrl: any, spHttpClient: any, file: any, filena
 
 }
 export async function GetAttachmentFile(WebUrl: any, spHttpClient: any, ID: string) {
-    let filter = "LID eq " + ID;
+    let filter = "TileLID eq " + ID;
     return await getMethod(WebUrl, spHttpClient, filter);
 }
 async function getMethod(WebUrl: string, spHttpClient: SPHttpClient, filter: string) {
