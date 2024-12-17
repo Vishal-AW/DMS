@@ -45,6 +45,20 @@ body {
     font-size: 13px;
 }
 
+.ControlZone {
+    margin: 0 0 !important;
+}
+
+.q_e_50a7110f {
+    max-width: 100% !important;
+}
+
+.row {
+    padding: 0 !important;
+    --bs-gutter-x: 0 !important;
+    --bs-gutter-y: 0 !important;
+}
+
 @media screen and (min-width: 1024px) {
     .a_a_50a7110f:not(.e_a_50a7110f) .h_a_50a7110f {
         max-width: none;
