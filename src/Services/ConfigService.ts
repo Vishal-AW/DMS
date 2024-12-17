@@ -15,7 +15,7 @@ export function getConfigActive(WebUrl: string, spHttpClient: any) {
 async function getMethod(WebUrl: string, spHttpClient: any, filter: any) {
 
   let option = {
-    select: "*,Id,Title,ColumnType,InternalListName,IsActive,IsStaticValue,StaticDataObject,DisplayValue,InternalTitleName,IsShowAsFilter,Abbreviation",
+    select: "Id,Title,ColumnType,InternalListName,IsActive,IsStaticValue,StaticDataObject,DisplayValue,InternalTitleName,IsShowAsFilter,Abbreviation",
     //expand : "",
     filter: filter,
     orderby: 'Title',

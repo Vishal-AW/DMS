@@ -1,7 +1,44 @@
-export interface ILabel{
+export interface ILabel {
     Cancel: string;
     Submit: string;
     Draft: string;
-    Tiles: string;
-    AddTileManagement:string;
+    Add: string;
+    Update: string;
+    AddTileManagement: string;
+    EditTileManagement: string;
+    TileName: string;
+    TileDetails: string;
+    SelectOrder: string;
+    TileAdmin1: string;
+    Order: string;
+    AllowApprover: string;
+    TileStatus: string;
+    AccessToTile: string;
+    DisplayPicture: string;
+    Action: string;
+    SearchFilterRequired: string;
+    IsFieldAllowinFile: string;
+    FieldStatus: string;
+    IsRequired: string;
+    Field: string;
+    SrNo: string;
+    Versions: string;
+    Rename: string;
+    Download: string;
+    Preview: string;
+    SelectMoreActions: string;
+    Fields: string;
+    ArchiveVersions: string;
+    SelectArchiveDays: string;
+    ArchiveDocumentLibraryName: string;
+    IsArchiveAllowed: string;
+    ChangeSetting: string;
+    InitialIncrement: string;
+    Separator: string;
+    ChooseFields: string;
+    DefaultReferenceExample: string;
+    DynamicReferenceExample: string;
+    IsDynamicReference: string;
+    ReferenceNoDetails: string;
+    ArchiveSection: string
 }

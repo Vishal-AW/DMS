@@ -2,19 +2,20 @@ import * as React from "react";
 import { useState, useEffect } from 'react';
 import * as moment from "moment";
 import styles from '../Master/Master.module.scss';
-import { SPHttpClient, SPHttpClientResponse, ISPHttpClientOptions } from '@microsoft/sp-http';
+//import { SPHttpClient, SPHttpClientResponse, ISPHttpClientOptions } from '@microsoft/sp-http';
 //import { HTTPServices, _getListItem } from "../../../HTTPServices";
 import {
   DefaultButton, Panel, PanelType, TextField, Toggle, Dropdown, IDropdownStyles, Checkbox, ChoiceGroup,
   IIconProps,
   IconButton,
-  IDropdownOption
+  IDropdownOption,
+  FontIcon
 } from 'office-ui-fabric-react';
 import { PeoplePicker, PrincipalType, IPeoplePickerContext } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 import MessageDialog from '../ResuableComponents/PopupBox';
 import ReactTableComponent from '../ResuableComponents/ReusableDataTable';
-import { IStackItemStyles, IStackStyles, IStackTokens, Stack, FontIcon } from 'office-ui-fabric-react';
-import { getTileAllData, SaveTileSetting, UpdateTileSetting } from "../../../../Services/MasTileService";
+import { IStackItemStyles, IStackStyles, IStackTokens, Stack } from 'office-ui-fabric-react';
+import { getDataById, getTileAllData, SaveTileSetting } from "../../../../Services/MasTileService";
 import { GetAllLabel } from "../../../../Services/ControlLabel";
 //import { FilePicker, IFilePickerResult } from '@pnp/spfx-controls-react/lib/FilePicker';
 //import MaterialTable from "material-table";
@@ -23,9 +24,10 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { useBoolean } from '@fluentui/react-hooks';
 import { ILabel } from '../Interface/ILabel';
 import { getUserIdFromLoginName, uuidv4 } from "../../../../DAL/Commonfile";
-import { UploadDocument } from "../../../../Services/DMSTileDocumentService";
+import { GetAttachmentFile, UploadDocument } from "../../../../Services/DMSTileDocumentService";
 import { getConfigActive } from "../../../../Services/ConfigService";
 import { getActiveRedundancyDays } from "../../../../Services/ArchiveRedundancyDaysService";
+import { service } from "../../../../Services/Service";
 
 //import { getConfigActive } from "../../../../Services/ConfigService";
 
@@ -35,10 +37,10 @@ import { getActiveRedundancyDays } from "../../../../Services/ArchiveRedundancyD
 
 
 export default function Master({ props }: any): JSX.Element {
+  const _spService: service = new service();
 
-
-  const [showModal, setShowModal] = useState(false);
-  const toggleModal = () => setShowModal(!showModal);
+  //const [showModal, setShowModal] = useState(false);
+  //const toggleModal = () => setShowModal(!showModal);
   //const [showDialog, setShowDialog] = useState(false);
   //const [dialogMessage, setDialogMessage] = useState('');
   //const [isOpen, setIsOpen] = useState(false);
@@ -48,18 +50,31 @@ export default function Master({ props }: any): JSX.Element {
   const [TileAdminselectedUsers, setTileAdminSelectedUsers] = useState<any[]>([]);
   const [TileName, setTileName] = useState("");
   const [TileError, setTileErr] = useState("");
+  const [attachmentErr, setAttachmentErr] = useState("");
+  const [AccessTileUserErr, setAccessTileUserErr] = useState("");
+  const [TileAdminUserErr, setTileAdminUserErr] = useState("");
+  const [TileSelectorderErr, setTileSelectorderErr] = useState("");
+  const [TileReferenceNoErr, setTileReferenceNoErr] = useState("");
+  const [TileRedundancyDaysErr, setTileRedundancyDaysErr] = useState("");
+  const [TileArchiveVersionErr, setTileArchiveVersionErr] = useState("");
+  const [MainTableSetdata, setData] = useState<any[]>([]);
+
+  // const [DuplicateTileError, setDuplicateTileError] = useState("");
+  // const [TileLowerUpperError, setTileLowerUpperError] = useState("");
   const [DisplayLabel, setDisplayLabel] = useState<ILabel>();
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | { name: string } | null>(null);
   //const [attachments, setAttachments]: any = useState([]);
   const [assignName, setAssignName] = useState<string>("");
-  const [assignID, setAssignID] = useState<string[]>([]);
+  const [assignID, setAssignID] = useState([]);
   const [TileAdminName, setTileAdminName] = useState<string>("");
-  const [TileAdminID, setTileAdminID] = useState<string[]>([]);
+  const [TileAdminID, setTileAdminID] = useState([]);
   const [order0Data, setorder0Data] = useState([]);
-  const [configData, setConfigData] = useState([]);
-  const [RedundancyData, setRedundancyData] = useState([]);
   const [RedundancyDataID, setRedundancyDataID] = useState('');
   const [RedundancyDataText, setRedundancyDataText] = useState('');
+  const [configData, setConfigData] = useState([]);
+  const [RedundancyData, setRedundancyData] = useState([]);
+  const [order0DataDataID, setorder0DataDataID] = useState('');
+  const [order0DataDataText, setorder0DataText] = useState('');
   const [isToggleDisabled, setIsToggleDisabled] = useState(false);
 
   const [isTileStatus, setIsTileStatus] = React.useState<boolean>(false);
@@ -104,30 +119,217 @@ export default function Master({ props }: any): JSX.Element {
     editingIndex: -1,
   });
 
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+
+  const openAddPanel = () => {
+    setIsEditMode(false);
+    setIsPanelOpen(true);
+  };
+
+
+
+
+
+  const closePanel = () => {
+    setIsPanelOpen(false);
+  };
+
 
   useEffect(() => {
 
+    fetchData();
     let DisplayLabel: ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}'); //localStorage.getItem('DisplayLabel')|| null;
     setDisplayLabel(DisplayLabel);
     clearField();
-    //fetchData();
+    fetchData();
     getAllData();
     ConfigMasterData();
     GetMainListData();
     RedundancyDaysData();
     setRefrenceNOData(`${moment().format('YYYY')}-00001`);
+    setRefExample(RefrenceNOData);
 
+    //DashboardDataEdit();
 
   }, []);
 
 
+
+  const fetchData = async () => {
+    let FetchallTileData: any = await getTileAllData(props.SiteURL, props.spHttpClient);
+
+    let TilesData = FetchallTileData.value;
+
+    setData(TilesData);
+
+    console.log(TilesData);
+  };
+
+
+  const Tablecolumns = [
+    { Header: "TILES", accessor: "TileName" },
+    {
+      Header: "ALLOW APPROVER",
+      accessor: "AllowApprover",
+      Cell: ({ row }: { row: any }) => (row.AllowApprover == true ? "Yes" : "No")
+    },
+    {
+      Header: "LAST MODIFIED",
+      Cell: ({ row }: { row: any }) => {
+        const rowData = row._original;
+        const formattedDate = new Date(rowData.Modified).toLocaleDateString("en-US", {
+          month: "2-digit",
+          day: "2-digit",
+          year: "numeric"
+        });
+        const formattedTime = new Date(rowData.Modified).toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true
+        });
+        return `${rowData.Editor?.Title || "Unknown"} ${formattedDate} at ${formattedTime}`;
+      }
+    },
+    {
+      Header: "ACTIVE",
+      accessor: "Active",
+      Cell: ({ row }: { row: any }) => (row.Active == true ? "Yes" : "No")
+    },
+    {
+      Header: "ACTION",
+      Cell: ({ row }: { row: any }) => (
+        <FontIcon aria-label="Edit" onClick={() => openEditPanel(row._original.Id)} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer' }}></FontIcon>
+      )
+    }
+  ];
+
+  const openEditPanel = async (rowData: any) => {
+
+    setIsEditMode(true);
+    setIsPanelOpen(true);
+
+    let GetEditData = await getDataById(props.SiteURL, props.spHttpClient, rowData);
+    const EditSettingData = GetEditData.value;
+
+    const str: string = EditSettingData[0].ID.toString();
+    console.log(EditSettingData);
+
+
+    await setTileName(EditSettingData[0].TileName);
+
+    const AccessTileData: any = EditSettingData[0].Permission ? EditSettingData[0].Permission.map((person: any) => person.EMail) : [];
+    await setAssignID(AccessTileData);
+
+    const TileAdminData: any = EditSettingData[0].TileAdmin ? ([EditSettingData[0].TileAdmin.EMail]) : []
+    await setTileAdminID(TileAdminData);
+
+    await setIsTileStatus(EditSettingData[0].Active);
+    await setIsAllowApprover(EditSettingData[0].AllowApprover);
+    await setIsDropdownVisible(EditSettingData[0].AllowOrder);
+    if (EditSettingData[0].AllowOrder == true) {
+      setorder0DataDataID(EditSettingData[0].Order0);
+    }
+    else {
+      setorder0DataDataID("");
+    }
+    const actionsData = (EditSettingData[0].ShowMoreActions == null ? [] : EditSettingData[0].ShowMoreActions.split(';'));
+    await setSelectedcheckboxActions(actionsData);
+
+    await setTableData(EditSettingData[0].DynamicControl == null ? [] : JSON.parse(EditSettingData[0].DynamicControl));
+
+    await setArchiveAllowed(EditSettingData[0].IsArchiveRequired);
+
+
+    if (EditSettingData[0].IsArchiveRequired == true) {
+      let ActiveRedundancyDaysData: any = await getActiveRedundancyDays(props.SiteURL, props.spHttpClient);
+      let ActiveRedundancyDaysvalueData = ActiveRedundancyDaysData.value;
+      const FilterRetentionDays = ActiveRedundancyDaysvalueData.filter((item: any) => item.RedundancyDays === EditSettingData[0].RetentionDays);
+      const RetentiondaysData = FilterRetentionDays[0].ID;
+
+      await setArchiveTest(EditSettingData[0].ArchiveLibraryName);
+      await setArchiveVersions(EditSettingData[0].ArchiveVersionCount);
+      await setRedundancyDataID(RetentiondaysData);
+    }
+    else {
+      setArchiveTest("");
+      setArchiveVersions("");
+      setRedundancyDataID("");
+    }
+    await setDynamicDataReference(EditSettingData[0].IsDynamicReference);
+
+    if (EditSettingData[0].IsDynamicReference == true) {
+
+      const formula = EditSettingData[0].ReferenceFormula;
+      await setRefExample(EditSettingData[0].ReferenceFormula);
+      //await setCustomSeparators(EditSettingData[0].Separator);
+
+      const fields = [];
+      if (formula.includes("{YYYY}")) fields.push("YYYY");
+      if (formula.includes("{YY_YY}")) fields.push("YY_YY");
+      if (formula.includes("{MM}")) fields.push("MM");
+
+      const dynamicFieldPattern = /\{([^}]+)\}/g;
+      let match;
+      while ((match = dynamicFieldPattern.exec(formula)) !== null) {
+        const fieldName = (match[1]);
+
+        if (!["YYYY", "YY_YY", "MM", "Continue"].includes(fieldName)) {
+          fields.push(fieldName);
+        }
+      }
+
+      setRefFormatData(fields);
+
+
+      setSeparator(EditSettingData[0].Separator || "-");
+      setIncrement(EditSettingData[0].InitialIncrement || "Continue");
+    }
+    else {
+      await setRefExample(EditSettingData[0].ReferenceFormula);
+    }
+
+    let GetAttachmentData: any = await GetAttachmentFile(props.SiteURL, props.spHttpClient, str);
+
+    const GetAttachmentDataValue = GetAttachmentData.value;
+
+    console.log(GetAttachmentDataValue);
+
+    if (GetAttachmentDataValue && GetAttachmentDataValue.length > 0) {
+
+      const existingFile = { name: GetAttachmentData.value[0].Documentpath };
+      setSelectedFile(existingFile);
+
+      // setSelectedFile(GetAttachmentData.value[0].File.Name);
+
+    } else {
+      setSelectedFile(null);
+    }
+
+
+
+
+
+
+  };
+
+
+
+  //   const getAllColumns() {
+  //     var query = props.SiteURL+ "/_api/web/lists/getbytitle('" + EditSettingData.LibraryName + "')/Fields?$filter=(CanBeDeleted eq true)";
+  //     GetListData(query).done(function(response) {
+  //         $scope.allLibColumn = response.d.results;
+
+  //     })
+  // }
 
   const CheckboxData = (obj: any) => {
 
 
     let icheckbox;
     if (obj.ColumnType == 'Dropdown' && !obj.IsStaticValue && obj.IsRequired == true && obj.IsFieldAllowInFile != true && obj.IsActiveControl == true) {
-      icheckbox = <Checkbox label={obj.Title} onChange={(e, checked) => handleCheckboxToggle(obj.Title, checked!)} />
+      icheckbox = <Checkbox label={obj.Title} checked={refFormatData.includes(obj.Title)} onChange={(e, checked) => handleCheckboxToggle(obj.Title, checked!)} />
 
 
     }
@@ -282,6 +484,13 @@ export default function Master({ props }: any): JSX.Element {
   };
 
 
+  const handleorder0DataDropdownChange = (
+    event: React.FormEvent<HTMLDivElement>, option?: IDropdownOption) => {
+    setorder0DataDataID(option?.key as string);
+    setorder0DataText(option?.text as string);
+    console.log(order0DataDataText);
+  };
+
   const getAllData = async () => {
     let data: any = await GetAllLabel(props.SiteURL, props.spHttpClient, "DefaultText");
     console.log(data);
@@ -418,7 +627,7 @@ export default function Master({ props }: any): JSX.Element {
 
           setTableData((prevData: any[]) => [
             ...prevData,
-            { ...formData, ...selectedOption }, // Combine formData with selectedOption if necessary
+            { ...formData, ...selectedOption },
           ]);
         }
 
@@ -582,25 +791,9 @@ export default function Master({ props }: any): JSX.Element {
     spHttpClient: props.context.spHttpClient
   };
 
-  const columns = [
-    { Header: 'TILES', accessor: 'TILES' },
-    { Header: 'ALLOW APPROVER', accessor: 'ALLOWAPPROVER' },
-    { Header: 'LAST MODIFIED', accessor: 'uploadedOn' },
-    { Header: 'ACTIVE', accessor: 'ACTIVE' },
-    { Header: 'ACTION', accessor: 'ACTION' },
 
-  ];
 
-  const data = [
-    {
-      TILES: 1,
-      ALLOWAPPROVER: 'No',
-      uploadedOn: 'AscenWork-Prajesh Borkar 04-09-2024 at 03:02:25 PM',
-      ACTIVE: 'Yes',
-      ACTION: <FontIcon aria-label="Edit" onClick={toggleModal} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer' }}></FontIcon>,
 
-    },
-  ];
 
 
 
@@ -624,8 +817,8 @@ export default function Master({ props }: any): JSX.Element {
 
 
 
-  const TileLibrary = (Internal: any, TileLID: any) => {
-    const Columns = [{
+  const TileLibrary = async (Internal: any, TileLID: any, ArchiveInternal: any) => {
+    const Columns: any = [{
       ListName: Internal,
       ListType: "101",
       Columns: [
@@ -678,85 +871,22 @@ export default function Master({ props }: any): JSX.Element {
         Columns[0].Columns.push({ "ColName": el.InternalTitleName, "ColType": colType });
       })
     }
-    // const listName = Columns;
-    let Listguid: { Title: string; Id: string }[] = [];
-    let count = 0;
-    // let outoff = '0/' + Columns.length;
 
-    setTimeout(function () {
-      for (let i = 0; i < Columns.length; i++) {
-        let listName = Columns[i].ListName;
-        let template = Number(Columns[i].ListType);
-        createList(listName, template).then(function (response) {
-          let obj = { LibGuidName: response.Id }
-          UpdateTileSetting(props.SiteURL, props.spHttpClient, obj, TileLID).then(function (response) { });
-          Listguid.push(response);
-          count++;
-          if (count == Columns.length) {
-            let listCount = 0;
-            for (let list = 0; list < Columns.length; list++) {
-              listCount++;
-              //let columnCount = 0;
-              let Count = 0;
-              let ColumnsObj: any = Columns[list].Columns;
-              for (let col = 0; col < ColumnsObj.length; col++) {
-                // columnCount++;
-                if (ColumnsObj[col].ColType == 6) {
-                  let returnedData = Listguid.filter(function (element, index) {
-                    return element.Title == Columns[list].ListName;
-                  });
-                  let obj = {
-                    '__metadata': { 'type': 'SP.FieldChoice' },
-                    'FieldTypeKind': 6,
-                    'Title': ColumnsObj[col].ColName,
-                    'Choices': { '__metadata': { 'type': 'Collection(Edm.String)' }, 'results': ColumnsObj[col].Choices }
-                  } //, 'EditFormat': 1 
-                  CreateChoiceCloumn(returnedData[0].Id, obj).then(function (response) {
-                    Count++;
-                    if (Count == ColumnsObj.length && listCount == Columns.length) {
-                      DefaultView(Columns);
-                    }
-                    //deferred.resolve(response);
-                  });
-                } else if (ColumnsObj[col].ColType == 7) {
-                  let listID = Listguid.filter(function (element, index) {
-                    return element.Title == Columns[list].ListName;
-                  });
-                  let query = props.SiteURL + "/_api/web/lists/getByTitle('" + ColumnsObj[col].LookupList + "')/Id";
-                  GetListData(query).then(function (response) {
-                    let listGuID = response.d.Id;
-                    let obj = {
-                      'parameters': {
-                        '__metadata': { 'type': 'SP.FieldCreationInformation' },
-                        'FieldTypeKind': 7,
-                        'Title': ColumnsObj[col].ColName,
-                        'LookupListId': listGuID,
-                        'LookupFieldName': ColumnsObj[col].LookupField
-                      }
-                    }
-                    Createlookup(listID[0].Id, obj).then(function (response) {
-                      Count++;
-                      if (Count == ColumnsObj.length && listCount == Columns.length) {
-                        DefaultView(Columns);
-                      }
-                      // deferred.resolve(response);
-                    });
-                  })
-                } else {
-                  createColumn(Columns[list].ListName, ColumnsObj[col].ColName, ColumnsObj[col].ColType).then(function (response) {
-                    Count++
-                    if (Count == ColumnsObj.length && listCount == Columns.length) {
-                      DefaultView(Columns);
-                    }
-                  });
-                }
-              }
-            }
-          }
-        })
+    if (IsArchiveAllowed == true) {
+      const obj = {
+        ListName: ArchiveInternal,
+        ListType: "101",
+        Columns: Columns[0].Columns
+
       }
-    }, 5000);
+      Columns.push(obj);
+    }
+
+    _spService.CreateList(props.context, props.SiteURL, Columns, TileLID, false)
+
   };
+
+
 
   const getColumnType = (val: any) => {
     switch (val) {
@@ -792,135 +922,7 @@ export default function Master({ props }: any): JSX.Element {
         return 2
     }
   }
-  const createList = async (listName: string, Template: number) => {
-    let siteUrl = props.SiteURL + "/_api/web/lists";
 
-
-    const listDefinition: any = {
-      "Title": listName,
-      "AllowContentTypes": true,
-      "BaseTemplate": Template,
-      "ContentTypesEnabled": true,
-    };
-    const spHttpClientOptions: ISPHttpClientOptions = {
-      "body": JSON.stringify(listDefinition)
-    };
-    return await props.context.spHttpClient.post(siteUrl, SPHttpClient.configurations.v1, spHttpClientOptions)
-      .then((response: SPHttpClientResponse) => {
-        return response.json();
-      });
-  }
-
-  const GetListData = async (query: string) => {
-    const response = await props.spHttpClient.get(query, SPHttpClient.configurations.v1, {
-      headers: {
-        'Accept': 'application/json;odata=verbose',
-        'odata-version': '',
-      },
-    });
-    return await response.json();
-  };
-
-  const CreateChoiceCloumn = async (listID: string, obj: any) => {
-    debugger;
-    const url = props.SiteURL + "/_api/web/lists(guid'" + listID + "')/Fields";
-    const spHttpClientOptions: ISPHttpClientOptions = {
-      headers: {
-        'Accept': 'application/json;odata=verbose',
-        'Content-type': 'application/json;odata=verbose',
-        'odata-version': ''
-      },
-      "body": JSON.stringify(obj)
-    };
-    return await props.context.spHttpClient.post(url, SPHttpClient.configurations.v1, spHttpClientOptions)
-  }
-
-  const Createlookup = async (listID: string, obj: any) => {
-    const url = props.SiteURL + "/_api/web/lists(guid'" + listID + "')/fields/addfield";
-    const spHttpClientOptions: ISPHttpClientOptions = {
-      headers: {
-        'Accept': 'application/json;odata=nometadata',
-        'Content-type': 'application/json;odata=nometadata',
-        'odata-version': ''
-      },
-      "body": JSON.stringify(obj)
-    };
-    return await props.context.spHttpClient.post(url, SPHttpClient.configurations.v1, spHttpClientOptions)
-  }
-
-  const createColumn = async (listName: string, ColumnName: string, ColumnType: number) => {
-    const url = props.SiteURL + "/_api/web/lists/GetByTitle('" + listName + "')/Fields";
-    const spHttpClientOptions: ISPHttpClientOptions = {
-      headers: {
-        'Accept': 'application/json;odata=nometadata',
-        'Content-type': 'application/json;odata=nometadata',
-        'odata-version': ''
-      },
-      "body": JSON.stringify({
-        __metadata: { type: 'SP.Field' },
-        'FieldTypeKind': ColumnType,
-        'Title': ColumnName,
-      })
-    };
-
-    return await props.context.spHttpClient.post(url, SPHttpClient.configurations.v1, spHttpClientOptions);
-  }
-
-  const DefaultView = async (IListItem: { ListName: string; ListType: string; Columns: { ColName: string; ColType: number }[] }[]) => {
-    console.log(IListItem);
-    //for (let list = 0; list < IListItem.length; list++) {
-    const url = props.SiteURL + "/_api/Web/Lists/getByTitle('" + IListItem[0]["ListName"] + "')/DefaultView";
-    await props.spHttpClient.get(url, SPHttpClient.configurations.v1, {
-      headers: {
-        'Accept': 'application/json;odata=verbose',
-        'odata-version': '',
-      },
-    }).then((response: SPHttpClientResponse) => {
-      response.json().then((result: any) => {
-        const defaulttViewID = result["d"]["Id"];
-
-        console.log(defaulttViewID);
-        addColumnOnView(IListItem, defaulttViewID)
-
-      })
-    });
-    //}
-  };
-
-
-  const addColumnOnView = async (IListItem: any, defaultView: string) => {
-    let listCount = 0;
-    for (let listName = 0; listName < IListItem.length; listName++) {
-      listCount++;
-      let columnCount = 0;
-      // let Count = 0;
-      let ColumnsObj: any = IListItem[listName]["Columns"];
-      for (let colName = 0; colName < ColumnsObj.length; colName++) {
-        // Count++;
-        let obj = { 'strField': ColumnsObj[colName]["ColName"] }
-        var resURL = props.SiteURL + "/_api/web/lists/getbytitle('" + IListItem[listName]["ListName"] + "')/Views/getbyId('" + defaultView + "')/ViewFields/AddViewField";
-        debugger;
-        await addDefaultViewColumn(resURL, obj).then((r: any) => {
-          columnCount++;
-          if (columnCount == ColumnsObj.length && listCount == IListItem.length) {
-            alert("Added");
-          }
-        })
-      }
-    }
-  }
-
-  const addDefaultViewColumn = async (resURL: string, obj: any) => {
-    return await props.context.spHttpClient.post(resURL, SPHttpClient.configurations.v1,
-      {
-        headers: {
-          'Accept': 'application/json;odata=nometadata',
-          'Content-type': 'application/json;odata=nometadata',
-          'odata-version': '',
-        },
-        body: JSON.stringify(obj)
-      })
-  }
 
 
 
@@ -929,14 +931,34 @@ export default function Master({ props }: any): JSX.Element {
   const clearField = () => {
 
     setTileName("");
-    setAssignID([]);
-    setTileAdminID([]);
+    setSelectedFile(null);
+    setAssignName("");
+    setTileAdminName("");
+    setorder0DataDataID("");
+    setIsTileStatus(false);
+    setIsAllowApprover(false);
+    setIsDropdownVisible(false);
+    setDynamicDataReference(false);
+    setRefrenceNOData("");
+    setArchiveVersions("");
+    setArchiveTest("");
+    setRedundancyDataID("");
+    setArchiveAllowed(false);
+    setSelectedcheckboxActions([]);
+    setTableData([]);
     clearError();
 
   };
   const clearError = () => {
 
-    setTileErr('');
+    setTileErr("");
+    setAttachmentErr("");
+    setAccessTileUserErr("");
+    setTileAdminUserErr("");
+    setTileSelectorderErr("");
+    setTileReferenceNoErr("");
+    setTileRedundancyDaysErr("");
+    setTileArchiveVersionErr("");
   };
 
 
@@ -951,8 +973,73 @@ export default function Master({ props }: any): JSX.Element {
     if (TileName === "" || TileName === undefined || TileName === null) {
       setTileErr('Tile name is required');
       isValidForm = false;
-
     }
+    if (selectedFile === null) {
+      setAttachmentErr("Enter Tile ImageURL");
+      isValidForm = false;
+    }
+
+    if (selectedUsers.length === 0) {
+      setAccessTileUserErr("Please Enter Access Details");
+      isValidForm = false;
+    }
+
+    if (TileAdminselectedUsers.length === 0) {
+      setTileAdminUserErr("Please add Tile Admin");
+      isValidForm = false;
+    }
+
+    if (isDropdownVisible == true) {
+      if (order0DataDataID === "" || order0DataDataID === undefined || order0DataDataID === null) {
+        setTileSelectorderErr("Enter Order");
+        isValidForm = false;
+      }
+    }
+
+    if (DynamicDataReference == true) {
+      if (refExample === "" || refExample === undefined || refExample === null) {
+        setTileReferenceNoErr("Select Reference No");
+        isValidForm = false;
+      }
+    }
+
+    if (IsArchiveAllowed == true) {
+      if (RedundancyDataID === "" || RedundancyDataID === undefined || RedundancyDataID === null) {
+        setTileRedundancyDaysErr("Select Redundancy Days");
+        isValidForm = false;
+      }
+      if (ArchiveVersions === "" || ArchiveVersions === undefined || ArchiveVersions === null) {
+        setTileArchiveVersionErr("Enter Archive Version");
+        isValidForm = false;
+      }
+    }
+    //const maindata = await getTileAllData(props.SiteURL, props.spHttpClient);
+
+    //   if(Action=="Add"){
+    //     if(TileName != "" || TileName != undefined || TileName != null){
+
+
+
+    //         for(var i=0; i<maindata.value; i++)
+    //         { 
+    //             if(maindata[i].TileName.toLowerCase() == maindata.toLowerCase())
+    //             {
+    //               setDuplicateTileError("<label class='error'>Tile Name you entered is already exists</label>");
+
+    //             }
+    //             else if($scope.GetData[i].LibraryName.toLowerCase() == Internal.toLowerCase())
+    //             {
+    //                     $("#txtTile").parent().append("<label class='error'>Tile Name you entered is already exists</label>");
+    //                     $("#txtTile").focus();
+    //                     $("#txtTile").prop("disabled",false);
+    //                     rv = false;
+    //                     return false;
+
+    //             }
+    //         }
+    //     }
+
+    // }
     return isValidForm;
   }
 
@@ -978,6 +1065,7 @@ export default function Master({ props }: any): JSX.Element {
 
   const saveData = async () => {
 
+    let ArchiveInternal = "";
     let uniqueid = await uuidv4();
 
     console.log(uniqueid);
@@ -995,6 +1083,15 @@ export default function Master({ props }: any): JSX.Element {
 
     let str = TileName;
     let Internal = str.replace(/[^a-zA-Z0-9]/g, '');
+
+    if (IsArchiveAllowed == true) {
+      let str1 = ArchiveTest;
+      ArchiveInternal = str1.replace(/[^a-zA-Z0-9]/g, '');
+    }
+    else {
+      ArchiveInternal = "";
+    }
+
 
     const userIds = await Promise.all(
       assignID.map(async (person: any) => {
@@ -1043,7 +1140,7 @@ export default function Master({ props }: any): JSX.Element {
       Separator: separator,
       DynamicControl: JSON.stringify(tableData),
       IsArchiveRequired: IsArchiveAllowed,
-      ArchiveLibraryName: ArchiveTest,
+      ArchiveLibraryName: ArchiveInternal,
       RetentionDays: parseInt(RedundancyDataText),
       ArchiveVersionCount: parseInt(ArchiveVersions),
       LibraryName: Internal
@@ -1055,15 +1152,18 @@ export default function Master({ props }: any): JSX.Element {
     let MainTileID = LID.Id;
     let MainTileLID = LID.Id.toString();
 
+
+
     if (LID != null) {
       saveAttachment(MainTileID);
 
-      const TileLibraryData = TileLibrary(Internal, MainTileLID);
-
-      console.log(TileLibraryData);
+      const TileLibraryData = TileLibrary(Internal, MainTileLID, ArchiveInternal).then(function (response) {
+        console.log(TileLibraryData);
+      });
 
     }
-
+    clearField();
+    closePanel();
 
   };
 
@@ -1075,18 +1175,18 @@ export default function Master({ props }: any): JSX.Element {
       <div>
 
         <div className={styles.alignbutton} >
-          <DefaultButton id="requestButton" className={styles.submit} text="+ ADD" onClick={toggleModal}  ></DefaultButton>
+          <DefaultButton id="requestButton" className={styles.submit} text={DisplayLabel?.Add} onClick={openAddPanel}  ></DefaultButton>
         </div>
 
         <Stack horizontal styles={stackStyles} tokens={stackTokens}>
           <Stack.Item grow={2} styles={stackItemStyles}>
             <ReactTableComponent
               TableClassName={styles.ReactTables}
-              Tablecolumns={columns}
-              Tabledata={data}
+              Tablecolumns={Tablecolumns}
+              Tabledata={MainTableSetdata}
               PagedefaultSize={10}
               TableRows={1}
-              TableshowPagination={data.length > 10}
+              TableshowPagination={MainTableSetdata.length > 10}
               TableshowFilter={true}
             />
           </Stack.Item>
@@ -1096,24 +1196,32 @@ export default function Master({ props }: any): JSX.Element {
 
         <Panel
           headerText=""
-          isOpen={showModal}
-          onDismiss={toggleModal}
+          isOpen={isPanelOpen}
+          onDismiss={closePanel}
           // You MUST provide this prop! Otherwise screen readers will just say "button" with no label.
           closeButtonAriaLabel="Close"
           type={PanelType.large}
           isFooterAtBottom={true}
+        //headerText={isEditMode ? "Edit Item" : "Add New Item"}
         >
-          <h6 className={styles.Headerlabel}>{DisplayLabel?.AddTileManagement}</h6><hr />
+
+          {!isEditMode ? (
+            <h6 className={styles.Headerlabel}>{DisplayLabel?.AddTileManagement}</h6>
+          ) :
+            <h6 className={styles.Headerlabel}>{DisplayLabel?.EditTileManagement}</h6>
+          }
+          <hr />
+
 
           <Accordion alwaysOpen >
             <Accordion.Item eventKey="0">
-              <Accordion.Header className={styles.Accodordianherder}>Tile Details</Accordion.Header>
+              <Accordion.Header className={styles.Accodordianherder}>{DisplayLabel?.TileDetails}</Accordion.Header>
               <Accordion.Body>
                 <Form>
                   <div className={`ms-Grid ${styles.inlineFormContainer}`}>
                     <div className="col-md-3">
                       <div className="form-group">
-                        <label className={styles.Headerlabel}>Tile Name</label>
+                        <label className={styles.Headerlabel}>{DisplayLabel?.TileName}<span style={{ color: "red" }}>*</span></label>
 
                         {/* <TextField label="Title" errorMessage={TileError} value={TileName} onChange={(e: any) => { setTileName(e.target.value); }} /> */}
                         <TextField
@@ -1131,7 +1239,7 @@ export default function Master({ props }: any): JSX.Element {
                     </div>
                     <div className="col-md-3">
                       <div className="form-group">
-                        <label className={styles.Headerlabel}>Display Picture</label>
+                        <label className={styles.Headerlabel}>{DisplayLabel?.DisplayPicture}<span style={{ color: "red" }}>*</span></label>
                         <TextField
                           placeholder=" "
                           // errorMessage={"Please fill this field"}
@@ -1139,6 +1247,8 @@ export default function Master({ props }: any): JSX.Element {
                           onChange={handleFileChange}
                           //onChange={(el: React.ChangeEvent<HTMLInputElement>) => setSelectedFile()}
                           type="file"
+                          errorMessage={attachmentErr}
+
                         />
                         {/* {attachments} */}
                         {selectedFile && <p>Selected File:{selectedFile.name}</p>}
@@ -1156,16 +1266,18 @@ export default function Master({ props }: any): JSX.Element {
                     </div>
                     <div className="col-md-3">
                       <div className="form-group">
-                        <label className={styles.Headerlabel}>Access To Tile</label>
+                        <label className={styles.Headerlabel}>{DisplayLabel?.AccessToTile}<span style={{ color: "red" }}>*</span></label>
                         <PeoplePicker
                           context={peoplePickerContext}
                           personSelectionLimit={5}
                           showtooltip={true}
                           required={true}
+                          errorMessage={AccessTileUserErr}
                           // searchTextLimit={2}
                           onChange={onPeoplePickerChange}
                           showHiddenInUI={false}
                           principalTypes={[PrincipalType.User]}
+                          defaultSelectedUsers={assignID}
                         // resolveDelay={1000} 
                         />
 
@@ -1177,33 +1289,35 @@ export default function Master({ props }: any): JSX.Element {
                   <div className={`ms-Grid ${styles.inlineFormContainer2}`}>
                     <div className="col-md-2">
                       <div className="form-group">
-                        <label className={styles.Headerlabel}>Tile Status</label>
+                        <label className={styles.Headerlabel}>{DisplayLabel?.TileStatus}</label>
                         <Toggle checked={isTileStatus} onChange={(_, checked) => handleTileStatusToggleChange(checked!)} />
                       </div>
                     </div>
                     <div className="col-md-2">
                       <div className="form-group">
-                        <label className={styles.Headerlabel}>Allow Approver</label>
+                        <label className={styles.Headerlabel}>{DisplayLabel?.AllowApprover}</label>
                         <Toggle checked={isAllowApprover} onChange={(_, checked) => handleAllowApproverToggleChange(checked!)} />
                       </div>
                     </div>
                     <div className="col-md-2">
                       <div className="form-group">
-                        <label className={styles.Headerlabel}>Order</label>
+                        <label className={styles.Headerlabel}>{DisplayLabel?.Order}</label>
                         <Toggle checked={isDropdownVisible} onChange={(_, checked) => handleToggleChange(checked!)}
                         />
                       </div>
                     </div>
                     <div className="col-md-3">
                       <div className="form-group">
-                        <label className={styles.Headerlabel}>Tile Admin</label>
+                        <label className={styles.Headerlabel}>{DisplayLabel?.TileAdmin1}<span style={{ color: "red" }}>*</span></label>
                         <PeoplePicker
                           context={peoplePickerContext}
                           showtooltip={true}
                           required={true}
+                          errorMessage={TileAdminUserErr}
                           onChange={onTilePeoplePickerChange}
                           showHiddenInUI={false}
                           principalTypes={[PrincipalType.User]}
+                          defaultSelectedUsers={TileAdminID}
                         />
                         {/* <TextField
                           placeholder=" "
@@ -1220,9 +1334,12 @@ export default function Master({ props }: any): JSX.Element {
                     <div className="col-md-3">
                       <div className="form-group">
                         {isDropdownVisible && (
-                          <><label className={styles.Headerlabel}>Select Order</label><Dropdown
+                          <><label className={styles.Headerlabel}>{DisplayLabel?.SelectOrder}<span style={{ color: "red" }}>*</span></label><Dropdown
                             placeholder="Select an option"
                             options={order0Data}
+                            onChange={handleorder0DataDropdownChange}
+                            selectedKey={order0DataDataID}
+                            errorMessage={TileSelectorderErr}
                             styles={dropdownStyles} /></>
                         )}
                       </div>
@@ -1235,12 +1352,12 @@ export default function Master({ props }: any): JSX.Element {
             </Accordion.Item>
             <br />
             <Accordion.Item eventKey="1">
-              <Accordion.Header className={styles.Accodordianherder}>Fields</Accordion.Header>
+              <Accordion.Header className={styles.Accodordianherder}>{DisplayLabel?.Fields}</Accordion.Header>
               <Accordion.Body>
 
                 <form>
                   <div style={{ marginBottom: '20px' }}>
-                    <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Select More Actions</label>
+                    <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>{DisplayLabel?.SelectMoreActions}</label>
                     <div
                       style={{
                         display: 'flex',
@@ -1257,6 +1374,7 @@ export default function Master({ props }: any): JSX.Element {
                           label={action}
                           key={action}
                           onChange={(e, isChecked) => handleCheckboxChange(action, isChecked)}
+                          checked={selectedcheckboxActions.includes(action)}
                         />
                       ))}
                     </div>
@@ -1266,13 +1384,13 @@ export default function Master({ props }: any): JSX.Element {
                     <table style={{ width: '100%', marginTop: '20px', borderCollapse: 'collapse' }}>
                       <thead>
                         <tr>
-                          <th>Sr. No.</th>
-                          <th>Field</th>
-                          <th>Is Required</th>
-                          <th>Field Status</th>
-                          <th>Is Field Allow in File</th>
-                          <th>Search Filter Required</th>
-                          <th>Action</th>
+                          <th>{DisplayLabel?.SrNo}</th>
+                          <th>{DisplayLabel?.Field} <span style={{ color: "red" }}>*</span></th>
+                          <th>{DisplayLabel?.IsRequired}</th>
+                          <th>{DisplayLabel?.FieldStatus}</th>
+                          <th>{DisplayLabel?.IsFieldAllowinFile}</th>
+                          <th>{DisplayLabel?.SearchFilterRequired}</th>
+                          <th>{DisplayLabel?.Action}</th>
                         </tr>
                       </thead>
 
@@ -1346,14 +1464,17 @@ export default function Master({ props }: any): JSX.Element {
                                 style={{ color: '#009EF7', font: 'bold', cursor: 'pointer' }}
                               />
                               {/* Delete Button */}
-                              <IconButton
-                                iconProps={deleteIcon}
-                                title="Delete"
-                                ariaLabel="Delete"
-                                onClick={() => handleDelete(index)}
-                                style={{ color: 'red', font: 'bold', cursor: 'pointer' }}
-                              />
+                              {row.Flag && (
+                                <IconButton
+                                  iconProps={deleteIcon}
+                                  title="Delete"
+                                  ariaLabel="Delete"
+                                  onClick={() => handleDelete(index)}
+                                  style={{ color: 'red', font: 'bold', cursor: 'pointer' }}
+                                />
+                              )}
                             </td>
+
                           </tr>
                         ))}
                       </tbody>
@@ -1369,7 +1490,7 @@ export default function Master({ props }: any): JSX.Element {
 
             <br />
             <Accordion.Item eventKey="2">
-              <Accordion.Header className={styles.Accodordianherder}>Reference No. Details</Accordion.Header>
+              <Accordion.Header className={styles.Accodordianherder}>{DisplayLabel?.ReferenceNoDetails}</Accordion.Header>
               <Accordion.Body>
                 <Form>
 
@@ -1378,7 +1499,7 @@ export default function Master({ props }: any): JSX.Element {
                     <div style={{ display: 'flex', gap: '10px' }}>
                       {/* Dynamic Reference Toggle */}
                       <div className="col-md-3">
-                        <label className={styles.Headerlabel}>Is Dynamic Reference</label>
+                        <label className={styles.Headerlabel}>{DisplayLabel?.IsDynamicReference}<span style={{ color: "red" }}>*</span></label>
                         <Toggle
                           checked={DynamicDataReference}
                           onChange={(_, checked) => ToggleChangeforrefernceno(checked!)}
@@ -1388,7 +1509,7 @@ export default function Master({ props }: any): JSX.Element {
                       {/* Dynamic Reference Example TextField */}
                       {!DynamicDataReference && (
                         <div className="col-md-6">
-                          <label className={styles.Headerlabel}>Default Reference Example</label>
+                          <label className={styles.Headerlabel}>{DisplayLabel?.DefaultReferenceExample}</label>
                           <TextField
                             placeholder=" "
                             value={RefrenceNOData}
@@ -1399,10 +1520,11 @@ export default function Master({ props }: any): JSX.Element {
 
                       {DynamicDataReference && (
                         <div className="col-md-6">
-                          <label className={styles.Headerlabel}>Dynamic Reference Example</label>
+                          <label className={styles.Headerlabel}>{DisplayLabel?.DynamicReferenceExample}</label>
                           <TextField
                             placeholder=" "
                             value={refExample}
+                            errorMessage={TileReferenceNoErr}
                             disabled
                           />
                         </div>
@@ -1413,7 +1535,7 @@ export default function Master({ props }: any): JSX.Element {
                     {DynamicDataReference && (
                       <div style={{ marginBottom: '20px' }}>
 
-                        <label className={styles.Headerlabel} style={{ marginBottom: '10px', display: 'block' }}>Choose Fields</label>
+                        <label className={styles.Headerlabel} style={{ marginBottom: '10px', display: 'block' }}>{DisplayLabel?.ChooseFields}</label>
                         <div
                           style={{
                             display: 'flex',
@@ -1426,9 +1548,9 @@ export default function Master({ props }: any): JSX.Element {
                           }}
                         >
 
-                          <Checkbox label="YYYY" onChange={(e, checked) => handleCheckboxToggle("YYYY", checked!)} />
-                          <Checkbox label="YY_YY" onChange={(e, checked) => handleCheckboxToggle("YY_YY", checked!)} />
-                          <Checkbox label="MM" onChange={(e, checked) => handleCheckboxToggle("MM", checked!)} />
+                          <Checkbox label="YYYY" checked={refFormatData.includes("YYYY")} onChange={(e, checked) => handleCheckboxToggle("YYYY", checked!)} />
+                          <Checkbox label="YY_YY" checked={refFormatData.includes("YY_YY")} onChange={(e, checked) => handleCheckboxToggle("YY_YY", checked!)} />
+                          <Checkbox label="MM" checked={refFormatData.includes("MM")} onChange={(e, checked) => handleCheckboxToggle("MM", checked!)} />
                           {
                             tableData.map((el) => (CheckboxData(el)))
 
@@ -1462,7 +1584,7 @@ export default function Master({ props }: any): JSX.Element {
                               flex: 1, // Make both sections take equal width
                             }}
                           >
-                            <label className={styles.Headerlabel} style={{ display: 'block' }}>Separator</label>
+                            <label className={styles.Headerlabel} style={{ display: 'block' }}>{DisplayLabel?.Separator}</label>
                             {/* <ChoiceGroup
                               options={choiceoptions}
                               onChange={(e, option) => handleRadioChange("separator", option?.key!)}
@@ -1512,7 +1634,7 @@ export default function Master({ props }: any): JSX.Element {
                               flex: 1,
                             }}
                           >
-                            <label className={styles.Headerlabel} style={{ display: 'block' }}>Initial Increment</label>
+                            <label className={styles.Headerlabel} style={{ display: 'block' }}>{DisplayLabel?.InitialIncrement}</label>
                             {/* <ChoiceGroup
                               options={InitialIncrementoptions}
                               selectedKey={increment}
@@ -1562,7 +1684,7 @@ export default function Master({ props }: any): JSX.Element {
                         {/* Choose Fields Section */}
 
                         <div>
-                          <label className={styles.Headerlabel} style={{ display: 'block' }}>Change Setting</label>
+                          <label className={styles.Headerlabel} style={{ display: 'block' }}>{DisplayLabel?.ChangeSetting}</label>
 
                           <div style={{ display: 'none' }}>
                             <TextField
@@ -1610,7 +1732,7 @@ export default function Master({ props }: any): JSX.Element {
             </Accordion.Item>
             <br />
             <Accordion.Item eventKey="3">
-              <Accordion.Header className={styles.Accodordianherder}>Archive Section</Accordion.Header>
+              <Accordion.Header className={styles.Accodordianherder}>{DisplayLabel?.ArchiveSection}</Accordion.Header>
               <Accordion.Body>
                 <Form>
                   <div style={{ marginBottom: '20px' }}>
@@ -1618,7 +1740,7 @@ export default function Master({ props }: any): JSX.Element {
                     <div style={{ display: 'flex', gap: '10px' }}>
                       {/* Dynamic Reference Toggle */}
                       <div className="col-md-3">
-                        <label className={styles.Headerlabel}>Is Archive Allowed</label>
+                        <label className={styles.Headerlabel}>{DisplayLabel?.IsArchiveAllowed}<span style={{ color: "red" }}>*</span></label>
                         <Toggle
                           checked={IsArchiveAllowed}
                           onChange={(_, checked) => ToggleChangeforArchiveAllowed(checked!)}
@@ -1627,7 +1749,7 @@ export default function Master({ props }: any): JSX.Element {
 
                       {IsArchiveAllowed && (
                         <div className="col-md-6">
-                          <label className={styles.Headerlabel}>Archive Document Library Name</label>
+                          <label className={styles.Headerlabel}>{DisplayLabel?.ArchiveDocumentLibraryName}</label>
                           <TextField
                             placeholder=" "
                             value={ArchiveTest}
@@ -1658,12 +1780,13 @@ export default function Master({ props }: any): JSX.Element {
                               flex: 1, // Make both sections take equal width
                             }}
                           >
-                            <label className={styles.Headerlabel} style={{ display: 'block' }}>Select Archive Days</label>
+                            <label className={styles.Headerlabel} style={{ display: 'block' }}>{DisplayLabel?.SelectArchiveDays}</label>
                             <Dropdown
                               placeholder="Select an Option"
                               options={RedundancyData}
                               onChange={handleArchiveDropdownChange}
                               selectedKey={RedundancyDataID}
+                              errorMessage={TileRedundancyDaysErr}
 
                             //selectedKey={}
                             />
@@ -1680,10 +1803,11 @@ export default function Master({ props }: any): JSX.Element {
                               flex: 1,
                             }}
                           >
-                            <label className={styles.Headerlabel} style={{ display: 'block' }}>Archive Versions</label>
+                            <label className={styles.Headerlabel} style={{ display: 'block' }}>{DisplayLabel?.ArchiveVersions}</label>
                             <TextField
                               placeholder=" "
                               value={ArchiveVersions}
+                              errorMessage={TileArchiveVersionErr}
                               onChange={(el: React.ChangeEvent<HTMLInputElement>) => setArchiveVersions(el.target.value)}
                             />
                           </div>
@@ -1704,11 +1828,16 @@ export default function Master({ props }: any): JSX.Element {
 
               {/* <DefaultButton onClick={submitTileData} text={DisplayLabel?.Draft} className={styles['sub-btn']} /> */}
 
-              <DefaultButton onClick={submitTileData} text="Save" className={styles['sub-btn']} />
+              {!isEditMode ? (
+                <DefaultButton onClick={submitTileData} text={DisplayLabel?.Submit} className={styles['sub-btn']} />
+              ) :
+                <DefaultButton onClick={submitTileData} text={DisplayLabel?.Update} className={styles['sub-btn']} />
+              }
+
               <MessageDialog isPopupBoxVisible={isPopupVisible} hidePopup={hidePopup} />
 
 
-              <DefaultButton text="Cancel" onClick={toggleModal} className={styles['can-btn']} allowDisabledFocus />
+              <DefaultButton text={DisplayLabel?.Cancel} onClick={closePanel} className={styles['can-btn']} allowDisabledFocus />
 
             </div>
 
