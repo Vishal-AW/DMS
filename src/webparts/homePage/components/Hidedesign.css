@@ -226,6 +226,10 @@ body {
     padding: 7px !important;
 }
 
+label {
+    margin-bottom: 4px !important;
+}
+
 .ms-BasePicker-input:active {
     width: 100%;
     background-color: #f5f8fa !important;
@@ -241,8 +245,15 @@ body {
     padding: 7px !important;
 }
 
-.ms-TooltipHost:focus-visible .ms-BasePicker-text:focus-visible {
+div:focus-visible,
+.ms-TooltipHost:focus-visible,
+.ms-BasePicker-text:focus-visible,
+.ms-PeoplePicker:focus-visible,
+.defaultClass_fdafbcc6:focus-visible,
+.ms-SelectionZone:focus-visible,
+.is-active {
     outline: None !important;
+    border: none !important;
 }
 
 .ms-BasePicker-input,
@@ -392,4 +403,9 @@ body {
 .ms-ChoiceFieldLabel {
     padding-left: 35px !important;
     padding-top: 3px !important;
+}
+
+.ms-Button {
+    border-radius: .475rem;
+
 }
