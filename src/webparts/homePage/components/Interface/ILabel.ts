@@ -8,7 +8,7 @@ export interface ILabel {
     EditTileManagement: string;
     TileName: string;
     TileDetails: string;
-    SelectOrder: string;
+    Selectorder: string;
     TileAdmin1: string;
     Order: string;
     AllowApprover: string;

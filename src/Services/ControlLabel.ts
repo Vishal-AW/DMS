@@ -20,7 +20,7 @@ export async function GetAllLabel(WebUrl: string, spHttpClient: SPHttpClient, La
       TileName: getValue("TileName", data, Language),
       AddTileManagement: getValue("AddTileManagement", data, Language),
       TileDetails: getValue("TileDetails", data, Language),
-      SelectOrder: getValue("SelectOrder", data, Language),
+      Selectorder: getValue("Selectorder", data, Language),
       TileAdmin1: getValue("TileAdmin1", data, Language),
       Order: getValue("Order", data, Language),
       AllowApprover: getValue("AllowApprover", data, Language),

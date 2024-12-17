@@ -15,7 +15,7 @@ import { PeoplePicker, PrincipalType, IPeoplePickerContext } from "@pnp/spfx-con
 import MessageDialog from '../ResuableComponents/PopupBox';
 import ReactTableComponent from '../ResuableComponents/ReusableDataTable';
 import { IStackItemStyles, IStackStyles, IStackTokens, Stack } from 'office-ui-fabric-react';
-import { getDataById, getTileAllData, SaveTileSetting } from "../../../../Services/MasTileService";
+import { getDataById, getTileAllData, SaveTileSetting, UpdateTileSetting } from "../../../../Services/MasTileService";
 import { GetAllLabel } from "../../../../Services/ControlLabel";
 //import { FilePicker, IFilePickerResult } from '@pnp/spfx-controls-react/lib/FilePicker';
 //import MaterialTable from "material-table";
@@ -28,6 +28,8 @@ import { GetAttachmentFile, UploadDocument } from "../../../../Services/DMSTileD
 import { getConfigActive } from "../../../../Services/ConfigService";
 import { getActiveRedundancyDays } from "../../../../Services/ArchiveRedundancyDaysService";
 import { service } from "../../../../Services/Service";
+import { WebPartContext } from "@microsoft/sp-webpart-base";
+import { ISPHttpClientOptions, SPHttpClient } from "@microsoft/sp-http-base";
 
 //import { getConfigActive } from "../../../../Services/ConfigService";
 
@@ -104,6 +106,8 @@ export default function Master({ props }: any): JSX.Element {
   const [increment, setIncrement] = useState<string>("Continue");
   const [refExample, setRefExample] = useState<string>("");
   const [customSeparators, setCustomSeparators] = useState<{ [key: number]: string }>({});
+
+  const [CurrentEditID, setCurrentEditID] = useState<number>(0);
 
 
   const [tableData, setTableData] = useState<any[]>([]);
@@ -214,6 +218,10 @@ export default function Master({ props }: any): JSX.Element {
     const EditSettingData = GetEditData.value;
 
     const str: string = EditSettingData[0].ID.toString();
+
+    const CurrentItemId: number = EditSettingData[0].ID;
+
+    setCurrentEditID(CurrentItemId);
     console.log(EditSettingData);
 
 
@@ -234,6 +242,8 @@ export default function Master({ props }: any): JSX.Element {
     else {
       setorder0DataDataID("");
     }
+
+    getAllColumns(EditSettingData[0].LibraryName);
     const actionsData = (EditSettingData[0].ShowMoreActions == null ? [] : EditSettingData[0].ShowMoreActions.split(';'));
     await setSelectedcheckboxActions(actionsData);
 
@@ -307,22 +317,19 @@ export default function Master({ props }: any): JSX.Element {
       setSelectedFile(null);
     }
 
-
-
-
-
-
   };
 
 
 
-  //   const getAllColumns() {
-  //     var query = props.SiteURL+ "/_api/web/lists/getbytitle('" + EditSettingData.LibraryName + "')/Fields?$filter=(CanBeDeleted eq true)";
-  //     GetListData(query).done(function(response) {
-  //         $scope.allLibColumn = response.d.results;
-
-  //     })
-  // }
+  const GetListData = async (context: WebPartContext, query: string) => {
+    const response = await context.spHttpClient.get(query, SPHttpClient.configurations.v1, {
+      headers: {
+        'Accept': 'application/json;odata=verbose',
+        'odata-version': '',
+      },
+    });
+    return await response.json();
+  };
 
   const CheckboxData = (obj: any) => {
 
@@ -968,6 +975,8 @@ export default function Master({ props }: any): JSX.Element {
     valid ? saveData() : "";
   };
 
+
+
   const validation = () => {
     let isValidForm = true;
     if (TileName === "" || TileName === undefined || TileName === null) {
@@ -979,12 +988,12 @@ export default function Master({ props }: any): JSX.Element {
       isValidForm = false;
     }
 
-    if (selectedUsers.length === 0) {
+    if (assignID.length === 0) {
       setAccessTileUserErr("Please Enter Access Details");
       isValidForm = false;
     }
 
-    if (TileAdminselectedUsers.length === 0) {
+    if (TileAdminID.length === 0) {
       setTileAdminUserErr("Please add Tile Admin");
       isValidForm = false;
     }
@@ -1042,6 +1051,8 @@ export default function Master({ props }: any): JSX.Element {
     // }
     return isValidForm;
   }
+
+
 
 
   const saveAttachment = async (MainTileID: any) => {
@@ -1135,6 +1146,7 @@ export default function Master({ props }: any): JSX.Element {
       IsDynamicReference: DynamicDataReference,
       ShowMoreActions: selectedcheckboxActions.join(";"),
       Order0: orderData,
+      AllowOrder: isDropdownVisible,
       Documentpath: siteurl,
       ReferenceFormula: refExample,
       Separator: separator,
@@ -1162,6 +1174,233 @@ export default function Master({ props }: any): JSX.Element {
       });
 
     }
+    clearField();
+    closePanel();
+
+  };
+
+
+
+  const UpdateTileData = () => {
+    clearError();
+    let valid = validation();
+    valid ? UpdateData() : "";
+  };
+
+  const UpdateSequenceNumber = async (startIndex: any, changeIndex: any, data: any, flag: string) => {
+    const NewSequencedata = []
+    for (let p = 0; p < data.length; p++) {
+
+      const NextSequencedata = data.filter((item: any) => item.Order0 === startIndex);
+      if (NextSequencedata.length > 0) {
+        let obj = { Id: NextSequencedata[0].Id, Order0: changeIndex }
+        NewSequencedata.push(obj)
+        startIndex = startIndex + 1
+        changeIndex = changeIndex + 1
+      }
+      if (startIndex > data.length) {
+        startIndex = 1
+      }
+      if (changeIndex > data.length) {
+        changeIndex = 1
+      }
+    }
+    return NewSequencedata
+  }
+
+  const UpdateTileSequence = async (NewSequencedata: any) => {
+    for (let i = 0; i < NewSequencedata.length; i++) {
+      let obj = { Order0: NewSequencedata[i].Order0 }
+      await UpdateTileSetting(props.SiteURL, props.spHttpClient, obj, CurrentEditID);
+    }
+  }
+
+  let allLibColumn: any = [];
+  const getAllColumns = async (TileName: any) => {
+    var query = props.SiteURL + "/_api/web/lists/getbytitle('" + TileName + "')/Fields?$filter=(CanBeDeleted eq true)";
+    const response = await GetListData(props.context, query);
+    allLibColumn = response.d.results;
+
+    console.log(allLibColumn);
+  }
+
+  const createAndUpdateColumn = async (Internal: string) => {
+    for (var i = 0; i < tableData.length; i++) {
+      const isDuplicate = allLibColumn.filter((item: any) => item.InternalName === tableData[i].InternalTitleName);
+      if (isDuplicate.length == 0) {
+        var colType = getColumnType(tableData[i].ColumnType);
+        var NewColType = colType.toString();
+        createColumn(props.context, props.SiteURL, Internal, tableData[i].InternalTitleName, NewColType).then(function (response) {
+
+        });
+
+      }
+    }
+  }
+
+
+
+  const createAndUpdateArchiveColumn = async (TileValue: any, ArchiveValue: boolean) => {
+    for (var i = 0; i < tableData.length; i++) {
+      const isDuplicate = allLibColumn.filter((item: any) => item.InternalName === tableData[i].InternalTitleName);
+      if (ArchiveValue == true) {
+        if (isDuplicate.length == 0) {
+          var colType = getColumnType(tableData[i].ColumnType);
+          var NewColType = colType.toString();
+          //_spService.CreateList(props.context, props.SiteURL, Columns, TileLID, false)
+          createColumn(props.context, props.SiteURL, TileValue.ArchiveLibraryName, tableData[i].InternalTitleName, NewColType).then(function (response) {
+
+          });
+        }
+      }
+
+    }
+  }
+
+  const createColumn = async (context: WebPartContext, webURL: string, listName: string, ColumnName: string, fieldType: string) => {
+    const url = webURL + "/_api/web/lists/GetByTitle('" + listName + "')/Fields";
+    const spHttpClientOptions: ISPHttpClientOptions = {
+      headers: {
+        'Accept': 'application/json;odata=nometadata',
+        'Content-type': 'application/json;odata=nometadata',
+        'odata-version': ''
+      },
+      "body": JSON.stringify({
+        'FieldTypeKind': fieldType,
+        'Title': ColumnName
+      })
+    };
+
+    return await context.spHttpClient.post(url, SPHttpClient.configurations.v1, spHttpClientOptions);
+  }
+
+
+  const UpdateData = async () => {
+
+    let ArchiveInternal = "";
+    let uniqueid = await uuidv4();
+
+    console.log(uniqueid);
+
+    let siteurl = "";
+    let NewSequencedata: any = [];
+
+
+    let GetAllTheTileData: any = await getTileAllData(props.SiteURL, props.spHttpClient);
+    let GetAllTheTileDatavalueData = GetAllTheTileData.value;
+    const Sequencedata = GetAllTheTileDatavalueData.filter((item: any) => item.Id === CurrentEditID);
+    let flagData = "";
+
+    var TileSequence = parseInt(order0DataDataID)
+    if (Sequencedata[0].Order0 != TileSequence) {
+      if (Sequencedata[0].Order0 > TileSequence) {
+        flagData = "forward";
+      }
+      else {
+        flagData = "backward";
+      }
+      NewSequencedata = await UpdateSequenceNumber(Sequencedata[0].Order0, TileSequence, GetAllTheTileDatavalueData, flagData);
+      console.log(NewSequencedata);
+    }
+
+    if (selectedFile) {
+      const backImageActualName = selectedFile.name.split(".")[0].replace(/[^a-zA-Z0-9]/g, "");
+      const backImageName = `${backImageActualName}.${selectedFile.name.split(".")[1]}`;
+      siteurl = `${props.SiteURL}/DMS_TileDocument/${uniqueid}-${backImageName}`;
+      console.log(siteurl);
+    } else {
+      console.log("No file selected.");
+    }
+
+    let str = TileName;
+    let Internal = str.replace(/[^a-zA-Z0-9]/g, '');
+
+    if (IsArchiveAllowed == true) {
+      let str1 = ArchiveTest;
+      ArchiveInternal = str1.replace(/[^a-zA-Z0-9]/g, '');
+    }
+    else {
+      ArchiveInternal = "";
+    }
+
+
+    createAndUpdateColumn(Internal);
+
+    const userIds = await Promise.all(
+      assignID.map(async (person: any) => {
+        const user = await getUserIdFromLoginName(props.context, person);
+        return user.Id;
+      })
+    );
+
+    const TilesIds = await Promise.all(
+      TileAdminID.map(async (person: any) => {
+        const user = await getUserIdFromLoginName(props.context, person);
+        return user.Id;
+      })
+    );
+
+
+    let option = {
+      __metadata: { type: "SP.Data.DMS_x005f_Mas_x005f_TileListItem" },
+      TileName: TileName,
+      PermissionId: { results: userIds },
+      TileAdminId: TilesIds[0],
+      AllowApprover: isAllowApprover,
+      Active: isTileStatus,
+      IsDynamicReference: DynamicDataReference,
+      ShowMoreActions: selectedcheckboxActions.join(";"),
+      // Order0: orderData,
+      AllowOrder: isDropdownVisible,
+      SystemCreated: false,
+      Documentpath: siteurl,
+      ReferenceFormula: refExample,
+      Separator: separator,
+      DynamicControl: JSON.stringify(tableData),
+      IsArchiveRequired: IsArchiveAllowed,
+      //LibraryName: Internal
+
+    }
+    await UpdateTileSetting(props.SiteURL, props.spHttpClient, option, CurrentEditID);
+    let UpdateData = await getDataById(props.SiteURL, props.spHttpClient, CurrentEditID);
+    { showPopup }
+    console.log(UpdateData);
+    let UpdateTileID = UpdateData.value;
+    console.log(UpdateTileID);
+    if (UpdateTileID != null) {
+      if (Sequencedata[0].Order0 != TileSequence) {
+        if (NewSequencedata.length > 0) {
+          await UpdateTileSequence(NewSequencedata)
+        }
+      }
+
+      if (UpdateTileID[0].IsArchiveRequired == true) {
+
+        var items = {
+          __metadata: { type: "SP.Data.DMS_x005f_Mas_x005f_TileListItem" },
+          ArchiveLibraryName: ArchiveInternal,
+          RetentionDays: parseInt(RedundancyDataText),
+          ArchiveVersionCount: parseInt(ArchiveVersions),
+        }
+        await UpdateTileSetting(props.SiteURL, props.spHttpClient, items, CurrentEditID);
+
+        let ArchUpdateData = await getDataById(props.SiteURL, props.spHttpClient, CurrentEditID);
+
+        let ArchUpdateTileID = ArchUpdateData.value;
+
+        if (ArchUpdateTileID[0].ArchiveLibraryName == null && ArchUpdateTileID[0].ArchiveLibraryName == undefined) {
+          const TileLibraryData = TileLibrary(Internal, CurrentEditID, ArchiveInternal).then(function (response) {
+            console.log(TileLibraryData);
+          });
+        }
+        else {
+          createAndUpdateArchiveColumn(UpdateTileID[0], true);
+        }
+
+      }
+
+    }
+    alert("Data Updated SuccessFully");
     clearField();
     closePanel();
 
@@ -1334,7 +1573,7 @@ export default function Master({ props }: any): JSX.Element {
                     <div className="col-md-3">
                       <div className="form-group">
                         {isDropdownVisible && (
-                          <><label className={styles.Headerlabel}>{DisplayLabel?.SelectOrder}<span style={{ color: "red" }}>*</span></label><Dropdown
+                          <><label className={styles.Headerlabel}>{DisplayLabel?.Selectorder}<span style={{ color: "red" }}>*</span></label><Dropdown
                             placeholder="Select an option"
                             options={order0Data}
                             onChange={handleorder0DataDropdownChange}
@@ -1831,7 +2070,7 @@ export default function Master({ props }: any): JSX.Element {
               {!isEditMode ? (
                 <DefaultButton onClick={submitTileData} text={DisplayLabel?.Submit} className={styles['sub-btn']} />
               ) :
-                <DefaultButton onClick={submitTileData} text={DisplayLabel?.Update} className={styles['sub-btn']} />
+                <DefaultButton onClick={UpdateTileData} text={DisplayLabel?.Update} className={styles['sub-btn']} />
               }
 
               <MessageDialog isPopupBoxVisible={isPopupVisible} hidePopup={hidePopup} />
@@ -1849,6 +2088,7 @@ export default function Master({ props }: any): JSX.Element {
     </div>
   )
 }
+
 
 
 
