@@ -9,10 +9,12 @@ import {
   IIconProps,
   IconButton,
   IDropdownOption,
-  FontIcon
+  FontIcon,
+  Spinner,
+  SpinnerSize
 } from 'office-ui-fabric-react';
 import { PeoplePicker, PrincipalType, IPeoplePickerContext } from "@pnp/spfx-controls-react/lib/PeoplePicker";
-import MessageDialog from '../ResuableComponents/PopupBox';
+//import MessageDialog from '../ResuableComponents/PopupBox';
 import ReactTableComponent from '../ResuableComponents/ReusableDataTable';
 import { IStackItemStyles, IStackStyles, IStackTokens, Stack } from 'office-ui-fabric-react';
 import { getDataById, getTileAllData, SaveTileSetting, UpdateTileSetting } from "../../../../Services/MasTileService";
@@ -21,7 +23,7 @@ import { GetAllLabel } from "../../../../Services/ControlLabel";
 //import MaterialTable from "material-table";
 import { Accordion, Form } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { useBoolean } from '@fluentui/react-hooks';
+
 import { ILabel } from '../Interface/ILabel';
 import { getUserIdFromLoginName, uuidv4 } from "../../../../DAL/Commonfile";
 import { GetAttachmentFile, UploadDocument } from "../../../../Services/DMSTileDocumentService";
@@ -30,6 +32,7 @@ import { getActiveRedundancyDays } from "../../../../Services/ArchiveRedundancyD
 import { service } from "../../../../Services/Service";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import { ISPHttpClientOptions, SPHttpClient } from "@microsoft/sp-http-base";
+import PopupBox from "../ResuableComponents/PopupBox";
 
 //import { getConfigActive } from "../../../../Services/ConfigService";
 
@@ -41,12 +44,14 @@ import { ISPHttpClientOptions, SPHttpClient } from "@microsoft/sp-http-base";
 export default function Master({ props }: any): JSX.Element {
   const _spService: service = new service();
 
+
   //const [showModal, setShowModal] = useState(false);
   //const toggleModal = () => setShowModal(!showModal);
   //const [showDialog, setShowDialog] = useState(false);
   //const [dialogMessage, setDialogMessage] = useState('');
   //const [isOpen, setIsOpen] = useState(false);
-  const [isPopupVisible, { setTrue: showPopup, setFalse: hidePopup }] = useBoolean(false);
+  const [isPopupVisible, setisPopupVisible] = useState(false);
+  //const [isPopupVisible, { setTrue: showPopup, setFalse: hidePopup }] = useBoolean(false);
   //const [isPopupVisible, { setFalse: hidePopup }] = useBoolean(false);
   const [selectedUsers, setSelectedUsers] = useState<any[]>([]);
   const [TileAdminselectedUsers, setTileAdminSelectedUsers] = useState<any[]>([]);
@@ -61,6 +66,8 @@ export default function Master({ props }: any): JSX.Element {
   const [TileArchiveVersionErr, setTileArchiveVersionErr] = useState("");
   const [MainTableSetdata, setData] = useState<any[]>([]);
 
+  const [isLoading, setIsLoading] = useState(false); // Spinner state
+
   // const [DuplicateTileError, setDuplicateTileError] = useState("");
   // const [TileLowerUpperError, setTileLowerUpperError] = useState("");
   const [DisplayLabel, setDisplayLabel] = useState<ILabel>();
@@ -71,11 +78,12 @@ export default function Master({ props }: any): JSX.Element {
   const [TileAdminName, setTileAdminName] = useState<string>("");
   const [TileAdminID, setTileAdminID] = useState([]);
   const [order0Data, setorder0Data] = useState([]);
+  const [uOrder0Data, setUorder0Data] = useState<any[]>([]);
   const [RedundancyDataID, setRedundancyDataID] = useState('');
   const [RedundancyDataText, setRedundancyDataText] = useState('');
   const [configData, setConfigData] = useState([]);
   const [RedundancyData, setRedundancyData] = useState([]);
-  const [order0DataDataID, setorder0DataDataID] = useState('');
+  const [order0DataDataID, setorder0DataDataID] = useState<string | undefined>();
   const [order0DataDataText, setorder0DataText] = useState('');
   const [isToggleDisabled, setIsToggleDisabled] = useState(false);
 
@@ -131,6 +139,11 @@ export default function Master({ props }: any): JSX.Element {
     setIsPanelOpen(true);
   };
 
+  const hidePopup = () => {
+    setisPopupVisible(false);
+    closePanel();
+  };
+
 
 
 
@@ -153,6 +166,7 @@ export default function Master({ props }: any): JSX.Element {
     RedundancyDaysData();
     setRefrenceNOData(`${moment().format('YYYY')}-00001`);
     setRefExample(RefrenceNOData);
+    setisPopupVisible(false);
 
     //DashboardDataEdit();
 
@@ -240,7 +254,7 @@ export default function Master({ props }: any): JSX.Element {
       setorder0DataDataID(EditSettingData[0].Order0);
     }
     else {
-      setorder0DataDataID("");
+      setorder0DataDataID('');
     }
 
     getAllColumns(EditSettingData[0].LibraryName);
@@ -256,11 +270,13 @@ export default function Master({ props }: any): JSX.Element {
       let ActiveRedundancyDaysData: any = await getActiveRedundancyDays(props.SiteURL, props.spHttpClient);
       let ActiveRedundancyDaysvalueData = ActiveRedundancyDaysData.value;
       const FilterRetentionDays = ActiveRedundancyDaysvalueData.filter((item: any) => item.RedundancyDays === EditSettingData[0].RetentionDays);
-      const RetentiondaysData = FilterRetentionDays[0].ID;
+      if (FilterRetentionDays.length > 0) {
+        const RetentiondaysData = FilterRetentionDays[0].ID;
 
-      await setArchiveTest(EditSettingData[0].ArchiveLibraryName);
-      await setArchiveVersions(EditSettingData[0].ArchiveVersionCount);
-      await setRedundancyDataID(RetentiondaysData);
+        await setArchiveTest(EditSettingData[0].ArchiveLibraryName);
+        await setArchiveVersions(EditSettingData[0].ArchiveVersionCount);
+        await setRedundancyDataID(RetentiondaysData);
+      }
     }
     else {
       setArchiveTest("");
@@ -468,14 +484,23 @@ export default function Master({ props }: any): JSX.Element {
 
     console.log(GetTileMAinData);
 
-    let OrdervalueData = GetTileMAinData.value;
+    const OrdervalueData = GetTileMAinData.value;
 
-    console.log(OrdervalueData);
+    const sortedById = [...OrdervalueData].sort((a, b) => b.ID - a.ID);
+
+    const sortedAsc = [...sortedById].sort((a, b) => a.Order0 - b.Order0);
+
+    await setUorder0Data(sortedAsc);
+
+    console.log(uOrder0Data);
+
+    console.log(sortedAsc);
+
 
 
     let options: any = [];
 
-    OrdervalueData.forEach((Order0Data: { ID: any; Order0: any; }) => {
+    sortedAsc.forEach((Order0Data: { ID: any; Order0: any; }) => {
 
       options.push({
 
@@ -1074,112 +1099,259 @@ export default function Master({ props }: any): JSX.Element {
   };
 
 
+  // const saveData = async () => {
+
+  //   setisPopupVisible(true);
+  //   let ArchiveInternal = "";
+  //   let uniqueid = await uuidv4();
+
+  //   console.log(uniqueid);
+
+  //   let siteurl = "";
+
+  //   if (selectedFile) {
+  //     const backImageActualName = selectedFile.name.split(".")[0].replace(/[^a-zA-Z0-9]/g, "");
+  //     const backImageName = `${backImageActualName}.${selectedFile.name.split(".")[1]}`;
+  //     siteurl = `${props.SiteURL}/DMS_TileDocument/${uniqueid}-${backImageName}`;
+  //     console.log(siteurl);
+  //   } else {
+  //     console.log("No file selected.");
+  //   }
+
+  //   let str = TileName;
+  //   let Internal = str.replace(/[^a-zA-Z0-9]/g, '');
+
+  //   if (IsArchiveAllowed == true) {
+  //     let str1 = ArchiveTest;
+  //     ArchiveInternal = str1.replace(/[^a-zA-Z0-9]/g, '');
+  //   }
+  //   else {
+  //     ArchiveInternal = "";
+  //   }
+
+
+  //   const userIds = await Promise.all(
+  //     assignID.map(async (person: any) => {
+  //       const user = await getUserIdFromLoginName(props.context, person);
+  //       return user.Id;
+  //     })
+  //   );
+
+  //   const TilesIds = await Promise.all(
+  //     TileAdminID.map(async (person: any) => {
+  //       const user = await getUserIdFromLoginName(props.context, person);
+  //       return user.Id;
+  //     })
+  //   );
+  //   let orderData;
+  //   if (isDropdownVisible == true) {
+
+  //     orderData = parseInt(order0DataDataText);
+  //     console.log(orderData);
+  //   }
+  //   else {
+  //     const maindata = await getTileAllData(props.SiteURL, props.spHttpClient);
+  //     let Dataval = maindata.value.length;
+
+  //     if (Dataval == null) {
+  //       orderData = 1;
+  //     }
+  //     else {
+  //       orderData = Dataval + 1;
+  //     }
+
+  //   }
+
+  //   const NewOrderData = [];
+  //   var ord = parseInt(orderData) - 1;
+  //   console.log(ord);
+  //   for (var i = ord; i < uOrder0Data.length; i++) {
+  //     if (uOrder0Data[i].ID != undefined) {
+  //       var id = uOrder0Data[i].ID
+  //       var orderno = parseInt(uOrder0Data[i].Order0) + 1
+  //       var obj = {
+  //         ID: id, orderno: orderno
+  //       }
+  //       NewOrderData.push(obj)
+  //     }
+  //   }
+
+  //   let option = {
+  //     __metadata: { type: "SP.Data.DMS_x005f_Mas_x005f_TileListItem" },
+  //     TileName: TileName,
+  //     PermissionId: { results: userIds },
+  //     TileAdminId: TilesIds[0],
+  //     AllowApprover: isAllowApprover,
+  //     Active: isTileStatus,
+  //     IsDynamicReference: DynamicDataReference,
+  //     ShowMoreActions: selectedcheckboxActions.join(";"),
+  //     Order0: orderData,
+  //     AllowOrder: isDropdownVisible,
+  //     Documentpath: siteurl,
+  //     ReferenceFormula: refExample,
+  //     Separator: separator,
+  //     DynamicControl: JSON.stringify(tableData),
+  //     IsArchiveRequired: IsArchiveAllowed,
+  //     ArchiveLibraryName: ArchiveInternal,
+  //     RetentionDays: RedundancyDataText == '' ? '' : parseInt(RedundancyDataText),
+  //     ArchiveVersionCount: ArchiveVersions == '' ? '' : parseInt(ArchiveVersions),
+  //     LibraryName: Internal
+
+  //   }
+  //   let LID = await SaveTileSetting(props.SiteURL, props.spHttpClient, option);
+  //   console.log(LID);
+  //   let MainTileID = LID.Id;
+  //   let MainTileLID = LID.Id.toString();
+
+  //   if (LID != null) {
+  //     saveAttachment(MainTileID);
+
+  //     const TileLibraryData = TileLibrary(Internal, MainTileLID, ArchiveInternal).then(function (response) {
+  //       console.log(TileLibraryData);
+  //     });
+
+  //     for (let i = 0; i < NewOrderData.length; i++) {
+  //       let obj = { Order0: NewOrderData[i].orderno }
+  //       UpdateTileSetting(props.SiteURL, props.spHttpClient, obj, NewOrderData[i].ID).then(function (response) {
+  //       })
+  //     }
+
+  //     MainTableSetdata
+  //   }
+
+  //   clearField();
+  //   closePanel();
+
+  // };
+
   const saveData = async () => {
 
-    let ArchiveInternal = "";
-    let uniqueid = await uuidv4();
-
-    console.log(uniqueid);
-
-    let siteurl = "";
-
-    if (selectedFile) {
-      const backImageActualName = selectedFile.name.split(".")[0].replace(/[^a-zA-Z0-9]/g, "");
-      const backImageName = `${backImageActualName}.${selectedFile.name.split(".")[1]}`;
-      siteurl = `${props.SiteURL}/DMS_TileDocument/${uniqueid}-${backImageName}`;
-      console.log(siteurl);
-    } else {
-      console.log("No file selected.");
-    }
-
-    let str = TileName;
-    let Internal = str.replace(/[^a-zA-Z0-9]/g, '');
-
-    if (IsArchiveAllowed == true) {
-      let str1 = ArchiveTest;
-      ArchiveInternal = str1.replace(/[^a-zA-Z0-9]/g, '');
-    }
-    else {
-      ArchiveInternal = "";
-    }
+    try {
+      setIsLoading(true); // Show spinner before starting the save operation
 
 
-    const userIds = await Promise.all(
-      assignID.map(async (person: any) => {
-        const user = await getUserIdFromLoginName(props.context, person);
-        return user.Id;
-      })
-    );
+      let ArchiveInternal = "";
+      let uniqueid = await uuidv4();
 
-    const TilesIds = await Promise.all(
-      TileAdminID.map(async (person: any) => {
-        const user = await getUserIdFromLoginName(props.context, person);
-        return user.Id;
-      })
-    );
-    let orderData;
-    if (isDropdownVisible == true) {
+      console.log(uniqueid);
 
-      orderData = isDropdownVisible;
-      console.log(orderData);
-    }
-    else {
-      const maindata = await getTileAllData(props.SiteURL, props.spHttpClient);
-      let Dataval = maindata.value.length;
+      let siteurl = "";
 
-      if (Dataval == null) {
-        orderData = 1;
-      }
-      else {
-        orderData = Dataval + 1;
+      if (selectedFile) {
+        const backImageActualName = selectedFile.name.split(".")[0].replace(/[^a-zA-Z0-9]/g, "");
+        const backImageName = `${backImageActualName}.${selectedFile.name.split(".")[1]}`;
+        siteurl = `${props.SiteURL}/DMS_TileDocument/${uniqueid}-${backImageName}`;
+        console.log(siteurl);
+      } else {
+        console.log("No file selected.");
       }
 
-    }
+      let str = TileName;
+      let Internal = str.replace(/[^a-zA-Z0-9]/g, '');
 
-    let option = {
-      __metadata: { type: "SP.Data.DMS_x005f_Mas_x005f_TileListItem" },
-      TileName: TileName,
-      PermissionId: { results: userIds },
-      TileAdminId: TilesIds[0],
-      AllowApprover: isAllowApprover,
-      Active: isTileStatus,
-      IsDynamicReference: DynamicDataReference,
-      ShowMoreActions: selectedcheckboxActions.join(";"),
-      Order0: orderData,
-      AllowOrder: isDropdownVisible,
-      Documentpath: siteurl,
-      ReferenceFormula: refExample,
-      Separator: separator,
-      DynamicControl: JSON.stringify(tableData),
-      IsArchiveRequired: IsArchiveAllowed,
-      ArchiveLibraryName: ArchiveInternal,
-      RetentionDays: parseInt(RedundancyDataText),
-      ArchiveVersionCount: parseInt(ArchiveVersions),
-      LibraryName: Internal
+      if (IsArchiveAllowed == true) {
+        let str1 = ArchiveTest;
+        ArchiveInternal = str1.replace(/[^a-zA-Z0-9]/g, '');
+      } else {
+        ArchiveInternal = "";
+      }
 
-    }
-    let LID = await SaveTileSetting(props.SiteURL, props.spHttpClient, option);
-    { showPopup }
-    console.log(LID);
-    let MainTileID = LID.Id;
-    let MainTileLID = LID.Id.toString();
+      const userIds = await Promise.all(
+        assignID.map(async (person: any) => {
+          const user = await getUserIdFromLoginName(props.context, person);
+          return user.Id;
+        })
+      );
 
+      const TilesIds = await Promise.all(
+        TileAdminID.map(async (person: any) => {
+          const user = await getUserIdFromLoginName(props.context, person);
+          return user.Id;
+        })
+      );
 
+      let orderData;
+      if (isDropdownVisible == true) {
+        orderData = parseInt(order0DataDataText);
+        console.log(orderData);
+      } else {
+        const maindata = await getTileAllData(props.SiteURL, props.spHttpClient);
+        let Dataval = maindata.value.length;
 
-    if (LID != null) {
-      saveAttachment(MainTileID);
+        if (Dataval == null) {
+          orderData = 1;
+        } else {
+          orderData = Dataval + 1;
+        }
+      }
 
-      const TileLibraryData = TileLibrary(Internal, MainTileLID, ArchiveInternal).then(function (response) {
+      const NewOrderData = [];
+      var ord = parseInt(orderData) - 1;
+      console.log(ord);
+      for (var i = ord; i < uOrder0Data.length; i++) {
+        if (uOrder0Data[i].ID != undefined) {
+          var id = uOrder0Data[i].ID;
+          var orderno = parseInt(uOrder0Data[i].Order0) + 1;
+          var obj = {
+            ID: id, orderno: orderno
+          };
+          NewOrderData.push(obj);
+        }
+      }
+
+      let option = {
+        __metadata: { type: "SP.Data.DMS_x005f_Mas_x005f_TileListItem" },
+        TileName: TileName,
+        PermissionId: { results: userIds },
+        TileAdminId: TilesIds[0],
+        AllowApprover: isAllowApprover,
+        Active: isTileStatus,
+        IsDynamicReference: DynamicDataReference,
+        ShowMoreActions: selectedcheckboxActions.join(";"),
+        Order0: orderData,
+        AllowOrder: isDropdownVisible,
+        Documentpath: siteurl,
+        ReferenceFormula: refExample,
+        Separator: separator,
+        DynamicControl: JSON.stringify(tableData),
+        IsArchiveRequired: IsArchiveAllowed,
+        ArchiveLibraryName: ArchiveInternal,
+        RetentionDays: RedundancyDataText === null ? null : parseInt(RedundancyDataText),
+        ArchiveVersionCount: ArchiveVersions === null ? null : parseInt(ArchiveVersions),
+        LibraryName: Internal
+      };
+
+      let LID = await SaveTileSetting(props.SiteURL, props.spHttpClient, option);
+      console.log(LID);
+
+      if (LID != null) {
+        const MainTileID = LID.Id;
+        const MainTileLID = LID.Id.toString();
+
+        saveAttachment(MainTileID);
+
+        for (let i = 0; i < NewOrderData.length; i++) {
+          let obj = { Order0: NewOrderData[i].orderno };
+          await UpdateTileSetting(props.SiteURL, props.spHttpClient, obj, NewOrderData[i].ID);
+        }
+
+        const TileLibraryData = await TileLibrary(Internal, MainTileLID, ArchiveInternal);
         console.log(TileLibraryData);
-      });
 
+      }
+
+
+    } catch (error) {
+      console.error("Error during save operation:", error);
+    } finally {
+      setIsLoading(false);
+      setisPopupVisible(true);
+      clearField();
+
+      //closePanel();
     }
-    clearField();
-    closePanel();
 
   };
-
-
 
   const UpdateTileData = () => {
     clearError();
@@ -1187,7 +1359,7 @@ export default function Master({ props }: any): JSX.Element {
     valid ? UpdateData() : "";
   };
 
-  const UpdateSequenceNumber = async (startIndex: any, changeIndex: any, data: any, flag: string) => {
+  const UpdateSequenceNumber = async (startIndex: number, changeIndex: any, data: any, flag: string) => {
     const NewSequencedata = []
     for (let p = 0; p < data.length; p++) {
 
@@ -1211,15 +1383,15 @@ export default function Master({ props }: any): JSX.Element {
   const UpdateTileSequence = async (NewSequencedata: any) => {
     for (let i = 0; i < NewSequencedata.length; i++) {
       let obj = { Order0: NewSequencedata[i].Order0 }
-      await UpdateTileSetting(props.SiteURL, props.spHttpClient, obj, CurrentEditID);
+      await UpdateTileSetting(props.SiteURL, props.spHttpClient, obj, NewSequencedata[i].Id);
     }
   }
 
-  let allLibColumn: any = [];
+  const [allLibColumn, setAllLibColumn] = useState([]);
   const getAllColumns = async (TileName: any) => {
     var query = props.SiteURL + "/_api/web/lists/getbytitle('" + TileName + "')/Fields?$filter=(CanBeDeleted eq true)";
     const response = await GetListData(props.context, query);
-    allLibColumn = response.d.results;
+    setAllLibColumn(response.d.results);
 
     console.log(allLibColumn);
   }
@@ -1277,6 +1449,7 @@ export default function Master({ props }: any): JSX.Element {
 
   const UpdateData = async () => {
 
+
     let ArchiveInternal = "";
     let uniqueid = await uuidv4();
 
@@ -1291,7 +1464,7 @@ export default function Master({ props }: any): JSX.Element {
     const Sequencedata = GetAllTheTileDatavalueData.filter((item: any) => item.Id === CurrentEditID);
     let flagData = "";
 
-    var TileSequence = parseInt(order0DataDataID)
+    var TileSequence = order0DataDataText == "" ? "" : parseInt(order0DataDataText);
     if (Sequencedata[0].Order0 != TileSequence) {
       if (Sequencedata[0].Order0 > TileSequence) {
         flagData = "forward";
@@ -1314,14 +1487,6 @@ export default function Master({ props }: any): JSX.Element {
 
     let str = TileName;
     let Internal = str.replace(/[^a-zA-Z0-9]/g, '');
-
-    if (IsArchiveAllowed == true) {
-      let str1 = ArchiveTest;
-      ArchiveInternal = str1.replace(/[^a-zA-Z0-9]/g, '');
-    }
-    else {
-      ArchiveInternal = "";
-    }
 
 
     createAndUpdateColumn(Internal);
@@ -1363,11 +1528,12 @@ export default function Master({ props }: any): JSX.Element {
     }
     await UpdateTileSetting(props.SiteURL, props.spHttpClient, option, CurrentEditID);
     let UpdateData = await getDataById(props.SiteURL, props.spHttpClient, CurrentEditID);
-    { showPopup }
     console.log(UpdateData);
     let UpdateTileID = UpdateData.value;
     console.log(UpdateTileID);
     if (UpdateTileID != null) {
+
+      saveAttachment(UpdateTileID[0].Id);
       if (Sequencedata[0].Order0 != TileSequence) {
         if (NewSequencedata.length > 0) {
           await UpdateTileSequence(NewSequencedata)
@@ -1375,6 +1541,14 @@ export default function Master({ props }: any): JSX.Element {
       }
 
       if (UpdateTileID[0].IsArchiveRequired == true) {
+
+        if (UpdateTileID[0].IsArchiveRequired == true) {
+          let str1 = ArchiveTest;
+          ArchiveInternal = str1.replace(/[^a-zA-Z0-9]/g, '');
+        }
+        else {
+          ArchiveInternal = "";
+        }
 
         var items = {
           __metadata: { type: "SP.Data.DMS_x005f_Mas_x005f_TileListItem" },
@@ -1384,13 +1558,15 @@ export default function Master({ props }: any): JSX.Element {
         }
         await UpdateTileSetting(props.SiteURL, props.spHttpClient, items, CurrentEditID);
 
-        let ArchUpdateData = await getDataById(props.SiteURL, props.spHttpClient, CurrentEditID);
+        // let ArchUpdateData = await getDataById(props.SiteURL, props.spHttpClient, CurrentEditID);
 
-        let ArchUpdateTileID = ArchUpdateData.value;
+        // let ArchUpdateTileID = ArchUpdateData.value;
 
-        if (ArchUpdateTileID[0].ArchiveLibraryName == null && ArchUpdateTileID[0].ArchiveLibraryName == undefined) {
-          const TileLibraryData = TileLibrary(Internal, CurrentEditID, ArchiveInternal).then(function (response) {
-            console.log(TileLibraryData);
+        if (UpdateTileID[0].ArchiveLibraryName == null && UpdateTileID[0].ArchiveLibraryName == undefined) {
+
+
+          const UpdateTileLibraryData = await TileLibrary(Internal, CurrentEditID, ArchiveInternal).then(function (response) {
+            console.log(UpdateTileLibraryData);
           });
         }
         else {
@@ -1400,7 +1576,8 @@ export default function Master({ props }: any): JSX.Element {
       }
 
     }
-    alert("Data Updated SuccessFully");
+
+    setisPopupVisible(true);
     clearField();
     closePanel();
 
@@ -1519,7 +1696,19 @@ export default function Master({ props }: any): JSX.Element {
                           defaultSelectedUsers={assignID}
                         // resolveDelay={1000} 
                         />
-
+                        {/* <PeoplePicker
+                          context={peoplePickerContext}
+                          personSelectionLimit={5}
+                          //showtooltip={true}
+                          // required={true}
+                          // errorMessage={AccessTileUserErr}
+                          // searchTextLimit={2}
+                          // onChange={onPeoplePickerChange}
+                          showHiddenInUI={false}
+                          principalTypes={[PrincipalType.User]}
+                        // defaultSelectedUsers={assignID}
+                        // resolveDelay={1000} 
+                        /> */}
                       </div>
                     </div>
 
@@ -2067,13 +2256,19 @@ export default function Master({ props }: any): JSX.Element {
 
               {/* <DefaultButton onClick={submitTileData} text={DisplayLabel?.Draft} className={styles['sub-btn']} /> */}
 
+              {isLoading && (
+                <Spinner size={SpinnerSize.large} label="Data is Saving please wait..." />
+              )}
+
               {!isEditMode ? (
+
                 <DefaultButton onClick={submitTileData} text={DisplayLabel?.Submit} className={styles['sub-btn']} />
               ) :
                 <DefaultButton onClick={UpdateTileData} text={DisplayLabel?.Update} className={styles['sub-btn']} />
               }
 
-              <MessageDialog isPopupBoxVisible={isPopupVisible} hidePopup={hidePopup} />
+
+              <PopupBox isPopupBoxVisible={isPopupVisible} hidePopup={hidePopup} />
 
 
               <DefaultButton text={DisplayLabel?.Cancel} onClick={closePanel} className={styles['can-btn']} allowDisabledFocus />
