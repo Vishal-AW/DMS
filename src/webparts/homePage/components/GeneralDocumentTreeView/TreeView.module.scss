@@ -1,3 +1,5 @@
+@import '~@fluentui/react/dist/sass/References.scss';
+
 .tree-view {
     list-style: none;
     margin: 0;
@@ -59,4 +61,17 @@
     cursor: pointer;
     font-size: 14px;
     line-height: 1;
+}
+
+.grid {
+    @include ms-Grid;
+}
+
+.col2 {
+    @include ms-Grid-col;
+    @include ms-md2;
+}
+
+.row {
+    @include ms-Grid-row;
 }

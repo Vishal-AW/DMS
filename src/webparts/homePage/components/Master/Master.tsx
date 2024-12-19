@@ -74,7 +74,7 @@ export default function Master({ props }: any): JSX.Element {
   const [selectedFile, setSelectedFile] = useState<File | { name: string } | null>(null);
   //const [attachments, setAttachments]: any = useState([]);
   const [assignName, setAssignName] = useState<string>("");
-  const [assignID, setAssignID] = useState([]);
+  const [assignID, setAssignID] = useState<string[]>([]);
   const [TileAdminName, setTileAdminName] = useState<string>("");
   const [TileAdminID, setTileAdminID] = useState([]);
   const [order0Data, setorder0Data] = useState([]);
@@ -241,8 +241,22 @@ export default function Master({ props }: any): JSX.Element {
 
     await setTileName(EditSettingData[0].TileName);
 
-    const AccessTileData: any = EditSettingData[0].Permission ? EditSettingData[0].Permission.map((person: any) => person.EMail) : [];
-    await setAssignID(AccessTileData);
+    // const AccessTileData: any = EditSettingData[0].Permission ? EditSettingData[0].Permission.map((person: any) => person.Id) : [];
+    // setAssignID(AccessTileData);
+
+
+    if (isEditMode) {
+      const AccessTileData: string[] = EditSettingData[0].Permission
+        ? EditSettingData[0].Permission.map((person: any) => person.EMail)
+        : [];
+      setAssignID(AccessTileData);
+    } else {
+      setAssignID([]);
+    }
+
+
+    // const AccessTileData: string[] = EditSettingData[0].Permission ? EditSettingData[0].Permission.map((person: any) => person.EMail) : [];
+    // setAssignID(AccessTileData);
 
     const TileAdminData: any = EditSettingData[0].TileAdmin ? ([EditSettingData[0].TileAdmin.EMail]) : []
     await setTileAdminID(TileAdminData);
@@ -250,8 +264,20 @@ export default function Master({ props }: any): JSX.Element {
     await setIsTileStatus(EditSettingData[0].Active);
     await setIsAllowApprover(EditSettingData[0].AllowApprover);
     await setIsDropdownVisible(EditSettingData[0].AllowOrder);
-    if (EditSettingData[0].AllowOrder == true) {
-      setorder0DataDataID(EditSettingData[0].Order0);
+    if (EditSettingData[0].AllowOrder === true) {
+      const EditOrder0Data = EditSettingData.filter(
+        (item: any) => item.Order0 === EditSettingData[0].Order0
+      );
+
+      const options = EditOrder0Data.map((item: any) => ({
+        key: item.Order0,
+        text: item.Order0.toString(),
+      }));
+
+      setorder0Data(options);
+
+
+      setorder0DataDataID(EditOrder0Data[0]?.Order0 ?? null);
     }
     else {
       setorder0DataDataID('');
@@ -326,8 +352,6 @@ export default function Master({ props }: any): JSX.Element {
 
       const existingFile = { name: GetAttachmentData.value[0].Documentpath };
       setSelectedFile(existingFile);
-
-      // setSelectedFile(GetAttachmentData.value[0].File.Name);
 
     } else {
       setSelectedFile(null);
@@ -776,13 +800,32 @@ export default function Master({ props }: any): JSX.Element {
   //   [],
   // );
 
+  // const onPeoplePickerChange = (items: any[]) => {
+  //   //console.log("Selected users:", items);
+  //   setSelectedUsers(items);
+  //   console.log("Users to process:", selectedUsers);
+  //   let Users = Array.prototype.map.call(items, (item: any) => {
+  //     return item.id;
+  //   });
+
+  //   if (items.length > 0) {
+  //     setAssignName(items[0].text);
+  //     setAssignID(Users);
+  //   } else {
+  //     setAssignName("");
+  //     setAssignID([]);
+
+  //     console.log(assignName);
+  //     console.log(assignID);
+  //   }
+  // };
+
   const onPeoplePickerChange = (items: any[]) => {
-    //console.log("Selected users:", items);
+
     setSelectedUsers(items);
+
     console.log("Users to process:", selectedUsers);
-    let Users = Array.prototype.map.call(items, (item: any) => {
-      return item.id;
-    });
+    const Users: any = items.map((item: any) => item.secondaryText);
 
     if (items.length > 0) {
       setAssignName(items[0].text);
@@ -790,10 +833,9 @@ export default function Master({ props }: any): JSX.Element {
     } else {
       setAssignName("");
       setAssignID([]);
-
-      console.log(assignName);
-      console.log(assignID);
     }
+    console.log(assignName);
+    console.log(assignID);
   };
 
 
@@ -1693,7 +1735,9 @@ export default function Master({ props }: any): JSX.Element {
                           onChange={onPeoplePickerChange}
                           showHiddenInUI={false}
                           principalTypes={[PrincipalType.User]}
-                          defaultSelectedUsers={assignID}
+                          defaultSelectedUsers={isEditMode ? assignID : undefined}
+                        //defaultSelectedUsers={assignID}
+
                         // resolveDelay={1000} 
                         />
                         {/* <PeoplePicker
