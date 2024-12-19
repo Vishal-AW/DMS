@@ -54,3 +54,15 @@
 .footera {
   color: #181c32;
 }
+
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1400;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: rgba(101, 101, 101, .8) url(https://ascenworktech.sharepoint.com/sites/SPFXDMS/SiteAssets/Loader.gif) 50% 50% no-repeat;
+  background-size: 70px;
+}

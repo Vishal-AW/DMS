@@ -2,6 +2,7 @@ import * as React from "react";
 import { useState, useEffect } from 'react';
 import * as moment from "moment";
 import styles from '../Master/Master.module.scss';
+import cls from '../HomePage.module.scss'
 //import { SPHttpClient, SPHttpClientResponse, ISPHttpClientOptions } from '@microsoft/sp-http';
 //import { HTTPServices, _getListItem } from "../../../HTTPServices";
 import {
@@ -10,8 +11,6 @@ import {
   IconButton,
   IDropdownOption,
   FontIcon,
-  Spinner,
-  SpinnerSize
 } from 'office-ui-fabric-react';
 import { PeoplePicker, PrincipalType, IPeoplePickerContext } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 //import MessageDialog from '../ResuableComponents/PopupBox';
@@ -29,9 +28,9 @@ import { getUserIdFromLoginName, uuidv4 } from "../../../../DAL/Commonfile";
 import { GetAttachmentFile, UploadDocument } from "../../../../Services/DMSTileDocumentService";
 import { getConfigActive } from "../../../../Services/ConfigService";
 import { getActiveRedundancyDays } from "../../../../Services/ArchiveRedundancyDaysService";
-import { service } from "../../../../Services/Service";
-import { WebPartContext } from "@microsoft/sp-webpart-base";
-import { ISPHttpClientOptions, SPHttpClient } from "@microsoft/sp-http-base";
+// import { service } from "../../../../Services/Service";
+// import { WebPartContext } from "@microsoft/sp-webpart-base";
+import { ISPHttpClientOptions, SPHttpClient, SPHttpClientResponse } from "@microsoft/sp-http-base";
 import PopupBox from "../ResuableComponents/PopupBox";
 
 //import { getConfigActive } from "../../../../Services/ConfigService";
@@ -42,7 +41,8 @@ import PopupBox from "../ResuableComponents/PopupBox";
 
 
 export default function Master({ props }: any): JSX.Element {
-  const _spService: service = new service();
+
+  // const _spService: service = new service();
 
 
   //const [showModal, setShowModal] = useState(false);
@@ -66,7 +66,7 @@ export default function Master({ props }: any): JSX.Element {
   const [TileArchiveVersionErr, setTileArchiveVersionErr] = useState("");
   const [MainTableSetdata, setData] = useState<any[]>([]);
 
-  const [isLoading, setIsLoading] = useState(false); // Spinner state
+  const [showLoader, setShowLoader] = useState({ display: "none" }); // Spinner state
 
   // const [DuplicateTileError, setDuplicateTileError] = useState("");
   // const [TileLowerUpperError, setTileLowerUpperError] = useState("");
@@ -135,13 +135,16 @@ export default function Master({ props }: any): JSX.Element {
   const [isEditMode, setIsEditMode] = useState(false);
 
   const openAddPanel = () => {
+    clearField();
     setIsEditMode(false);
     setIsPanelOpen(true);
   };
 
   const hidePopup = () => {
     setisPopupVisible(false);
+    clearField();
     closePanel();
+    setShowLoader({ display: "none" });
   };
 
 
@@ -245,7 +248,7 @@ export default function Master({ props }: any): JSX.Element {
     // setAssignID(AccessTileData);
 
 
-    if (isEditMode) {
+    if (!isEditMode) {
       const AccessTileData: string[] = EditSettingData[0].Permission
         ? EditSettingData[0].Permission.map((person: any) => person.EMail)
         : [];
@@ -254,12 +257,15 @@ export default function Master({ props }: any): JSX.Element {
       setAssignID([]);
     }
 
+    if (!isEditMode) {
+      const TileAdminData: any = EditSettingData[0].TileAdmin ? ([EditSettingData[0].TileAdmin.EMail]) : []
+      await setTileAdminID(TileAdminData);
+    } else {
+      setTileAdminID([]);
+    }
 
-    // const AccessTileData: string[] = EditSettingData[0].Permission ? EditSettingData[0].Permission.map((person: any) => person.EMail) : [];
-    // setAssignID(AccessTileData);
 
-    const TileAdminData: any = EditSettingData[0].TileAdmin ? ([EditSettingData[0].TileAdmin.EMail]) : []
-    await setTileAdminID(TileAdminData);
+
 
     await setIsTileStatus(EditSettingData[0].Active);
     await setIsAllowApprover(EditSettingData[0].AllowApprover);
@@ -359,17 +365,6 @@ export default function Master({ props }: any): JSX.Element {
 
   };
 
-
-
-  const GetListData = async (context: WebPartContext, query: string) => {
-    const response = await context.spHttpClient.get(query, SPHttpClient.configurations.v1, {
-      headers: {
-        'Accept': 'application/json;odata=verbose',
-        'odata-version': '',
-      },
-    });
-    return await response.json();
-  };
 
   const CheckboxData = (obj: any) => {
 
@@ -891,9 +886,9 @@ export default function Master({ props }: any): JSX.Element {
 
 
 
-  const TileLibrary = async (Internal: any, TileLID: any, ArchiveInternal: any) => {
+  const TileLibrary = async (Internal: any, TileLID: any, ArchiveInternal: any, isUpdate: boolean) => {
     const Columns: any = [{
-      ListName: Internal,
+      ListName: isUpdate ? ArchiveInternal : Internal,
       ListType: "101",
       Columns: [
         { ColName: "DefineRole", ColType: 8 },
@@ -946,7 +941,7 @@ export default function Master({ props }: any): JSX.Element {
       })
     }
 
-    if (IsArchiveAllowed == true) {
+    if (IsArchiveAllowed && !isUpdate) {
       const obj = {
         ListName: ArchiveInternal,
         ListType: "101",
@@ -956,7 +951,7 @@ export default function Master({ props }: any): JSX.Element {
       Columns.push(obj);
     }
 
-    _spService.CreateList(props.context, props.SiteURL, Columns, TileLID, false)
+    CreateList(Columns, TileLID, false)
 
   };
 
@@ -1141,135 +1136,10 @@ export default function Master({ props }: any): JSX.Element {
   };
 
 
-  // const saveData = async () => {
-
-  //   setisPopupVisible(true);
-  //   let ArchiveInternal = "";
-  //   let uniqueid = await uuidv4();
-
-  //   console.log(uniqueid);
-
-  //   let siteurl = "";
-
-  //   if (selectedFile) {
-  //     const backImageActualName = selectedFile.name.split(".")[0].replace(/[^a-zA-Z0-9]/g, "");
-  //     const backImageName = `${backImageActualName}.${selectedFile.name.split(".")[1]}`;
-  //     siteurl = `${props.SiteURL}/DMS_TileDocument/${uniqueid}-${backImageName}`;
-  //     console.log(siteurl);
-  //   } else {
-  //     console.log("No file selected.");
-  //   }
-
-  //   let str = TileName;
-  //   let Internal = str.replace(/[^a-zA-Z0-9]/g, '');
-
-  //   if (IsArchiveAllowed == true) {
-  //     let str1 = ArchiveTest;
-  //     ArchiveInternal = str1.replace(/[^a-zA-Z0-9]/g, '');
-  //   }
-  //   else {
-  //     ArchiveInternal = "";
-  //   }
-
-
-  //   const userIds = await Promise.all(
-  //     assignID.map(async (person: any) => {
-  //       const user = await getUserIdFromLoginName(props.context, person);
-  //       return user.Id;
-  //     })
-  //   );
-
-  //   const TilesIds = await Promise.all(
-  //     TileAdminID.map(async (person: any) => {
-  //       const user = await getUserIdFromLoginName(props.context, person);
-  //       return user.Id;
-  //     })
-  //   );
-  //   let orderData;
-  //   if (isDropdownVisible == true) {
-
-  //     orderData = parseInt(order0DataDataText);
-  //     console.log(orderData);
-  //   }
-  //   else {
-  //     const maindata = await getTileAllData(props.SiteURL, props.spHttpClient);
-  //     let Dataval = maindata.value.length;
-
-  //     if (Dataval == null) {
-  //       orderData = 1;
-  //     }
-  //     else {
-  //       orderData = Dataval + 1;
-  //     }
-
-  //   }
-
-  //   const NewOrderData = [];
-  //   var ord = parseInt(orderData) - 1;
-  //   console.log(ord);
-  //   for (var i = ord; i < uOrder0Data.length; i++) {
-  //     if (uOrder0Data[i].ID != undefined) {
-  //       var id = uOrder0Data[i].ID
-  //       var orderno = parseInt(uOrder0Data[i].Order0) + 1
-  //       var obj = {
-  //         ID: id, orderno: orderno
-  //       }
-  //       NewOrderData.push(obj)
-  //     }
-  //   }
-
-  //   let option = {
-  //     __metadata: { type: "SP.Data.DMS_x005f_Mas_x005f_TileListItem" },
-  //     TileName: TileName,
-  //     PermissionId: { results: userIds },
-  //     TileAdminId: TilesIds[0],
-  //     AllowApprover: isAllowApprover,
-  //     Active: isTileStatus,
-  //     IsDynamicReference: DynamicDataReference,
-  //     ShowMoreActions: selectedcheckboxActions.join(";"),
-  //     Order0: orderData,
-  //     AllowOrder: isDropdownVisible,
-  //     Documentpath: siteurl,
-  //     ReferenceFormula: refExample,
-  //     Separator: separator,
-  //     DynamicControl: JSON.stringify(tableData),
-  //     IsArchiveRequired: IsArchiveAllowed,
-  //     ArchiveLibraryName: ArchiveInternal,
-  //     RetentionDays: RedundancyDataText == '' ? '' : parseInt(RedundancyDataText),
-  //     ArchiveVersionCount: ArchiveVersions == '' ? '' : parseInt(ArchiveVersions),
-  //     LibraryName: Internal
-
-  //   }
-  //   let LID = await SaveTileSetting(props.SiteURL, props.spHttpClient, option);
-  //   console.log(LID);
-  //   let MainTileID = LID.Id;
-  //   let MainTileLID = LID.Id.toString();
-
-  //   if (LID != null) {
-  //     saveAttachment(MainTileID);
-
-  //     const TileLibraryData = TileLibrary(Internal, MainTileLID, ArchiveInternal).then(function (response) {
-  //       console.log(TileLibraryData);
-  //     });
-
-  //     for (let i = 0; i < NewOrderData.length; i++) {
-  //       let obj = { Order0: NewOrderData[i].orderno }
-  //       UpdateTileSetting(props.SiteURL, props.spHttpClient, obj, NewOrderData[i].ID).then(function (response) {
-  //       })
-  //     }
-
-  //     MainTableSetdata
-  //   }
-
-  //   clearField();
-  //   closePanel();
-
-  // };
-
   const saveData = async () => {
 
     try {
-      setIsLoading(true); // Show spinner before starting the save operation
+      setShowLoader({ display: "block" }); // Show spinner before starting the save operation
 
 
       let ArchiveInternal = "";
@@ -1377,7 +1247,7 @@ export default function Master({ props }: any): JSX.Element {
           await UpdateTileSetting(props.SiteURL, props.spHttpClient, obj, NewOrderData[i].ID);
         }
 
-        const TileLibraryData = await TileLibrary(Internal, MainTileLID, ArchiveInternal);
+        const TileLibraryData = await TileLibrary(Internal, MainTileLID, ArchiveInternal, false);
         console.log(TileLibraryData);
 
       }
@@ -1385,14 +1255,8 @@ export default function Master({ props }: any): JSX.Element {
 
     } catch (error) {
       console.error("Error during save operation:", error);
-    } finally {
-      setIsLoading(false);
-      setisPopupVisible(true);
-      clearField();
-
-      //closePanel();
+      setShowLoader({ display: "none" });
     }
-
   };
 
   const UpdateTileData = () => {
@@ -1432,7 +1296,7 @@ export default function Master({ props }: any): JSX.Element {
   const [allLibColumn, setAllLibColumn] = useState([]);
   const getAllColumns = async (TileName: any) => {
     var query = props.SiteURL + "/_api/web/lists/getbytitle('" + TileName + "')/Fields?$filter=(CanBeDeleted eq true)";
-    const response = await GetListData(props.context, query);
+    const response = await GetListData(query);
     setAllLibColumn(response.d.results);
 
     console.log(allLibColumn);
@@ -1444,7 +1308,8 @@ export default function Master({ props }: any): JSX.Element {
       if (isDuplicate.length == 0) {
         var colType = getColumnType(tableData[i].ColumnType);
         var NewColType = colType.toString();
-        createColumn(props.context, props.SiteURL, Internal, tableData[i].InternalTitleName, NewColType).then(function (response) {
+        createColumn(Internal, tableData[i].InternalTitleName, NewColType).then(function (response) {
+          setisPopupVisible(true);
 
         });
 
@@ -1462,7 +1327,8 @@ export default function Master({ props }: any): JSX.Element {
           var colType = getColumnType(tableData[i].ColumnType);
           var NewColType = colType.toString();
           //_spService.CreateList(props.context, props.SiteURL, Columns, TileLID, false)
-          createColumn(props.context, props.SiteURL, TileValue.ArchiveLibraryName, tableData[i].InternalTitleName, NewColType).then(function (response) {
+          createColumn(TileValue.ArchiveLibraryName, tableData[i].InternalTitleName, NewColType).then(function (response) {
+            setisPopupVisible(true);
 
           });
         }
@@ -1471,161 +1337,154 @@ export default function Master({ props }: any): JSX.Element {
     }
   }
 
-  const createColumn = async (context: WebPartContext, webURL: string, listName: string, ColumnName: string, fieldType: string) => {
-    const url = webURL + "/_api/web/lists/GetByTitle('" + listName + "')/Fields";
-    const spHttpClientOptions: ISPHttpClientOptions = {
-      headers: {
-        'Accept': 'application/json;odata=nometadata',
-        'Content-type': 'application/json;odata=nometadata',
-        'odata-version': ''
-      },
-      "body": JSON.stringify({
-        'FieldTypeKind': fieldType,
-        'Title': ColumnName
-      })
-    };
 
-    return await context.spHttpClient.post(url, SPHttpClient.configurations.v1, spHttpClientOptions);
-  }
 
 
   const UpdateData = async () => {
 
+    try {
+      setShowLoader({ display: "block" });
+      let ArchiveInternal = "";
+      let uniqueid = await uuidv4();
 
-    let ArchiveInternal = "";
-    let uniqueid = await uuidv4();
+      console.log(uniqueid);
 
-    console.log(uniqueid);
-
-    let siteurl = "";
-    let NewSequencedata: any = [];
-
-
-    let GetAllTheTileData: any = await getTileAllData(props.SiteURL, props.spHttpClient);
-    let GetAllTheTileDatavalueData = GetAllTheTileData.value;
-    const Sequencedata = GetAllTheTileDatavalueData.filter((item: any) => item.Id === CurrentEditID);
-    let flagData = "";
-
-    var TileSequence = order0DataDataText == "" ? "" : parseInt(order0DataDataText);
-    if (Sequencedata[0].Order0 != TileSequence) {
-      if (Sequencedata[0].Order0 > TileSequence) {
-        flagData = "forward";
-      }
-      else {
-        flagData = "backward";
-      }
-      NewSequencedata = await UpdateSequenceNumber(Sequencedata[0].Order0, TileSequence, GetAllTheTileDatavalueData, flagData);
-      console.log(NewSequencedata);
-    }
-
-    if (selectedFile) {
-      const backImageActualName = selectedFile.name.split(".")[0].replace(/[^a-zA-Z0-9]/g, "");
-      const backImageName = `${backImageActualName}.${selectedFile.name.split(".")[1]}`;
-      siteurl = `${props.SiteURL}/DMS_TileDocument/${uniqueid}-${backImageName}`;
-      console.log(siteurl);
-    } else {
-      console.log("No file selected.");
-    }
-
-    let str = TileName;
-    let Internal = str.replace(/[^a-zA-Z0-9]/g, '');
+      let siteurl = "";
+      let NewSequencedata: any = [];
 
 
-    createAndUpdateColumn(Internal);
+      let GetAllTheTileData: any = await getTileAllData(props.SiteURL, props.spHttpClient);
+      let GetAllTheTileDatavalueData = GetAllTheTileData.value;
+      const Sequencedata = GetAllTheTileDatavalueData.filter((item: any) => item.Id === CurrentEditID);
+      let flagData = "";
 
-    const userIds = await Promise.all(
-      assignID.map(async (person: any) => {
-        const user = await getUserIdFromLoginName(props.context, person);
-        return user.Id;
-      })
-    );
-
-    const TilesIds = await Promise.all(
-      TileAdminID.map(async (person: any) => {
-        const user = await getUserIdFromLoginName(props.context, person);
-        return user.Id;
-      })
-    );
-
-
-    let option = {
-      __metadata: { type: "SP.Data.DMS_x005f_Mas_x005f_TileListItem" },
-      TileName: TileName,
-      PermissionId: { results: userIds },
-      TileAdminId: TilesIds[0],
-      AllowApprover: isAllowApprover,
-      Active: isTileStatus,
-      IsDynamicReference: DynamicDataReference,
-      ShowMoreActions: selectedcheckboxActions.join(";"),
-      // Order0: orderData,
-      AllowOrder: isDropdownVisible,
-      SystemCreated: false,
-      Documentpath: siteurl,
-      ReferenceFormula: refExample,
-      Separator: separator,
-      DynamicControl: JSON.stringify(tableData),
-      IsArchiveRequired: IsArchiveAllowed,
-      //LibraryName: Internal
-
-    }
-    await UpdateTileSetting(props.SiteURL, props.spHttpClient, option, CurrentEditID);
-    let UpdateData = await getDataById(props.SiteURL, props.spHttpClient, CurrentEditID);
-    console.log(UpdateData);
-    let UpdateTileID = UpdateData.value;
-    console.log(UpdateTileID);
-    if (UpdateTileID != null) {
-
-      saveAttachment(UpdateTileID[0].Id);
+      var TileSequence = order0DataDataText == "" ? "" : parseInt(order0DataDataText);
       if (Sequencedata[0].Order0 != TileSequence) {
-        if (NewSequencedata.length > 0) {
-          await UpdateTileSequence(NewSequencedata)
+        if (Sequencedata[0].Order0 > TileSequence) {
+          flagData = "forward";
         }
+        else {
+          flagData = "backward";
+        }
+        NewSequencedata = await UpdateSequenceNumber(Sequencedata[0].Order0, TileSequence, GetAllTheTileDatavalueData, flagData);
+        console.log(NewSequencedata);
       }
 
-      if (UpdateTileID[0].IsArchiveRequired == true) {
+      if (selectedFile) {
+        const backImageActualName = selectedFile.name.split(".")[0].replace(/[^a-zA-Z0-9]/g, "");
+        const backImageName = `${backImageActualName}.${selectedFile.name.split(".")[1]}`;
+        siteurl = `${props.SiteURL}/DMS_TileDocument/${uniqueid}-${backImageName}`;
+        console.log(siteurl);
+      } else {
+        console.log("No file selected.");
+      }
+
+      let str = TileName;
+      let Internal = str.replace(/[^a-zA-Z0-9]/g, '');
+
+
+      createAndUpdateColumn(Internal);
+
+      const userIds = await Promise.all(
+        assignID.map(async (person: any) => {
+          const user = await getUserIdFromLoginName(props.context, person);
+          return user.Id;
+        })
+      );
+
+      const TilesIds = await Promise.all(
+        TileAdminID.map(async (person: any) => {
+          const user = await getUserIdFromLoginName(props.context, person);
+          return user.Id;
+        })
+      );
+
+
+      let option = {
+        __metadata: { type: "SP.Data.DMS_x005f_Mas_x005f_TileListItem" },
+        TileName: TileName,
+        PermissionId: { results: userIds },
+        TileAdminId: TilesIds[0],
+        AllowApprover: isAllowApprover,
+        Active: isTileStatus,
+        IsDynamicReference: DynamicDataReference,
+        ShowMoreActions: selectedcheckboxActions.join(";"),
+        // Order0: orderData,
+        AllowOrder: isDropdownVisible,
+        SystemCreated: false,
+        Documentpath: siteurl,
+        ReferenceFormula: refExample,
+        Separator: separator,
+        DynamicControl: JSON.stringify(tableData),
+        IsArchiveRequired: IsArchiveAllowed,
+        //LibraryName: Internal
+
+      }
+      await UpdateTileSetting(props.SiteURL, props.spHttpClient, option, CurrentEditID);
+      let UpdateData = await getDataById(props.SiteURL, props.spHttpClient, CurrentEditID);
+      console.log(UpdateData);
+      let UpdateTileID = UpdateData.value;
+      console.log(UpdateTileID);
+      if (UpdateTileID != null) {
+
+        saveAttachment(UpdateTileID[0].Id);
+        if (Sequencedata[0].Order0 != TileSequence) {
+          if (NewSequencedata.length > 0) {
+            await UpdateTileSequence(NewSequencedata)
+          }
+        }
 
         if (UpdateTileID[0].IsArchiveRequired == true) {
-          let str1 = ArchiveTest;
-          ArchiveInternal = str1.replace(/[^a-zA-Z0-9]/g, '');
-        }
-        else {
-          ArchiveInternal = "";
-        }
 
-        var items = {
-          __metadata: { type: "SP.Data.DMS_x005f_Mas_x005f_TileListItem" },
-          ArchiveLibraryName: ArchiveInternal,
-          RetentionDays: parseInt(RedundancyDataText),
-          ArchiveVersionCount: parseInt(ArchiveVersions),
-        }
-        await UpdateTileSetting(props.SiteURL, props.spHttpClient, items, CurrentEditID);
+          if (UpdateTileID[0].IsArchiveRequired == true) {
+            let str1 = ArchiveTest;
+            ArchiveInternal = str1.replace(/[^a-zA-Z0-9]/g, '');
+          }
+          else {
+            ArchiveInternal = "";
+          }
 
-        // let ArchUpdateData = await getDataById(props.SiteURL, props.spHttpClient, CurrentEditID);
+          var items = {
+            __metadata: { type: "SP.Data.DMS_x005f_Mas_x005f_TileListItem" },
+            ArchiveLibraryName: ArchiveInternal,
+            RetentionDays: parseInt(RedundancyDataText),
+            ArchiveVersionCount: parseInt(ArchiveVersions),
+          }
+          await UpdateTileSetting(props.SiteURL, props.spHttpClient, items, CurrentEditID);
 
-        // let ArchUpdateTileID = ArchUpdateData.value;
+          // let ArchUpdateData = await getDataById(props.SiteURL, props.spHttpClient, CurrentEditID);
 
-        if (UpdateTileID[0].ArchiveLibraryName == null && UpdateTileID[0].ArchiveLibraryName == undefined) {
+          // let ArchUpdateTileID = ArchUpdateData.value;
+
+          if (UpdateTileID[0].ArchiveLibraryName == null && UpdateTileID[0].ArchiveLibraryName == undefined) {
 
 
-          const UpdateTileLibraryData = await TileLibrary(Internal, CurrentEditID, ArchiveInternal).then(function (response) {
-            console.log(UpdateTileLibraryData);
-          });
-        }
-        else {
-          createAndUpdateArchiveColumn(UpdateTileID[0], true);
+            const UpdateTileLibraryData = await TileLibrary(Internal, CurrentEditID, ArchiveInternal, true).then(function (response) {
+              console.log(UpdateTileLibraryData);
+            });
+          }
+          else {
+            createAndUpdateArchiveColumn(UpdateTileID[0], true);
+          }
+
         }
 
       }
 
     }
+    catch (error) {
+      console.error("Error during save operation:", error);
+      setShowLoader({ display: "none" });
+    }
 
-    setisPopupVisible(true);
-    clearField();
-    closePanel();
+
+
+
 
   };
 
-
+  let ListGuid: any = [];
+  let defaulttViewID: any;
 
   return (
 
@@ -1789,7 +1648,8 @@ export default function Master({ props }: any): JSX.Element {
                           onChange={onTilePeoplePickerChange}
                           showHiddenInUI={false}
                           principalTypes={[PrincipalType.User]}
-                          defaultSelectedUsers={TileAdminID}
+                          //defaultSelectedUsers={TileAdminID}
+                          defaultSelectedUsers={isEditMode ? TileAdminID : undefined}
                         />
                         {/* <TextField
                           placeholder=" "
@@ -2300,9 +2160,11 @@ export default function Master({ props }: any): JSX.Element {
 
               {/* <DefaultButton onClick={submitTileData} text={DisplayLabel?.Draft} className={styles['sub-btn']} /> */}
 
-              {isLoading && (
+              {/* {isLoading && (
                 <Spinner size={SpinnerSize.large} label="Data is Saving please wait..." />
-              )}
+              )} */}
+
+              <div className={cls["modal"]} style={showLoader}></div>
 
               {!isEditMode ? (
 
@@ -2325,7 +2187,241 @@ export default function Master({ props }: any): JSX.Element {
 
       </div>
     </div>
-  )
+  );
+
+  // let count:any;
+  // const  [ListGuid,setListGuid]=useState([]);
+
+  // function CreateList(IListItem: any, TileLID: number, isArchive: boolean) {
+  //   count=0;
+  //   ListGuid = [];
+  //   for (let i = 0; i < IListItem.length; i++) {
+  //     httpServiceForCreateList(,, IListItem, TileLID, isArchive);
+  //   }
+  // }
+  function CreateList(IListItem: any, TileLID: number, isArchive: boolean) {
+    let count = 0;
+    ListGuid = [];
+    for (let i = 0; i < IListItem.length; i++) {
+      const listName: string = IListItem[i]["ListName"];
+      const Template: string = IListItem[i]["ListType"];
+      const url: string = props.SiteURL + "/_api/web/lists";
+      const listDefinition: any = {
+        "Title": listName,
+        "AllowContentTypes": true,
+        "BaseTemplate": Template,
+        "ContentTypesEnabled": true,
+      };
+      const spHttpClientOptions: ISPHttpClientOptions = {
+        "body": JSON.stringify(listDefinition)
+      };
+      props.context.spHttpClient.post(url, SPHttpClient.configurations.v1, spHttpClientOptions)
+        .then((response: SPHttpClientResponse) => {
+          response.json().then(async (results: any) => {
+            ListGuid.push(results);
+            let obj = { LibGuidName: ListGuid[0].Id }
+
+            console.log(obj);
+
+            isArchive ? "" : await UpdateTileSetting(props.SiteURL, props.spHttpClient, obj, TileLID);
+            count++;
+            if (count == IListItem.length) {
+              createAllColumns(IListItem)
+              console.log("GUID", ListGuid);
+            }
+          });
+        });
+    }
+  }
+  async function createAllColumns(IListItem: any) {
+    let listCount = 0
+    for (let list = 0; list < IListItem.length; list++) {
+      listCount++;
+      // let columnCount = 0;
+      let Count = 0;
+      let ColumnsObj: any = IListItem[list]['Columns'];
+      for (let col = 0; col < ColumnsObj.length; col++) {
+        // columnCount++;
+        let colType = ColumnsObj[col]["ColType"];
+
+        if (colType == "6") {
+          let obj = {
+            '__metadata': { 'type': 'SP.FieldChoice' },
+            'FieldTypeKind': 6,
+            'Title': ColumnsObj[col]["ColName"],
+            'Choices': { '__metadata': { 'type': 'Collection(Edm.String)' }, 'results': ColumnsObj[col]["Choices"] }
+          }
+
+          let filterGUID = ListGuid.filter((x: any) => IListItem[list]["ListName"].includes(x.Title));
+          await CreateChoiceCloumn(filterGUID[0].Id, obj);
+          Count++;
+          if (Count == ColumnsObj.length && listCount == IListItem.length) {
+
+            await getDefaultView(IListItem);
+            // alert("Success");
+          }
+          //})
+
+        }
+        else if (colType == "7") {
+          let filterGUID = ListGuid.filter((x: any) => IListItem[list]["ListName"].includes(x.Title));
+          let query = props.SiteURL + "/_api/web/lists/getByTitle('" + ColumnsObj[col].LookupList + "')/Id";
+          await GetListData(query).then(async (response: any) => {
+            let listGuID = response.d.Id;
+            let obj = {
+              'parameters': {
+                'FieldTypeKind': 7,
+                'Title': ColumnsObj[col]["ColName"],
+                'LookupListId': listGuID,
+                'LookupFieldName': ColumnsObj[col]["LookupField"]
+              }
+            };
+            await Createlookup(filterGUID[0].Id, obj);
+            Count++;
+            if (Count === ColumnsObj.length && listCount === IListItem.length) {
+
+              await getDefaultView(IListItem);
+              // alert("Success");
+            }
+            //});
+          });
+        }
+        else {
+          await createColumn(IListItem[list]["ListName"], ColumnsObj[col]["ColName"], colType);
+          Count++;
+          if (Count == ColumnsObj.length && listCount == IListItem.length) {
+
+            await getDefaultView(IListItem);
+            // alert("Success");
+          }
+          //});
+        }
+      }
+    }
+  }
+  async function GetListData(query: string) {
+    const response = await props.context.spHttpClient.get(query, SPHttpClient.configurations.v1, {
+      headers: {
+        'Accept': 'application/json;odata=verbose',
+        'odata-version': '',
+      },
+    });
+    return await response.json();
+
+
+  };
+
+  async function Createlookup(listID: string, obj: any) {
+    const url = props.SiteURL + "/_api/web/lists(guid'" + listID + "')/fields/addfield";
+    const spHttpClientOptions: ISPHttpClientOptions = {
+      headers: {
+        'Accept': 'application/json;odata=nometadata',
+        'Content-type': 'application/json;odata=nometadata',
+        'odata-version': ''
+      },
+      "body": JSON.stringify(obj)
+    };
+    return await props.context.spHttpClient.post(url, SPHttpClient.configurations.v1, spHttpClientOptions)
+  }
+
+  async function CreateChoiceCloumn(listID: string, obj: any) {
+
+    const url = props.SiteURL + "/_api/web/lists(guid'" + listID + "')/Fields";
+    const spHttpClientOptions: ISPHttpClientOptions = {
+      headers: {
+        'Accept': 'application/json;odata=verbose',
+        'Content-type': 'application/json;odata=verbose',
+        'odata-version': ''
+      },
+      "body": JSON.stringify(obj)
+    };
+    return await props.context.spHttpClient.post(url, SPHttpClient.configurations.v1, spHttpClientOptions)
+  }
+
+
+  async function createColumn(listName: string, ColumnName: string, fieldType: string) {
+    const url = props.SiteURL + "/_api/web/lists/GetByTitle('" + listName + "')/Fields";
+    const spHttpClientOptions: ISPHttpClientOptions = {
+      headers: {
+        'Accept': 'application/json;odata=nometadata',
+        'Content-type': 'application/json;odata=nometadata',
+        'odata-version': ''
+      },
+      "body": JSON.stringify({
+        'FieldTypeKind': fieldType,
+        'Title': ColumnName
+      })
+    };
+
+    return await props.context.spHttpClient.post(url, SPHttpClient.configurations.v1, spHttpClientOptions);
+  }
+
+
+
+
+
+  async function getDefaultView(IListItem: []) {
+    console.log(IListItem);
+    defaulttViewID = [];
+    for (let list = 0; list < IListItem.length; list++) {
+      // const url = webURL + "/_api/Web/Lists/getByTitle('" + IListItem[list]["ListName"] + "')/views/getByTitle('All Items')";
+      const url = `${props.SiteURL}/_api/Web/Lists/getByTitle('${encodeURIComponent(IListItem[list]["ListName"])}')/views/getByTitle('${encodeURIComponent("All Documents")}')`;
+
+      await props.context.spHttpClient.get(url, SPHttpClient.configurations.v1,
+        {
+          headers: {
+            'Accept': 'application/json;odata=verbose',
+            'odata-version': ''
+          }
+        }).then((response: SPHttpClientResponse) => {
+          response.json().then((result: any) => {
+            console.log(result)
+            defaulttViewID.push(result["d"]["Id"]);
+            if (defaulttViewID.length == IListItem.length) {
+              addColumnOnView(IListItem, defaulttViewID)
+            }
+          })
+        })
+    }
+  }
+
+  async function addColumnOnView(IListItem: [], defaultView: []) {
+    let listCount = 0;
+    for (let listName = 0; listName < IListItem.length; listName++) {
+      listCount++;
+      let columnCount = 0;
+      // let Count = 0;
+      let ColumnsObj: any = IListItem[listName]["Columns"];
+      for (let colName = 0; colName < ColumnsObj.length; colName++) {
+        // Count++;
+        let obj = { 'strField': ColumnsObj[colName]["ColName"] }
+        var resURL = props.SiteURL + "/_api/web/lists/getbytitle('" + IListItem[listName]["ListName"] + "')/Views/getbyId('" + defaultView[listName] + "')/ViewFields/AddViewField";
+
+        await addDefaultViewColumn(resURL, obj).then((r: any) => {
+          columnCount++;
+          if (columnCount == ColumnsObj.length && listCount == IListItem.length) {
+
+            setisPopupVisible(true);
+
+            // closePanel();
+
+          }
+        })
+      }
+    }
+  }
+
+  async function addDefaultViewColumn(resURL: string, obj: any) {
+    return await props.context.spHttpClient.post(resURL, SPHttpClient.configurations.v1,
+      {
+        headers: {
+          'Accept': 'application/json;odata=nometadata',
+          'Content-type': 'application/json;odata=nometadata',
+          'odata-version': '',
+        },
+        body: JSON.stringify(obj)
+      })
+  }
 }
 
 
