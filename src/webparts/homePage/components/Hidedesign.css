@@ -240,8 +240,15 @@ body {
     padding: 7px !important;
 }
 
+/*form CSS*/
+
 label {
     margin-bottom: 4px !important;
+}
+
+.ms-BasePicker-text {
+    border: 1px solid #e4e6ef !important;
+    border-radius: .475rem !important;
 }
 
 .ms-BasePicker-input:active {
