@@ -129,6 +129,8 @@ export async function getUserIdFromLoginName(context: WebPartContext, loginName:
 
 
 
+
+
 export async function UploadFile(WebUrl: string, spHttpClient: any, file: string, DisplayName: string | File, DocumentLib: string, jsonBody: { __metadata: { type: string; }; Name: string; TileLID: any; DocumentType: string; Documentpath: string; } | null): Promise<any> {
 
   // let fileupload = DocumentLib +"/"+FolderName;
@@ -261,6 +263,72 @@ function URLBuilder(url: string, options: any) {
   }
   return url;
 };
+
+
+export async function FindUserGroup(context: WebPartContext, loginName: string): Promise<any> {
+  try {
+    const response: SPHttpClientResponse = await this.context.spHttpClient.get(
+      `${this.context.pageContext.web.absoluteUrl}/_api/Web/GetUserById(${this.context.pageContext.legacyPageContext.userId})?$expand=Groups`,
+      SPHttpClient.configurations.v1, {
+      headers: {
+        'Accept': 'application/json;odata=nometadata',
+        'odata-version': ''
+      }
+    }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      userData(data.Groups); // Assuming Groups is the field that contains user groups
+    } else {
+      const errorMessage: string = `Error loading current user: ${response.status} - ${response.statusText}`;
+      console.log(new Error(errorMessage));
+    }
+  } catch (error) {
+    console.log(error instanceof Error ? error : new Error('Unknown error occurred'));
+  }
+}
+
+async function userData(groupData: any) {
+  let dinamicurl = "Permission/ID eq " + this.context.pageContext.legacyPageContext.userId;
+  try {
+    const response: SPHttpClientResponse = await this.context.spHttpClient.get(
+      `${this.context.pageContext.web.absoluteUrl}/_api/Web/siteusers`,
+      SPHttpClient.configurations.v1, {
+      headers: {
+        'Accept': 'application/json;odata=nometadata',
+        'odata-version': ''
+      }
+    }
+    );
+
+    if (response.ok) {
+      let data = await response.json();
+      let userArray = new Array();
+      data.value.map((el: any) => {
+        if (el.IsShareByEmailGuestUser == false) {
+          userArray.push(el);
+        }
+      });
+
+      var externaluser = userArray;
+      var NonExternalUser = externaluser.filter(Title => Title.Title == "Everyone except external users");
+      dinamicurl = dinamicurl + "or Permission/ID eq " + NonExternalUser[0].Id + " ";
+      for (var i = 0; i < groupData.length; i++) {
+        dinamicurl = dinamicurl + " or Permission/ID eq " + groupData[i].Id + " ";
+      }
+      this._loadCurrentUserDisplayName(dinamicurl);
+    } else {
+      const responseText: string = await response.text();
+      const errorMessage: string = `Error loading current user: ${response.status} - ${responseText}`;
+      console.log(new Error(errorMessage));
+    }
+  } catch (error) {
+    console.log(error instanceof Error ? error : new Error(error));
+  }
+}
+
+
 
 
 

@@ -1471,6 +1471,9 @@ export default function Master({ props }: any): JSX.Element {
 
       }
 
+      setShowLoader({ display: "none" });
+      setisPopupVisible(true);
+
     }
     catch (error) {
       console.error("Error during save operation:", error);
@@ -1504,7 +1507,7 @@ export default function Master({ props }: any): JSX.Element {
               PagedefaultSize={10}
               TableRows={1}
               TableshowPagination={MainTableSetdata.length > 10}
-              TableshowFilter={true}
+            //TableshowFilter={true}
             />
           </Stack.Item>
         </Stack>
