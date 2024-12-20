@@ -208,7 +208,12 @@
 }
 
 .submit:hover {
-  color: #009EF7;
+  background-color: #009EF7 !important;
+  color: #fff !important;
+}
+
+.can-btn:hover {
+  color: #7e8299 !important;
 }
 
 .alignbutton {
@@ -237,7 +242,6 @@
   color: #fff;
   background: #f35922;
   text-decoration: none;
-
   margin: 3px 15px 0px 3px;
   font-size: 15px;
 }

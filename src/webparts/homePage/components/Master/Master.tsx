@@ -1491,7 +1491,7 @@ export default function Master({ props }: any): JSX.Element {
     <div>
       <div>
 
-        <div className={styles.alignbutton} >
+        <div className={styles.alignbutton} style={{ paddingRight: '0px' }}>
           <DefaultButton id="requestButton" className={styles.submit} text={DisplayLabel?.Add} onClick={openAddPanel}  ></DefaultButton>
         </div>
 
@@ -1512,27 +1512,26 @@ export default function Master({ props }: any): JSX.Element {
 
 
         <Panel
-          headerText=""
           isOpen={isPanelOpen}
           onDismiss={closePanel}
           // You MUST provide this prop! Otherwise screen readers will just say "button" with no label.
           closeButtonAriaLabel="Close"
           type={PanelType.large}
           isFooterAtBottom={true}
-        //headerText={isEditMode ? "Edit Item" : "Add New Item"}
+
+          headerText={isEditMode ? "Edit Tile Managment" : "Add Tile Managment"}
         >
 
-          {!isEditMode ? (
+          {/* {!isEditMode ? (
             <h6 className={styles.Headerlabel}>{DisplayLabel?.AddTileManagement}</h6>
           ) :
             <h6 className={styles.Headerlabel}>{DisplayLabel?.EditTileManagement}</h6>
-          }
-          <hr />
+          } */}
 
 
           <Accordion alwaysOpen >
             <Accordion.Item eventKey="0">
-              <Accordion.Header className={styles.Accodordianherder}>{DisplayLabel?.TileDetails}</Accordion.Header>
+              <Accordion.Header className={styles.Accodordianherder}>{DisplayLabel?.TileDetails} </Accordion.Header>
               <Accordion.Body>
                 <Form>
                   <div className={`ms-Grid ${styles.inlineFormContainer}`}>
@@ -2186,7 +2185,7 @@ export default function Master({ props }: any): JSX.Element {
         </Panel>
 
       </div>
-    </div>
+    </div >
   );
 
   // let count:any;

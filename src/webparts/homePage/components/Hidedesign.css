@@ -157,7 +157,9 @@ body {
     color: #009ef7 !important;
 }
 
-
+.profileName_fb42a33d {
+    margin-left: 0px !important;
+}
 
 .ps-menuitem-root:hover {
     color: #009ef7 !important;
@@ -427,6 +429,48 @@ div:focus-visible,
 }
 
 .ms-Button {
-    border-radius: .475rem;
+    border-radius: .475rem !important;
+    padding: 20px 20px !important;
+}
+
+.submit:hover {
+    background-color: #009ef7 !important;
+    color: #fff !important;
+}
+
+/*Accordion CSS */
+
+.accordion-button:focus {
+    box-shadow: none !important;
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: #f5f8fa !important;
+}
+
+.accordion-button {
+    font-weight: 500 !important;
+}
+
+.ms-Panel-commands {
+    border-bottom: 1px solid #eff2f5 !important;
+    margin-top: 0 !important;
+}
+
+.ms-Panel-navigation {
+    margin: 18px 0px !important;
+}
+
+.ms-Panel-contentInner {
+    padding-top: 30px !important;
+}
+
+.ms-Panel-closeButton {
+    padding: 0 !important;
+}
+
+.ms-Panel-closeButton:hover {
+    color: #009ef7 !important;
+    background-color: #f0f0f000 !important;
 
 }
