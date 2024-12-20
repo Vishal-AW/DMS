@@ -51,7 +51,7 @@ export default function HomePage(props: IHomePageProps): JSX.Element {
 
         <section>
           <div className={styles.nav}>
-            <SideMenu onclickbutton={toggleSidebar}></SideMenu>
+            <SideMenu props={props} onclickbutton={toggleSidebar}></SideMenu>
           </div>
           <div className={styles.article}
             style={{
