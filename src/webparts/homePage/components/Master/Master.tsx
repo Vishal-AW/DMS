@@ -193,7 +193,7 @@ export default function Master({ props }: any): JSX.Element {
     {
       Header: "ALLOW APPROVER",
       accessor: "AllowApprover",
-      Cell: ({ row }: { row: any }) => (row.AllowApprover == true ? "Yes" : "No")
+      Cell: ({ row }: { row: any }) => (row.AllowApprover === true ? "Yes" : "No")
     },
     {
       Header: "LAST MODIFIED",
@@ -216,7 +216,7 @@ export default function Master({ props }: any): JSX.Element {
     {
       Header: "ACTIVE",
       accessor: "Active",
-      Cell: ({ row }: { row: any }) => (row.Active == true ? "Yes" : "No")
+      Cell: ({ row }: { row: any }) => (row.Active === true ? "Yes" : "No")
     },
     {
       Header: "ACTION",
@@ -290,15 +290,15 @@ export default function Master({ props }: any): JSX.Element {
     }
 
     getAllColumns(EditSettingData[0].LibraryName);
-    const actionsData = (EditSettingData[0].ShowMoreActions == null ? [] : EditSettingData[0].ShowMoreActions.split(';'));
+    const actionsData = (EditSettingData[0].ShowMoreActions === null ? [] : EditSettingData[0].ShowMoreActions.split(';'));
     await setSelectedcheckboxActions(actionsData);
 
-    await setTableData(EditSettingData[0].DynamicControl == null ? [] : JSON.parse(EditSettingData[0].DynamicControl));
+    await setTableData(EditSettingData[0].DynamicControl === null ? [] : JSON.parse(EditSettingData[0].DynamicControl));
 
     await setArchiveAllowed(EditSettingData[0].IsArchiveRequired);
 
 
-    if (EditSettingData[0].IsArchiveRequired == true) {
+    if (EditSettingData[0].IsArchiveRequired === true) {
       let ActiveRedundancyDaysData: any = await getActiveRedundancyDays(props.SiteURL, props.spHttpClient);
       let ActiveRedundancyDaysvalueData = ActiveRedundancyDaysData.value;
       const FilterRetentionDays = ActiveRedundancyDaysvalueData.filter((item: any) => item.RedundancyDays === EditSettingData[0].RetentionDays);
@@ -317,7 +317,7 @@ export default function Master({ props }: any): JSX.Element {
     }
     await setDynamicDataReference(EditSettingData[0].IsDynamicReference);
 
-    if (EditSettingData[0].IsDynamicReference == true) {
+    if (EditSettingData[0].IsDynamicReference === true) {
 
       const formula = EditSettingData[0].ReferenceFormula;
       await setRefExample(EditSettingData[0].ReferenceFormula);
@@ -370,7 +370,7 @@ export default function Master({ props }: any): JSX.Element {
 
 
     let icheckbox;
-    if (obj.ColumnType == 'Dropdown' && !obj.IsStaticValue && obj.IsRequired == true && obj.IsFieldAllowInFile != true && obj.IsActiveControl == true) {
+    if (obj.ColumnType === 'Dropdown' && !obj.IsStaticValue && obj.IsRequired === true && obj.IsFieldAllowInFile != true && obj.IsActiveControl === true) {
       icheckbox = <Checkbox label={obj.Title} checked={refFormatData.includes(obj.Title)} onChange={(e, checked) => handleCheckboxToggle(obj.Title, checked!)} />
 
 
@@ -674,7 +674,7 @@ export default function Master({ props }: any): JSX.Element {
 
         console.log(isDuplicate);
 
-        if (isDuplicate == undefined) {
+        if (isDuplicate === undefined) {
 
           setTableData((prevData: any[]) => [
             ...prevData,
@@ -1060,21 +1060,21 @@ export default function Master({ props }: any): JSX.Element {
       isValidForm = false;
     }
 
-    if (isDropdownVisible == true) {
+    if (isDropdownVisible === true) {
       if (order0DataDataID === "" || order0DataDataID === undefined || order0DataDataID === null) {
         setTileSelectorderErr("Enter Order");
         isValidForm = false;
       }
     }
 
-    if (DynamicDataReference == true) {
+    if (DynamicDataReference === true) {
       if (refExample === "" || refExample === undefined || refExample === null) {
         setTileReferenceNoErr("Select Reference No");
         isValidForm = false;
       }
     }
 
-    if (IsArchiveAllowed == true) {
+    if (IsArchiveAllowed === true) {
       if (RedundancyDataID === "" || RedundancyDataID === undefined || RedundancyDataID === null) {
         setTileRedundancyDaysErr("Select Redundancy Days");
         isValidForm = false;
@@ -1183,14 +1183,14 @@ export default function Master({ props }: any): JSX.Element {
       );
 
       let orderData;
-      if (isDropdownVisible == true) {
+      if (isDropdownVisible === true) {
         orderData = parseInt(order0DataDataText);
         console.log(orderData);
       } else {
         const maindata = await getTileAllData(props.SiteURL, props.spHttpClient);
         let Dataval = maindata.value.length;
 
-        if (Dataval == null) {
+        if (Dataval === null) {
           orderData = 1;
         } else {
           orderData = Dataval + 1;
@@ -1305,7 +1305,7 @@ export default function Master({ props }: any): JSX.Element {
   const createAndUpdateColumn = async (Internal: string) => {
     for (var i = 0; i < tableData.length; i++) {
       const isDuplicate = allLibColumn.filter((item: any) => item.InternalName === tableData[i].InternalTitleName);
-      if (isDuplicate.length == 0) {
+      if (isDuplicate.length === 0) {
         var colType = getColumnType(tableData[i].ColumnType);
         var NewColType = colType.toString();
         createColumn(Internal, tableData[i].InternalTitleName, NewColType).then(function (response) {
@@ -1322,8 +1322,8 @@ export default function Master({ props }: any): JSX.Element {
   const createAndUpdateArchiveColumn = async (TileValue: any, ArchiveValue: boolean) => {
     for (var i = 0; i < tableData.length; i++) {
       const isDuplicate = allLibColumn.filter((item: any) => item.InternalName === tableData[i].InternalTitleName);
-      if (ArchiveValue == true) {
-        if (isDuplicate.length == 0) {
+      if (ArchiveValue === true) {
+        if (isDuplicate.length === 0) {
           var colType = getColumnType(tableData[i].ColumnType);
           var NewColType = colType.toString();
           //_spService.CreateList(props.context, props.SiteURL, Columns, TileLID, false)
@@ -1358,7 +1358,7 @@ export default function Master({ props }: any): JSX.Element {
       const Sequencedata = GetAllTheTileDatavalueData.filter((item: any) => item.Id === CurrentEditID);
       let flagData = "";
 
-      var TileSequence = order0DataDataText == "" ? "" : parseInt(order0DataDataText);
+      var TileSequence = order0DataDataText === "" ? "" : parseInt(order0DataDataText);
       if (Sequencedata[0].Order0 != TileSequence) {
         if (Sequencedata[0].Order0 > TileSequence) {
           flagData = "forward";
@@ -1434,9 +1434,9 @@ export default function Master({ props }: any): JSX.Element {
           }
         }
 
-        if (UpdateTileID[0].IsArchiveRequired == true) {
+        if (UpdateTileID[0].IsArchiveRequired === true) {
 
-          if (UpdateTileID[0].IsArchiveRequired == true) {
+          if (UpdateTileID[0].IsArchiveRequired === true) {
             let str1 = ArchiveTest;
             ArchiveInternal = str1.replace(/[^a-zA-Z0-9]/g, '');
           }
@@ -1456,7 +1456,7 @@ export default function Master({ props }: any): JSX.Element {
 
           // let ArchUpdateTileID = ArchUpdateData.value;
 
-          if (UpdateTileID[0].ArchiveLibraryName == null && UpdateTileID[0].ArchiveLibraryName == undefined) {
+          if (UpdateTileID[0].ArchiveLibraryName === null && UpdateTileID[0].ArchiveLibraryName === undefined) {
 
 
             const UpdateTileLibraryData = await TileLibrary(Internal, CurrentEditID, ArchiveInternal, true).then(function (response) {
@@ -2227,7 +2227,7 @@ export default function Master({ props }: any): JSX.Element {
 
             isArchive ? "" : await UpdateTileSetting(props.SiteURL, props.spHttpClient, obj, TileLID);
             count++;
-            if (count == IListItem.length) {
+            if (count === IListItem.length) {
               createAllColumns(IListItem)
               console.log("GUID", ListGuid);
             }
@@ -2246,7 +2246,7 @@ export default function Master({ props }: any): JSX.Element {
         // columnCount++;
         let colType = ColumnsObj[col]["ColType"];
 
-        if (colType == "6") {
+        if (colType === "6") {
           let obj = {
             '__metadata': { 'type': 'SP.FieldChoice' },
             'FieldTypeKind': 6,
@@ -2257,7 +2257,7 @@ export default function Master({ props }: any): JSX.Element {
           let filterGUID = ListGuid.filter((x: any) => IListItem[list]["ListName"].includes(x.Title));
           await CreateChoiceCloumn(filterGUID[0].Id, obj);
           Count++;
-          if (Count == ColumnsObj.length && listCount == IListItem.length) {
+          if (Count === ColumnsObj.length && listCount === IListItem.length) {
 
             await getDefaultView(IListItem);
             // alert("Success");
@@ -2265,7 +2265,7 @@ export default function Master({ props }: any): JSX.Element {
           //})
 
         }
-        else if (colType == "7") {
+        else if (colType === "7") {
           let filterGUID = ListGuid.filter((x: any) => IListItem[list]["ListName"].includes(x.Title));
           let query = props.SiteURL + "/_api/web/lists/getByTitle('" + ColumnsObj[col].LookupList + "')/Id";
           await GetListData(query).then(async (response: any) => {
@@ -2291,7 +2291,7 @@ export default function Master({ props }: any): JSX.Element {
         else {
           await createColumn(IListItem[list]["ListName"], ColumnsObj[col]["ColName"], colType);
           Count++;
-          if (Count == ColumnsObj.length && listCount == IListItem.length) {
+          if (Count === ColumnsObj.length && listCount === IListItem.length) {
 
             await getDefaultView(IListItem);
             // alert("Success");
@@ -2379,7 +2379,7 @@ export default function Master({ props }: any): JSX.Element {
           response.json().then((result: any) => {
             console.log(result)
             defaulttViewID.push(result["d"]["Id"]);
-            if (defaulttViewID.length == IListItem.length) {
+            if (defaulttViewID.length === IListItem.length) {
               addColumnOnView(IListItem, defaulttViewID)
             }
           })
@@ -2401,7 +2401,7 @@ export default function Master({ props }: any): JSX.Element {
 
         await addDefaultViewColumn(resURL, obj).then((r: any) => {
           columnCount++;
-          if (columnCount == ColumnsObj.length && listCount == IListItem.length) {
+          if (columnCount === ColumnsObj.length && listCount === IListItem.length) {
 
             setisPopupVisible(true);
 
