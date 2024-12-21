@@ -178,7 +178,8 @@ body {
 
 .rt-thead {
     min-width: 500px;
-    color: #b5b5c3 !important;
+    /*color: #b5b5c3 !important;*/
+    color: #343434 !important;
     text-transform: uppercase !important;
     font-size: 13px !important;
     font-weight: 600 !important;
