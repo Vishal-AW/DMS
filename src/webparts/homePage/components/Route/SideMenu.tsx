@@ -179,13 +179,13 @@ const SideMenu: React.FC<ISideMenu> = ({ onclickbutton, props }) => {
 
   function getChildDataFinal(data: any, parent: any) {
 
-    var subArray = <SubMenu icon={<Icon iconName={parent.IconClass} style={{ color: '#3f4254', fontSize: '18px' }} />} label={parent.MenuName}>
+    let subArray = <SubMenu icon={<Icon iconName={parent.IconClass} style={{ color: '#3f4254', fontSize: '18px' }} />} label={parent.MenuName}>
       {
 
         data.map((el: any) => {
           let submenu;
 
-          var childData = getEqualToHeaderData(el.Id, data);
+          let childData = getEqualToHeaderData(el.Id, data);
           if (childData.length > 0) {
             submenu = <MenuItem icon={<Icon iconName={el.IconClass} style={{ color: '#b5b5c3', fontSize: '11px' }} />}>{el.MenuName}</MenuItem>
           } else {
