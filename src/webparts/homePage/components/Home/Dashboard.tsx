@@ -7,8 +7,8 @@ import { SPHttpClient, SPHttpClientResponse } from "@microsoft/sp-http-base";
 
 export default function Dashboard({ props }: any): JSX.Element {
 
-  const [allmenuArray, setallmenuArray] = useState([]);
-  const [TileDetailsdata, setTileDetailsdata] = useState([]);
+  //const [allmenuArray, setallmenuArray] = useState([]);
+  //const [TileDetailsdata, setTileDetailsdata] = useState([]);
   const [userRole, setuserRole] = useState('');
 
 
@@ -16,10 +16,14 @@ export default function Dashboard({ props }: any): JSX.Element {
   let dinamicurl = "";
 
   dinamicurl = dinamicurl + " Permission/ID eq " + props.userID + " or TileAdmin/ID eq " + props.userID + " or Permission/Title eq 'Everyone except external users'";
-
-  FindUserGroupMain(props.spHttpClient).then(function (response) {
-    Findusergroupdata();
-  });
+  React.useEffect(() => {
+    getTileData();
+  }, [])
+  function getTileData() {
+    FindUserGroupMain(props.spHttpClient).then(function (response) {
+      Findusergroupdata();
+    });
+  }
   async function FindUserGroupMain(spHttpClient: any) {
 
 
@@ -71,7 +75,7 @@ export default function Dashboard({ props }: any): JSX.Element {
     console.log(userData);
 
   }
-
+  const [tileData, setTileData] = useState<any>([])
   async function FindUserGroup(WebUrl: string, spHttpClient: any, loginName: number): Promise<any> {
 
     let TotalDisplayTiles: any[] = [];
@@ -105,7 +109,7 @@ export default function Dashboard({ props }: any): JSX.Element {
 
         await GetListData(query).then(async (responseData: any) => {
           let AllTileMainData = responseData.d.results;
-          setallmenuArray(AllTileMainData);
+          //setallmenuArray(AllTileMainData);
           let TileCount = 0;
           if (AllTileMainData.length > 0) {
 
@@ -115,13 +119,14 @@ export default function Dashboard({ props }: any): JSX.Element {
               console.log(Permission);
               TileCount++;
               console.log("libraray:" + Permission.libraryName + " and hasPermission:" + Permission.hasPermission);
-              if (Permission.hasPermission == true) {
-                TotalDisplayTiles.push(allmenuArray[value]);
+              if (Permission.hasPermission) {
+                TotalDisplayTiles.push(index);
               }
 
-              if (allmenuArray.length == TileCount) {
+              if (AllTileMainData.length == TileCount) {
                 TotalDisplayTiles.sort((a: any, b: any) => a.Order0 - b.Order0);
-                createTileFinal(TotalDisplayTiles);
+                setTileData(TotalDisplayTiles)
+                //createTileFinal(TotalDisplayTiles);
               }
 
 
@@ -137,60 +142,60 @@ export default function Dashboard({ props }: any): JSX.Element {
     });
   }
 
-  function createTileFinal(item: any) {
-    // Ensure setTileDetailsdata returns an array
-    const TileDetail = setTileDetailsdata(item);
+  // function createTileFinal(item: any) {
 
-    if (!Array.isArray(TileDetail)) {
-      console.error("setTileDetailsdata did not return an array.");
-      return '<h1 style="text-align:center;width: 100%;">No data available</h1>';
-    }
+  //   const TileDetail = setTileDetailsdata(item);
+  //   console.log(TileDetail);
 
-    const TileItem = TileDetail.map((el: any) => {
-      let htmldata = "";
+  //   if (!Array.isArray(item)) {
+  //     return '<h1 style="text-align:center;width: 100%;">No data available</h1>';
+  //   }
 
-      const attrobj = encodeURIComponent(JSON.stringify(el));
+  //   const TileItem = item.map((el: any) => {
+  //     let htmldata = "";
 
-      if (el !== null) {
-        if (!el.Documentpath) {
-          el.Documentpath = props.siteurl + "/DMS_TileDocument/Default.jpg";
-        }
+  //     const attrobj = encodeURIComponent(JSON.stringify(el));
 
-        htmldata += `<div class="col-xl-3 openLibrary me-8 mb-8" data-obj="${attrobj}">`;
-        htmldata += `<div class="elementor-column elementor-col-33 elementor-top-column elementor-element elementor-element-3a866be" data-id="3a866be" data-element_type="column">`;
-        htmldata += `<div class="elementor-widget-wrap elementor-element-populated">`;
-        htmldata += `<div class="elementor-element elementor-element-c07abbc elementor-widget elementor-widget-cleversoft_core_banner" data-id="c07abbc" data-element_type="widget" data-widget_type="cleversoft_core_banner.default">`;
-        htmldata += `<div class="elementor-widget-container">`;
-        htmldata += `<div class="qodef-shortcode qodef-m  qodef-banner qodef-layout--info-on-image">`;
-        htmldata += `<div class="qodef-m-image">`;
-        htmldata += `<img width="1100" height="759" src="${el.Documentpath}" class="attachment-full size-full" alt="d" loading="lazy" srcset="" sizes="(max-width: 1100px) 100vw, 1100px">`;
-        htmldata += `</div>`;
-        htmldata += `<div class="qodef-m-content">`;
-        htmldata += `<div class="qodef-m-content-inner">`;
-        htmldata += `<h5 class="qodef-m-title">${el.TileName}</h5>`;
-        htmldata += `<a itemprop="url" class="qodef-m-arrow" target="_self">`;
-        htmldata += `<span class="fa fa-arrow-right"></span>`;
-        htmldata += `<span class="qodef-icon-elegant-icons arrow_right"></span>`;
-        htmldata += `</a>`;
-        htmldata += `</div>`;
-        htmldata += `</div>`;
-        htmldata += `</div>`;
-        htmldata += `</div>`;
-        htmldata += `</div>`;
-        htmldata += `</div>`;
-        htmldata += `</div>`;
-        htmldata += `</div>`;
-      } else {
-        htmldata = '<h1 style="text-align:center;width: 100%;">No data available</h1>';
-      }
+  //     if (el !== null) {
+  //       if (!el.Documentpath) {
+  //         el.Documentpath = props.siteurl + "/DMS_TileDocument/Default.jpg";
+  //       }
 
-      return htmldata;
-      console.log(TileDetailsdata);
-    });
+  //       htmldata += `<div class="col-xl-3 openLibrary me-8 mb-8" data-obj="${attrobj}">`;
+  //       htmldata += `<div class="elementor-column elementor-col-33 elementor-top-column elementor-element elementor-element-3a866be" data-id="3a866be" data-element_type="column">`;
+  //       htmldata += `d<div class="elementor-widget-wrap elementor-element-populated">`;
+  //       htmldata += `<div class="elementor-element elementor-element-c07abbc elementor-widget elementor-widget-cleversoft_core_banner" data-id="c07abbc" data-element_type="widget" data-widget_type="cleversoft_core_banner.default">`;
+  //       htmldata += `<div class="elementor-widget-container">`;
+  //       htmldata += `<div class="qodef-shortcode qodef-m  qodef-banner qodef-layout--info-on-image">`;
+  //       htmldata += `<div class="qodef-m-image">`;
+  //       htmldata += `<img width="1100" height="759" src="${el.Documentpath}" class="attachment-full size-full" alt="d" loading="lazy" srcset="" sizes="(max-width: 1100px) 100vw, 1100px">`;
+  //       htmldata += `</div>`;
+  //       htmldata += `<div class="qodef-m-content">`;
+  //       htmldata += `<div class="qodef-m-content-inner">`;
+  //       htmldata += `<h5 class="qodef-m-title">${el.TileName}</h5>`;
+  //       htmldata += `<a itemprop="url" class="qodef-m-arrow" target="_self">`;
+  //       htmldata += `<span class="fa fa-arrow-right"></span>`;
+  //       htmldata += `<span class="qodef-icon-elegant-icons arrow_right"></span>`;
+  //       htmldata += `</a>`;
+  //       htmldata += `</div>`;
+  //       htmldata += `</div>`;
+  //       htmldata += `</div>`;
+  //       htmldata += `</div>`;
+  //       htmldata += `</div>`;
+  //       htmldata += `</div>`;
+  //       htmldata += `</div>`;
+  //       htmldata += `</div>`;
+  //     } else {
+  //       htmldata = '<h1 style="text-align:center;width: 100%;">No data available</h1>';
+  //     }
 
-    return TileItem;
+  //     return htmldata;
+  //     console.log(TileDetailsdata);
+  //   });
 
-  }
+  //   return TileItem;
+
+  // }
 
 
 
@@ -241,48 +246,36 @@ export default function Dashboard({ props }: any): JSX.Element {
 
   };
 
+  const openLib = (obj: any) => {
 
-  interface CardProps {
-    imageUrl: string;
-    title: string;
-    link: string;
   }
-  const cards = [
-    { imageUrl: "https://static.twproject.com/blog/wp-content/uploads/project-documents-1130x736.jpg", title: "Leasing Department", link: "/our-services/" },
-    { imageUrl: "https://static.twproject.com/blog/wp-content/uploads/project-documents-1130x736.jpg", title: "Projects", link: "/our-services/" },
-    { imageUrl: "https://img.freepik.com/premium-vector/accountants-collaborate-financial-strategies-using-technology-charts-their-office-environment-financial-accounting-male-accountants-make-financial-statements_538213-156156.jpg?w=996", title: "Finance", link: "/our-services/" },
-    { imageUrl: "https://media.istockphoto.com/id/1421633064/vector/law-and-justice-men-discuss-legal-issues-people-work-on-laptop-near-justice-scales-judge.jpg?s=612x612&w=0&k=20&c=OltIMj4VqzTS4tPicUEujvKVZtSHKG_Li_uWCkoiWwg=", title: "Legal", link: "/our-services/" },
-    { imageUrl: "https://media.istockphoto.com/id/1421633064/vector/law-and-justice-men-discuss-legal-issues-people-work-on-laptop-near-justice-scales-judge.jpg?s=612x612&w=0&k=20&c=OltIMj4VqzTS4tPicUEujvKVZtSHKG_Li_uWCkoiWwg=", title: "Quality", link: "/our-services/" },
 
-  ];
-  const Card: React.FC<CardProps> = ({ imageUrl, title, link }) => (
-    <div className="col-xl-3 col-lg-6 col-md-12 mb-4">
-      <div className={styles["card-container"]}>
-        <div className={styles["card-content"]}>
-          <div className={styles["card-image"]}>
-            <img src={imageUrl} alt={title} loading="lazy" />
-          </div>
-          <div className={styles["card-details"]}>
-            <h5 className={styles["card-title"]}>{title}</h5>
-            <a href={link} className={styles["card-link"]} target="_self">
-              <span className={styles["fa-arrow-right"]}></span>
-            </a>
-          </div>
-          <a href={link} className={styles["card-overlay"]} target="_self"></a>
-        </div>
-      </div>
-    </div>
-  );
   return (
     <div className={styles["row1-container"]}>
-      {cards.map((card, index) => (
-        <Card
-          key={index}
-          imageUrl={card.imageUrl}
-          title={card.title}
-          link={card.link}
-        />
-      ))}
+
+      {
+        tileData.length > 0 ? tileData.map((el: any) => (
+
+          <div className="col-xl-3 col-lg-6 col-md-12 mb-4" onClick={() => { openLib(el) }}>
+            <div className={styles["card-container"]}>
+              <div className={styles["card-content"]}>
+                <div className={styles["card-image"]}>
+                  <img src={el.Documentpath ? el.Documentpath : `${props.SiteURL}/DMS_TileDocument/Default.jpg`} alt={el.TileName} loading="lazy" />
+                </div>
+                <div className={styles["card-details"]}>
+                  <h5 className={styles["card-title"]}>{el.TileName}</h5>
+                  <a href="javascript:void(0)" className={styles["card-link"]} target="_self">
+                    <span className={styles["fa-arrow-right"]}></span>
+                  </a>
+                </div>
+                <a href="javascript:void(0)" className={styles["card-overlay"]} target="_self"></a>
+              </div>
+            </div>
+          </div>
+        )) : <>
+          <h1 style={{ textAlign: "center", width: "100%;" }}>No data available</h1>
+        </>
+      }
     </div>
   )
 

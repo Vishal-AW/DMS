@@ -1143,16 +1143,18 @@ export default function Master({ props }: any): JSX.Element {
 
 
       let ArchiveInternal = "";
-      let uniqueid = await uuidv4();
+      //let uniqueid = await uuidv4();
 
-      console.log(uniqueid);
+      let Fileuniqueid = await uuidv4();
+
+      console.log(Fileuniqueid);
 
       let siteurl = "";
 
       if (selectedFile) {
         const backImageActualName = selectedFile.name.split(".")[0].replace(/[^a-zA-Z0-9]/g, "");
         const backImageName = `${backImageActualName}.${selectedFile.name.split(".")[1]}`;
-        siteurl = `${props.SiteURL}/DMS_TileDocument/${uniqueid}-${backImageName}`;
+        siteurl = `${props.SiteURL}/DMS_TileDocument/${Fileuniqueid}-${backImageName}`;
         console.log(siteurl);
       } else {
         console.log("No file selected.");
