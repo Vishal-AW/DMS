@@ -4,6 +4,10 @@ import * as React from "react";
 import styles from '../Home/Dashboard.module.scss';
 import { useState } from "react";
 import { SPHttpClient, SPHttpClientResponse } from "@microsoft/sp-http-base";
+//import { getDataByLibraryName } from "../../../../Services/MasTileService";
+//import { Route } from "react-router-dom";
+//import TreeView from "../GeneralDocumentTreeView/TreeView";
+//import TestTreeView from "../GeneralDocumentTreeView/TestTreeView";
 
 export default function Dashboard({ props }: any): JSX.Element {
 
@@ -246,37 +250,105 @@ export default function Dashboard({ props }: any): JSX.Element {
 
   };
 
-  const openLib = (obj: any) => {
+  const openLib = async (obj: any) => {
 
-  }
+    const item = obj;
+    console.log(item);
+
+    const TileObject = {
+      LibraryName: item.LibraryName,
+      InternalLibraryName: item.TileName,
+      GuidID: item.LibGuidName,
+      AllowApprover: item.AllowApprover,
+      AllowArchive: item.IsArchiveRequired,
+    };
+
+    console.log(TileObject);
+
+    // const response = await getDataByLibraryName(props.SiteURL, props.spHttpClient, obj.LibraryName);
+    // const libDetails = response.data.d.results[0];
+
+    // if (libDetails.DynamicControl) {
+    //   const jsonData = JSON.parse(libDetails.DynamicControl);
+    //   console.log(jsonData);
+    //   sessionStorage.setItem("controlData", libDetails.DynamicControl);
+    // }
+
+    // sessionStorage.setItem("TileObject", JSON.stringify(TileObject));
+
+    if (item.LibraryName === "ProjectMasterDocument") {
+
+    } else if (item.TileType === "Community") {
+      if (item.TileImageURL) {
+
+      }
+    } else {
+      location.href = "#/TreeView"
+
+    }
+  };
+
 
   return (
-    <div className={styles["row1-container"]}>
 
+
+    <div className={styles["row1-container"]}>
       {
         tileData.length > 0 ? tileData.map((el: any) => (
-
           <div className="col-xl-3 col-lg-6 col-md-12 mb-4" onClick={() => { openLib(el) }}>
             <div className={styles["card-container"]}>
               <div className={styles["card-content"]}>
                 <div className={styles["card-image"]}>
-                  <img src={el.Documentpath ? el.Documentpath : `${props.SiteURL}/DMS_TileDocument/Default.jpg`} alt={el.TileName} loading="lazy" />
+                  <img
+                    src={el.Documentpath ? el.Documentpath : `${props.SiteURL}/DMS_TileDocument/Default.jpg`}
+                    alt={el.TileName}
+                    loading="lazy"
+                  />
                 </div>
                 <div className={styles["card-details"]}>
                   <h5 className={styles["card-title"]}>{el.TileName}</h5>
                   <a href="javascript:void(0)" className={styles["card-link"]} target="_self">
-                    <span className={styles["fa-arrow-right"]}></span>
+                    <span className={`${styles["fa-arrow-right"]} ${styles["arrow-button"]}`}></span>
                   </a>
                 </div>
                 <a href="javascript:void(0)" className={styles["card-overlay"]} target="_self"></a>
               </div>
             </div>
           </div>
-        )) : <>
-          <h1 style={{ textAlign: "center", width: "100%;" }}>No data available</h1>
-        </>
+        )) : (
+          <>
+            <h1 style={{ textAlign: "center", width: "100%" }}>No data available</h1>
+          </>
+        )
       }
     </div>
+
+    // <div className={styles["row1-container"]}>
+
+    //   {
+    //     tileData.length > 0 ? tileData.map((el: any) => (
+
+    //       <div className="col-xl-3 col-lg-6 col-md-12 mb-4" onClick={() => { openLib(el) }}>
+    //         <div className={styles["card-container"]}>
+    //           <div className={styles["card-content"]}>
+    //             <div className={styles["card-image"]}>
+    //               <img src={el.Documentpath ? el.Documentpath : `${props.SiteURL}/DMS_TileDocument/Default.jpg`} alt={el.TileName} loading="lazy" />
+    //             </div>
+    //             <div className={styles["card-details"]}>
+    //               <h5 className={styles["card-title"]}>{el.TileName}</h5>
+    //               <a href="javascript:void(0)" className={styles["card-link"]} target="_self">
+    //                 <span className={styles["fa-arrow-right"]}></span>
+    //               </a>
+    //             </div>
+    //             <a href="javascript:void(0)" className={styles["card-overlay"]} target="_self"></a>
+    //           </div>
+    //         </div>
+    //       </div>
+    //     )) : <>
+    //       <h1 style={{ textAlign: "center", width: "100%;" }}>No data available</h1>
+    //     </>
+    //   }
+    // </div>
   )
 
 }
