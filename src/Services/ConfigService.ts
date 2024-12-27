@@ -11,6 +11,11 @@ export function getConfigActive(WebUrl: string, spHttpClient: any) {
   return getMethod(WebUrl, spHttpClient, filter);
 }
 
+export function getAllListFromSite(WebUrl: string, spHttpClient: any) {
+  let filter = "(Hidden eq false) and (BaseType ne 1) and Title ne 'ConfigEntryMaster'";
+
+  return getMethod(WebUrl, spHttpClient, filter);
+}
 
 async function getMethod(WebUrl: string, spHttpClient: any, filter: any) {
 

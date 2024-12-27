@@ -16,6 +16,7 @@ import { GetAllLabel } from "../../../Services/ControlLabel";
 
 import '../components/Hidedesign.css';
 import TestTreeView from './GeneralDocumentTreeView/TestTreeView';
+import ConfigMaster from './Master/ConfigEntryForm';
 
 
 
@@ -69,6 +70,8 @@ export default function HomePage(props: IHomePageProps): JSX.Element {
               <Route path='/Master' element={<Master props={props}></Master>}></Route>
               <Route path='/TreeView' element={<TestTreeView props={props}></TestTreeView>}></Route>
               <Route path='/Datatable' element={<Datatable></Datatable>}></Route>
+              <Route path='/ConfigMaster' element={<ConfigMaster props={props}></ConfigMaster>}></Route>
+
             </Routes>
 
 
