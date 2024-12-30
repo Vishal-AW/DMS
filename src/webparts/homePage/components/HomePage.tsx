@@ -15,7 +15,7 @@ import Dashboard from '../components/Home/Dashboard';
 import { GetAllLabel } from "../../../Services/ControlLabel";
 
 import '../components/Hidedesign.css';
-import TestTreeView from './GeneralDocumentTreeView/TestTreeView';
+import TreeView from './GeneralDocumentTreeView/TreeView';
 
 
 
@@ -67,7 +67,7 @@ export default function HomePage(props: IHomePageProps): JSX.Element {
             <Routes>
               <Route path='/Dashboard' element={<Dashboard></Dashboard>}></Route>
               <Route path='/Master' element={<Master props={props}></Master>}></Route>
-              <Route path='/TreeView' element={<TestTreeView props={props}></TestTreeView>}></Route>
+              <Route path='/TreeView' element={<TreeView props={props}></TreeView>}></Route>
               <Route path='/Datatable' element={<Datatable></Datatable>}></Route>
             </Routes>
 
