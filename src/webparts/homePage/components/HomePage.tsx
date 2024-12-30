@@ -15,7 +15,12 @@ import Dashboard from '../components/Home/Dashboard';
 import { GetAllLabel } from "../../../Services/ControlLabel";
 
 import '../components/Hidedesign.css';
+<<<<<<< HEAD
 import TreeView from './GeneralDocumentTreeView/TreeView';
+=======
+import TestTreeView from './GeneralDocumentTreeView/TestTreeView';
+import ConfigMaster from './Master/ConfigEntryForm';
+>>>>>>> 8beb01e6ac489732f5ad9f1b5e689412896207b2
 
 
 
@@ -51,7 +56,7 @@ export default function HomePage(props: IHomePageProps): JSX.Element {
 
         <section>
           <div className={styles.nav}>
-            <SideMenu onclickbutton={toggleSidebar}></SideMenu>
+            <SideMenu props={props} onclickbutton={toggleSidebar}></SideMenu>
           </div>
           <div className={styles.article}
             style={{
@@ -65,10 +70,12 @@ export default function HomePage(props: IHomePageProps): JSX.Element {
           >
 
             <Routes>
-              <Route path='/Dashboard' element={<Dashboard></Dashboard>}></Route>
+              <Route path='/Dashboard' element={<Dashboard props={props}></Dashboard>}></Route>
               <Route path='/Master' element={<Master props={props}></Master>}></Route>
               <Route path='/TreeView' element={<TreeView props={props}></TreeView>}></Route>
               <Route path='/Datatable' element={<Datatable></Datatable>}></Route>
+              <Route path='/ConfigMaster' element={<ConfigMaster props={props}></ConfigMaster>}></Route>
+
             </Routes>
 
 

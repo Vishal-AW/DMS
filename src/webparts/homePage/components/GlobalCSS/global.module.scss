@@ -27,6 +27,7 @@ body {
 
 .headerdiv {
   padding: 10px;
+  height: 50px;
 }
 
 .topnavright {
@@ -166,6 +167,7 @@ section::after {
 }
 
 .dropdownItem {
+
   cursor: pointer;
   padding-right: 1.25rem !important;
   padding-left: 1.25rem !important;
@@ -194,7 +196,7 @@ section::after {
   color: #000000;
   font-size: 22px;
   font-weight: 500px !important;
-  border: 1px solid;
+  /* border: 1px solid;
   border-radius: 50%;
-  padding: 5px 8px;
+  padding: 5px 8px;*/
 }

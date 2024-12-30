@@ -33,7 +33,8 @@ export default class HomePageWebPart extends BaseClientSideWebPart<IHomePageWebP
         context: this.context,
         SiteURL: this.context.pageContext.web.absoluteUrl,
         UserEmailID: this.context.pageContext.user.email,
-        spHttpClient: this.context.spHttpClient
+        spHttpClient: this.context.spHttpClient,
+        userID: this.context.pageContext.legacyPageContext["userId"]
       }
     );
 

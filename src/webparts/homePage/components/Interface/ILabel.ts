@@ -40,5 +40,11 @@ export interface ILabel {
     DynamicReferenceExample: string;
     IsDynamicReference: string;
     ReferenceNoDetails: string;
-    ArchiveSection: string
+    ArchiveSection: string;
+    FieldName: string;
+    ColumnType: string;
+    IsShowasFilter: string;
+    IsStaticValue: string;
+    ListName: string;
+    DisplayColumn: string;
 }
