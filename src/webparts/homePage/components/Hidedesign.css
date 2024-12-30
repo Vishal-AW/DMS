@@ -4,6 +4,18 @@ body {
     font-family: 'Poppins', sans-serif;
 }*/
 
+::-webkit-scrollbar {
+    width: 9px !important;
+    background-color: transparent !important;
+    height: 8px !important;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: #b5b7b9 !important;
+    border-radius: 10px !important;
+}
+
 #sp-appBar {
     display: none;
 }
@@ -252,6 +264,12 @@ label {
 .ms-BasePicker-text {
     border: 1px solid #e4e6ef !important;
     border-radius: .475rem !important;
+}
+
+.ms-TextField-fieldGroup::after,
+.ms-BasePicker-text::after,
+.ms-Dropdown::after {
+    border: none !important;
 }
 
 .ms-BasePicker-input:active {
