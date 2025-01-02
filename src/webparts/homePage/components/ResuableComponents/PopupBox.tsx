@@ -2,6 +2,13 @@ import * as React from 'react';
 import { mergeStyleSets, DefaultButton, FocusTrapZone, Layer, Overlay, Popup } from '@fluentui/react';
 import { Icon } from 'office-ui-fabric-react';
 //import { useBoolean } from '@fluentui/react-hooks';
+import {
+    Dialog,
+    DialogType,
+    DialogFooter,
+    PrimaryButton,
+
+} from "@fluentui/react";
 
 const PopupBoxStyles = mergeStyleSets({
     root: {
@@ -81,6 +88,39 @@ const PopupBox: React.FC<IPopupboxProps> = ({ isPopupBoxVisible, hidePopup }) =>
 
 export default PopupBox;
 
+
+
+
+interface IConfirmboxProps {
+    hideDialog: boolean;
+    closeDialog: () => void;
+    handleConfirm: (value: boolean) => void;
+    msg: string;
+}
+export const ConfirmationDialog: React.FC<IConfirmboxProps> = ({ hideDialog, closeDialog, handleConfirm, msg }) => {
+
+    return (
+        <div>
+            <Dialog
+                hidden={!hideDialog}
+                onDismiss={closeDialog}
+                dialogContentProps={{
+                    type: DialogType.normal,
+                    title: "Confirm Action",
+                    subText: msg,
+                }}
+                modalProps={{
+                    isBlocking: false,
+                }}
+            >
+                <DialogFooter>
+                    <PrimaryButton text="Yes" onClick={() => handleConfirm(true)} />
+                    <DefaultButton text="No" onClick={closeDialog} />
+                </DialogFooter>
+            </Dialog>
+        </div>
+    );
+};
 
 
 

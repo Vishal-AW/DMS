@@ -1,115 +1,288 @@
 import * as React from 'react';
-import { useState } from 'react';
-import { Icon } from 'office-ui-fabric-react'; // Import icons from Office UI Fabric
-import styles from './TreeView.module.scss'
+import { getAllFolder } from "../../../../Services/GeneralDocument";
+import { useCallback, useEffect, useRef, useState } from "react";
+import styles from "./TreeView.module.scss";
+import { DialogType, Icon, IStackItemStyles, IStackStyles, IStackTokens, Stack } from "@fluentui/react";
+import ReactTableComponent from '../ResuableComponents/ReusableDataTable';
+import { ContextualMenu, ContextualMenuItemType } from '@fluentui/react/lib/ContextualMenu';
+// import { SPComponentLoader } from "@microsoft/sp-loader";
+import IFrameDialog from "./IFrameDialog";
+import AdvancePermission from "./AdvancePermission";
 
-interface TreeNode {
-    name: string;
-    children?: TreeNode[];
+
+interface Folder {
+    [key: string]: string | number | {} | null | undefined;
 }
-
-interface TreeViewProps {
-    onNodeSelect: (nodeName: string) => void;
-}
-
-const treeData: TreeNode[] = [
-    {
-        name: 'Leasing Department',
-        children: [
-            { name: 'Demo Nexus Mall' },
-            {
-                name: 'Nexus Ahmedabad One',
-                children: [
-                    { name: 'Documents Tracker' },
-                    { name: 'Floor Plan' },
-                    {
-                        name: 'Kiosk Storage and Service Agreements',
-                        children: [
-                            {
-                                name: 'Kiosks',
-                                children: [
-                                    { name: 'BATA' },
-                                    { name: 'Brillare' },
-                                    { name: 'Reebok' },
-                                    { name: 'Tommy Kids' },
-
-                                ],
-                            },
-                            { name: 'Service' },
-                            { name: 'Storage' },
-
-                        ],
-
-
-                    },
-                    { name: 'Retail' },
-                ],
-            },
-            { name: 'Nexus Amritsar' },
-            { name: 'Nexus Hyderabad' },
-            { name: 'Nexus Indore Central' },
-            { name: 'Nexus Mall Koramangala' },
-            { name: 'Nexus Seawood' },
-            { name: 'Nexus Select CityWalk Delhi' },
-            { name: 'Nexus Shantiniketan' },
-            { name: 'Nexus Vijaya Complex' },
-        ],
+const stackStyles: IStackStyles = { root: { height: '100vh' } };
+const stackItemStyles: IStackItemStyles = {
+    root: {
+        padding: 10,
+        border: '1px solid #ddd',
+        overflow: 'auto',
+        background: '#fff',
+        boxShadow: '0 10px 30px 0 rgba(82, 63, 105, .05)',
     },
-];
+};
+const stackTokens: IStackTokens = { childrenGap: 10 };
+export default function TreeView({ props }: any) {
+    const linkRef = useRef<Record<string, HTMLDivElement | null>>({});
+    // const [showContextualMenu, setShowContextualMenu] = useState(false);
+    const [showContextualMenu, setShowContextualMenu] = React.useState<{ [key: string]: boolean; }>({});
+    const [nodeId, setNodeId] = useState(0);
 
-const TreeView: React.FC<TreeViewProps> = ({ onNodeSelect }) => {
-    const [expandedNodes, setExpandedNodes] = useState<string[]>([]);
+    const [folders, setFolders] = useState<Folder[]>([]);
+    const [folderPath, setFolderPath] = useState("");
+    const [rightFolders, setRightFolders] = useState<Folder[]>([]);
+    const [childFolders, setChildFolders] = useState<Record<string, Folder[]>>({});
+    const [files, setFiles] = useState([]);
+    const libName = "Finance";
+    const [iFrameDialogOpened, setIFrameDialogOpened] = useState(false);
+    const [shareURL, setShareURL] = useState("");
+    const tileObject: string | null = sessionStorage.getItem("LibDetails");
+    const libDetails: any = JSON.parse(tileObject as string);
+    const portalUrl = new URL(props.SiteURL).origin;
+    const [isPanelOpen, setIsPanelOpen] = useState(false);
+    const [itemId, setItemId] = useState<number>(0);
 
-    const toggleNode = (nodeName: string) => {
-        if (expandedNodes.includes(nodeName)) {
-            setExpandedNodes(expandedNodes.filter(name => name !== nodeName));
-        } else {
-            setExpandedNodes([...expandedNodes, nodeName]);
+
+    useEffect(() => {
+        fetchFolders(libName, "");
+    }, []);
+
+    const fetchFolders = async (folderPath: string, nodeName: string) => {
+        try {
+            setFolderPath(folderPath);
+            const data: any = await getAllFolder(props.SiteURL, props.context, folderPath);
+            if (data && data.Folders) {
+                const updatedFolders = data.Folders.map((folder: any) => {
+                    const updatedFolder = { ...folder };
+                    updatedFolder.folderPath = `${folderPath}/${folder.Name}`;
+
+                    return updatedFolder;
+                });
+                setRightFolders(updatedFolders);
+                if (folderPath === libName) {
+                    setFolders(data.Folders);
+                } else {
+                    setChildFolders((prev) => ({
+                        ...prev,
+                        [folderPath]: data.Folders,
+                    }));
+                    setFiles(data.Files);
+                }
+                data.Folders.length === 0 ? setExpandedNodes(expandedNodes.filter((name) => name !== nodeName)) : "";
+            } else {
+                console.error("Unexpected response format", data);
+            }
+        } catch (error) {
+            console.error("Error fetching folders:", error);
         }
     };
 
-    const renderTree = (nodes: TreeNode[]) => {
-        return nodes.map(node => (
-            <li key={node.name}>
-                <div className={styles['tree-node']}>
-                    <span onClick={() => toggleNode(node.name)} style={{ cursor: 'pointer' }}>
-                        {/* {node.children && ( */}
-                        <Icon
-                            iconName={
+    const [expandedNodes, setExpandedNodes] = useState<string[]>([libName]);
 
+    const toggleNode = (nodeName: string, folderPath: string) => {
 
+        if (expandedNodes.includes(nodeName)) {
+            setExpandedNodes(expandedNodes.filter((name) => name !== nodeName));
+        } else {
+            setExpandedNodes([...expandedNodes, nodeName]);
+            fetchFolders(folderPath, nodeName);
+        }
+    };
+    let count = 0;
+    const columns = [
+        { Header: 'Sr. No.', accessor: "Id", Cell: (props: any) => <span>{count + 1}</span> },
+        { Header: 'Name', accessor: 'Name' },
+        { Header: 'Uploaded On', accessor: 'TimeCreated' },
+        { Header: 'Reference No', accessor: 'UIVersionLabel' },
+        { Header: 'Version', accessor: 'UIVersionLabel' },
+        { Header: 'Status', accessor: 'UIVersionLabel' },
+        { Header: 'OCR Status', accessor: 'UIVersionLabel' },
+    ];
 
-                                expandedNodes.includes(node.name)
-                                    ? 'FabricOpenFolderHorizontal'
-                                    : 'FabricFolderFill'
+    const renderTree = (nodes: Folder[], parentPath: string = "") => {
+        return nodes.map((node: any) => {
 
-
-                            }
-                            className={styles['folder-icon']}
-                            style={{ marginRight: '5px', color: '#0162e8' }}
-                        />
-                        {/* )} */}
-                        {/* {node.children && (
-                            <button className="toggle-button">
-                                {expandedNodes.includes(node.name) ? '-' : '+'}
-                            </button>
-                        )} */}
+            return node.Name !== "Forms" && (
+                <li key={node.ListItemAllFields.Id}>
+                    <div className={styles["tree-node"]}>
                         <span
-                            className={styles['node-name']}
-                            onClick={() => onNodeSelect(node.name)}
+                            onClick={() => toggleNode(node.Name, `${parentPath}/${node.Name}`)}
+                            style={{ cursor: "pointer" }}
                         >
-                            {node.name}
+                            <Icon
+                                iconName={
+                                    expandedNodes.includes(node.Name)
+                                        ? "FabricOpenFolderHorizontal"
+                                        : "FabricFolderFill"
+                                }
+                                className={styles["folder-icon"]}
+                                style={{ marginRight: "5px", color: "#0162e8" }}
+                            />
+                            <span className={styles["node-name"]}>{node.Name}</span>
                         </span>
-                    </span>
+                        <div ref={(el) => (linkRef.current[node.ListItemAllFields.Id] = el)} onClick={(e) => onShowContextualMenu(e, node.ListItemAllFields.Id)}>
+                            <Icon
+                                iconName={"More"}
+                                className={styles["folder-icon"]}
+                                style={{ marginLeft: "5px", color: "#0162e8", cursor: "pointer" }}
+                            />
+                            {showContextualMenu[node.ListItemAllFields.Id] && nodeId === node.ListItemAllFields.Id ? (
+                                <ContextualMenu
+                                    items={bindMenu(node)}
+                                    hidden={!showContextualMenu[node.ListItemAllFields.Id]}
+                                    target={linkRef.current[node.ListItemAllFields.Id]}
+                                    onItemClick={() => onHideContextualMenu(node.ListItemAllFields.Id)}
+                                    onDismiss={() => onHideContextualMenu(node.ListItemAllFields.Id)}
+                                />
+                            ) : <></>
+                            }
+                        </div>
+
+                    </div>
+                    {expandedNodes.includes(node.Name) && childFolders[`${parentPath}/${node.Name}`] && (
+                        <ul className="nested-list">
+                            {renderTree(childFolders[`${parentPath}/${node.Name}`], `${parentPath}/${node.Name}`)}
+                        </ul>
+                    )}
+                </li>
+            );
+        });
+    };
+
+    const renderRightFolder = (nodes: Folder[]) => {
+        return nodes.map((node: any) => (
+            node.Name !== "Forms" && (
+                <div key={node.Id} className={styles.col2}>
+                    <div>
+                        <span
+                            onClick={() => toggleNode(node.Name, `${node.folderPath}`)}
+                            style={{ cursor: "pointer" }}
+                        >
+                            <Icon
+                                iconName="FabricFolderFill"
+                                className={styles["folder-icon"]}
+                                style={{ marginRight: "5px", color: "#0162e8", fontSize: "50px" }}
+                            />
+                            <br />
+                            <span className={styles["node-name"]}>{node.Name}</span>
+                        </span>
+                    </div>
                 </div>
-                {node.children && expandedNodes.includes(node.name) && (
-                    <ul className="nested-list">{renderTree(node.children)}</ul>
-                )}
-            </li>
+            )
         ));
     };
 
-    return <ul className={styles['tree-view']}>{renderTree(treeData)}</ul>;
-};
+    const bindMenu = (node: any) => {
+        return [
+            {
+                key: 'advancePermission',
+                text: 'Advance Permission',
+                onClick: () => { setItemId(node.ListItemAllFields.Id); setIsPanelOpen(true); },
+            },
+            {
+                key: 'divider_1',
+                itemType: ContextualMenuItemType.Divider,
+            },
+            {
+                key: 'share',
+                text: 'Share',
+                onClick: () => {
+                    setShareURL(`${props.SiteURL}/_layouts/15/sharedialog.aspx?listId=${libDetails[0].GuidID}&listItemId=${node.ListItemAllFields.Id}&clientId=sharePoint&policyTip=0&folderColor=undefined&ma=0&fullScreenMode=true&itemName=${node.Name}&origin=${portalUrl}`);
+                    setIFrameDialogOpened(true);
+                }
+            },
+            {
+                key: "view",
+                text: "View",
+                onClick: () => console.log('Rename clicked', node),
+            },
+            {
+                key: 'edit',
+                text: 'Edit',
+                onClick: () => console.log('Edit clicked', node),
+            },
+        ];
+    };
+    const onShowContextualMenu = useCallback((ev: React.MouseEvent<HTMLElement>, nodeId: string) => {
+        ev.preventDefault(); // don't navigate
+        setNodeId(Number(nodeId));
+        setShowContextualMenu((prev) => ({ ...prev, [nodeId]: true }));
+    }, []);
+    const onHideContextualMenu = useCallback((nodeId: string) => { setShowContextualMenu((prev) => ({ ...prev, [nodeId]: false })); setNodeId(0); }, []);
 
-export default TreeView;
+
+    const onDismiss: any = useCallback(() => { setIsPanelOpen(false); }, []);
+
+
+    return (
+        <div>
+            <Stack horizontal styles={stackStyles} tokens={stackTokens}>
+                <Stack.Item grow={2} styles={stackItemStyles}>
+                    <ul className={styles["tree-view"]}>
+                        <li>
+                            <div className={styles["tree-node"]}>
+                                <span
+                                    onClick={() => toggleNode(libName, libName)}
+                                    style={{ cursor: "pointer" }}
+                                >
+                                    <Icon
+                                        iconName={
+                                            expandedNodes.includes(libName)
+                                                ? "FabricOpenFolderHorizontal"
+                                                : "FabricFolderFill"
+                                        }
+                                        className={styles["folder-icon"]}
+                                        style={{ marginRight: "5px", color: "#0162e8" }}
+                                    />
+                                    <span className={styles["node-name"]}>{libName}</span>
+                                </span>
+                            </div>
+                            <ul className="nested-list">
+                                {expandedNodes.includes(libName) && renderTree(folders, libName)}
+                            </ul>
+                        </li>
+                    </ul>
+                </Stack.Item>
+                <Stack.Item grow={3} styles={stackItemStyles}>
+                    <div>Dashboard/{folderPath}</div>
+                    <div className={styles.grid}>
+                        <div className={styles.row}>
+                            {renderRightFolder(rightFolders)}
+                        </div>
+                    </div>
+
+                    {rightFolders.length === 0 ? <ReactTableComponent
+                        TableClassName="ReactTables"
+                        Tablecolumns={columns}
+                        Tabledata={files}
+                        PagedefaultSize={10}
+                        TableRows={1}
+                        TableshowPagination={files.length > 10}
+                    // TableshowFilter={true}
+                    /> : <></>}
+
+                </Stack.Item>
+            </Stack>
+
+            <IFrameDialog
+                url={shareURL}
+                width="800px !important"
+                height="600px"
+                hidden={!iFrameDialogOpened}
+                onDismiss={() => setIFrameDialogOpened(false)}
+                iframeOnLoad={(iframe) => console.log('Iframe loaded:', iframe)}
+                modalProps={{
+                    isBlocking: true,
+
+                }}
+                dialogContentProps={{
+                    type: DialogType.close,
+                    showCloseButton: true
+                }}
+            />;
+            <AdvancePermission isOpen={isPanelOpen} context={props.context} folderId={itemId} LibraryName={libName} dismissPanel={onDismiss} />
+        </div>
+    );
+}
