@@ -35,6 +35,11 @@ export default class HomePageWebPart extends BaseClientSideWebPart<IHomePageWebP
         UserEmailID: this.context.pageContext.user.email,
         spHttpClient: this.context.spHttpClient,
         userID: this.context.pageContext.legacyPageContext["userId"]
+        // peoplePickerContext: {
+        //   absoluteUrl: this.context.pageContext.web.absoluteUrl,
+        //   msGraphClientFactory: this.context.msGraphClientFactory,
+        //   spHttpClient: this.context.spHttpClient
+        // }
       }
     );
 
