@@ -57,6 +57,12 @@ export async function GetAllLabel(WebUrl: string, spHttpClient: SPHttpClient, La
       Add: getValue("Add", data, Language),
       Update: getValue("Update", data, Language),
       EditTileManagement: getValue("EditTileManagement", data, Language),
+      FieldName: getValue("FieldName", data, Language),
+      ColumnType: getValue("ColumnType", data, Language),
+      IsShowasFilter: getValue("IsShowasFilter", data, Language),
+      IsStaticValue: getValue("IsStaticValue", data, Language),
+      ListName: getValue("ListName", data, Language),
+      DisplayColumn: getValue("DisplayColumn", data, Language),
     };
 
     // 

@@ -1,19 +1,10 @@
 import * as React from "react";
 import { Sidebar, Menu, MenuItem, SubMenu, } from 'react-pro-sidebar';
 import { Icon } from 'office-ui-fabric-react';
-//import styles from '../GlobalCSS/global.module.scss';
-//import 'react-pro-sidebar/dist/css/styles.css'; // Import styles for react-pro-sidebar
 import { Link } from 'react-router-dom';
-//import { ConstName } from '../Constants/Constants'
-//import styles from "../HomePage.module.scss";
-//import { BarChart } from "../icons/BarChart"
-//import { Global } from '../icons/Global';
-//import { InkBottle } from '../icons/InkBottle';
 import { useEffect, useState } from "react";
-//import { getAllNav } from "../../../../Services/NavigationService";
 import { SPHttpClient, SPHttpClientResponse } from "@microsoft/sp-http-base";
-//export default function SideMenu(): JSX.Element {
-//const Imageurl = "https://apar.com/wp-content/uploads/2023/05/APAR_Media_Kit/APAROriginalIDlWithBrandLine050820.png"
+
 
 
 interface ISideMenu {
@@ -22,7 +13,7 @@ interface ISideMenu {
 }
 const SideMenu: React.FC<ISideMenu> = ({ onclickbutton, props }) => {
   const [collapsed, setCollapsed] = useState(false);
-  // State to toggle collapse
+
   const [ImageURL, setImageURL] = useState('');
 
 
@@ -69,7 +60,6 @@ const SideMenu: React.FC<ISideMenu> = ({ onclickbutton, props }) => {
   }
 
   async function FindUserGroup(WebUrl: string, spHttpClient: any, loginName: number): Promise<any> {
-    // let URL = WebUrl + "/_api/web/siteusers?&$expand=Groups";
     let URL = `${WebUrl}/_api/Web/GetUserById(${loginName})?$expand=Groups`;
 
     return await spHttpClient.get(URL,
@@ -103,13 +93,13 @@ const SideMenu: React.FC<ISideMenu> = ({ onclickbutton, props }) => {
         let data = await response.json();
         let userArray = new Array();
         data.value.map((el: any) => {
-          if (el.IsShareByEmailGuestUser == false) {
+          if (el.IsShareByEmailGuestUser === false) {
             userArray.push(el);
           }
         });
 
         let externaluser = userArray;
-        let NonExternalUser = externaluser.filter(Title => Title.Title == "Everyone except external users");
+        let NonExternalUser = externaluser.filter(Title => Title.Title === "Everyone except external users");
         dinamicurl = dinamicurl + "or Permission/Id eq " + NonExternalUser[0].Id + " ";
         for (let i = 0; i < groupData.length; i++) {
           dinamicurl = dinamicurl + " or Permission/Id eq " + groupData[i].Id + " ";
@@ -140,8 +130,6 @@ const SideMenu: React.FC<ISideMenu> = ({ onclickbutton, props }) => {
         setAllMenu(userData.value);
         console.log(allMenu);
 
-        // let d: any = document.getElementById("spSiteHeader");
-        // d.style.display = "none";
 
       } else {
         const responseText: string = await response.text();
@@ -151,75 +139,21 @@ const SideMenu: React.FC<ISideMenu> = ({ onclickbutton, props }) => {
     })
   }
 
-  // function createMenuLevelFinal(allMenu: any) {
-  //   let rootURL = props.SiteURL;
-  //   let finalMenuHtml = '';
-  //   let firstlevel = getFirstLevel(allMenu);
-  //   finalMenuHtml += "";
-  //   for (let i = 0; i < firstlevel.length; i++) {
-  //     let childData = getEqualToHeaderData(firstlevel[i].Id, allMenu);
-  //     if (childData.length > 0) {
-  //       if (firstlevel[i].External_Url) {
-  //         if (firstlevel[i].MenuName == "Workflow") {
-  //           finalMenuHtml +=
-  //             <MenuItem component={<Link to="/" />} icon={<Icon iconName={firstlevel[i].IconClass} style={{ color: '#3f4254', fontSize: '18px' }} />}><SubMenu> ${getChildDataFinal(childData)}</SubMenu>${CheckNextTab(firstlevel[i].Next_Tab)}${firstlevel[i].MenuName}</MenuItem>
-  //           //finalMenuHtml += `<li ><a  ${CheckNextTab(firstlevel[i].Next_Tab)}>${firstlevel[i].MenuName}<svg style="margin-left:10px" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-down-fill" viewBox="0 0 16 16"><path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/></svg></a><ul ${styles["sub-menu"]}>${getChildDataFinal(childData)}</ul></li>`;
-  //         } else {
-  //           <MenuItem component={<Link to="/" />} icon={<Icon iconName={firstlevel[i].IconClass} style={{ color: '#3f4254', fontSize: '18px' }} />}><SubMenu> ${getChildDataFinal(childData)}</SubMenu>${CheckNextTab(firstlevel[i].Next_Tab)}${firstlevel[i].MenuName}</MenuItem>
 
-  //           // finalMenuHtml += `<li ><a  ${CheckNextTab(firstlevel[i].Next_Tab)}>${firstlevel[i].MenuName} <svg style="margin-left:10px" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-down-fill" viewBox="0 0 16 16"><path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/></svg></a><ul class='${styles["sub-menu"]}'>${getChildDataFinal(childData)}</ul></li>`;
-  //         }
-  //       } else {
-  //         if (firstlevel[i].URL == null) {
-  //           <MenuItem component={<Link to="/" />} icon={<Icon iconName={firstlevel[i].IconClass} style={{ color: '#3f4254', fontSize: '18px' }} />}><SubMenu> ${getChildDataFinal(childData)}</SubMenu>${CheckNextTab(firstlevel[i].Next_Tab)}${firstlevel[i].MenuName}</MenuItem>
-
-  //           //finalMenuHtml += `<li  ><a >${firstlevel[i].MenuName}<svg style="margin-left:10px" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-down-fill" viewBox="0 0 16 16"><path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/></svg></a><ul class='${styles["sub-menu"]}'>${getChildDataFinal(childData)}</ul></li>`;
-  //         } else {
-  //           <MenuItem component={<Link to="/" />} icon={<Icon iconName={firstlevel[i].IconClass} style={{ color: '#3f4254', fontSize: '18px' }} />}><SubMenu> ${getChildDataFinal(childData)}</SubMenu>${CheckNextTab(firstlevel[i].Next_Tab)}${firstlevel[i].MenuName}</MenuItem>
-
-  //           //finalMenuHtml += `<li><a ${CheckNextTab(firstlevel[i].Next_Tab)} >${firstlevel[i].MenuName}<svg style="margin-left:10px" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-down-fill" viewBox="0 0 16 16"><path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/></svg></a><ul class='${styles["sub-menu"]}'>${getChildDataFinal(childData)}</ul></li>`;
-  //         }
-  //       }
-  //     } else {
-  //       if (firstlevel[i].External_Url) {
-  //         var URL = firstlevel[i].URL;
-  //         if (firstlevel[i].URL == null) {
-
-  //           //finalMenuHtml += `<li ><label>${firstlevel[i].MenuName}</label></li>`;
-  //         } else {
-  //           finalMenuHtml += `<li ><a href="${URL}" ${CheckNextTab(firstlevel[i].Next_Tab)}>${firstlevel[i].MenuName}</a></li>`;
-  //         }
-  //       } else {
-  //         let urlData = rootURL + firstlevel[i].URL;
-  //         finalMenuHtml += `<li><a href="${urlData}" ${CheckNextTab(firstlevel[i].Next_Tab)} >${firstlevel[i].MenuName}</a></li>`;
-  //       }
-  //     }
-  //   }
-  //   let newOptions: any = document.getElementById("newOptions");
-  //   newOptions.innerHTML = finalMenuHtml;
-  // }
 
   function createMenuLevelFinal(allMenu: any) {
-    // const rootURL = props.SiteURL;
+
     const firstlevel = getFirstLevel(allMenu);
     const links = firstlevel.map((el: any) => {
       let finalMenuHtml;
       const childData = getEqualToHeaderData(el.Id, allMenu);
 
-      // if (childData.length > 0) {
-      if (el.External_Url) {
-        if (el.MenuName == "Workflow") {
-          finalMenuHtml = <><MenuItem component={<Link to="/" />} icon={<Icon iconName={el.IconClass} style={{ color: '#3f4254', fontSize: '18px' }} />}>{el.MenuName}</MenuItem>{childData.length > 0 ? getChildDataFinal(childData, el) : <></>}</>
-        } else {
-          finalMenuHtml = <><MenuItem component={<Link to="/" />} icon={<Icon iconName={el.IconClass} style={{ color: '#3f4254', fontSize: '18px' }} />}>{CheckNextTab(el.Next_Tab)}{el.MenuName}</MenuItem>{childData.length > 0 ? getChildDataFinal(childData, el) : <></>}</>
 
-        }
+      if (el.External_Url) {
+        finalMenuHtml = <>{childData.length > 0 ? getChildDataFinal(childData, el) : <MenuItem component={<Link to={el.URL} />} icon={<Icon iconName={el.IconClass} style={{ color: '#3f4254', fontSize: '18px' }} />}>{CheckNextTab(el.Next_Tab)}{el.MenuName}</MenuItem>}</>
+
       } else {
-        if (el.URL == null) {
-          finalMenuHtml = <><MenuItem component={<Link to="/" />} icon={<Icon iconName={el.IconClass} style={{ color: '#3f4254', fontSize: '18px' }} />}>{CheckNextTab(el.Next_Tab)}{el.MenuName}</MenuItem>{childData.length > 0 ? getChildDataFinal(childData, el) : <></>}</>
-        } else {
-          finalMenuHtml = <><MenuItem component={<Link to="https://google.com" />} icon={<Icon iconName={el.IconClass} style={{ color: '#3f4254', fontSize: '18px' }} />}>{CheckNextTab(el.Next_Tab)}{el.MenuName}</MenuItem>{childData.length > 0 ? getChildDataFinal(childData, el) : <></>}</>
-        }
+        finalMenuHtml = <>{childData.length > 0 ? getChildDataFinal(childData, el) : <MenuItem component={<Link to={el.URL} />} icon={<Icon iconName={el.IconClass} style={{ color: '#3f4254', fontSize: '18px' }} />}>{CheckNextTab(el.Next_Tab)}{el.MenuName}</MenuItem>}</>
       }
       // }
       return finalMenuHtml;
@@ -228,11 +162,11 @@ const SideMenu: React.FC<ISideMenu> = ({ onclickbutton, props }) => {
     return links;
   }
   function getFirstLevel(item: any) {
-    return item.filter((it: any) => (it.ParentMenuIdId == null));
+    return item.filter((it: any) => (it.ParentMenuIdId === null));
   }
 
   function getEqualToHeaderData(id: any, allMenu: any[]) {
-    return allMenu.filter((it: any) => (it.ParentMenuIdId == id));
+    return allMenu.filter((it: any) => (it.ParentMenuIdId === id));
   }
 
   function CheckNextTab(nextTab: any) {
@@ -244,23 +178,22 @@ const SideMenu: React.FC<ISideMenu> = ({ onclickbutton, props }) => {
   }
 
   function getChildDataFinal(data: any, parent: any) {
-    // let rootURL = props.SiteURL;
-    var subArray = <SubMenu icon={<Icon iconName="BarChartVertical" style={{ color: '#3f4254', fontSize: '18px' }} />} label={parent.MenuName}>
+
+    let subArray = <SubMenu icon={<Icon iconName={parent.IconClass} style={{ color: '#3f4254', fontSize: '18px' }} />} label={parent.MenuName}>
       {
 
         data.map((el: any) => {
           let submenu;
-          var childData = getEqualToHeaderData(el.Id, data);
+
+          let childData = getEqualToHeaderData(el.Id, data);
           if (childData.length > 0) {
-            submenu = <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '11px' }} />}>{el.MenuName}</MenuItem>
-              ;
+            submenu = <MenuItem icon={<Icon iconName={el.IconClass} style={{ color: '#b5b5c3', fontSize: '11px' }} />}>{el.MenuName}</MenuItem>
           } else {
             if (el.External_Url) {
-              submenu = <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '11px' }} />}>{el.MenuName}</MenuItem>
+              submenu = <MenuItem component={<Link to={el.URL} />} icon={<Icon iconName={el.IconClass} style={{ color: '#b5b5c3', fontSize: '11px' }} />}>{el.MenuName}</MenuItem>
 
             } else {
-              // var urlData = rootURL + data[i].URL;
-              submenu = <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '11px' }} />}>{el.MenuName}</MenuItem>
+              submenu = <MenuItem component={<Link to="/" />} icon={<Icon iconName={el.IconClass} style={{ color: '#b5b5c3', fontSize: '11px' }} />}>{el.MenuName}</MenuItem>
 
             }
           }
@@ -298,7 +231,7 @@ const SideMenu: React.FC<ISideMenu> = ({ onclickbutton, props }) => {
           </a>)}
 
           <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'space-between', padding: '0', height: 'calc(1.5em + 1.5rem + 2px)' }}
-            onClick={toggleSidebar} // Toggle on click
+            onClick={toggleSidebar}
           >
             <Icon iconName="DoubleChevronLeftMed" style={{ fontSize: '16px', verticalAlign: 'middle', color: '#a4a7b9', cursor: 'pointer', textAlign: 'center' }} />
           </span>
@@ -306,43 +239,7 @@ const SideMenu: React.FC<ISideMenu> = ({ onclickbutton, props }) => {
 
         <Menu>
           {createMenuLevelFinal(allMenu)}
-          {/* <SubMenu icon={<Icon iconName="BarChartVertical" style={{ color: '#3f4254', fontSize: '18px' }} />} label="Charts">
-            <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '11px' }} />}>Pie charts</MenuItem>
-            <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '11px' }} />}>Line charts</MenuItem>
-            <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '11px' }} />}>Bar charts</MenuItem>
-          </SubMenu>
 
-          <SubMenu icon={<Icon iconName="Globe" style={{ color: '#3f4254', fontSize: '18px' }} />} label="Maps">
-            <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '11px' }} />}><NavLink to={"/"}>Google maps</NavLink></MenuItem>
-            <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '11px' }} />}>Open street maps</MenuItem>
-          </SubMenu>
-
-
-          <SubMenu icon={<Icon iconName="Color" style={{ color: '#3f4254', fontSize: '18px' }} />} label="Theme">
-            <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '11px' }} />}>Dark</MenuItem>
-            <MenuItem icon={<Icon iconName="LocationDot" style={{ color: '#b5b5c3', fontSize: '11px' }} />}>Light</MenuItem>
-          </SubMenu>
-
-          <MenuItem component={<Link to="/" />}
-            icon={<Icon iconName="calendar" style={{ color: '#3f4254', fontSize: '18px' }} />}>
-            {ConstName.Const_Route.Dashboard}
-          </MenuItem>
-
-          <MenuItem component={<Link to="/" />}
-            icon={<Icon iconName="ShoppingCart" style={{ color: '#3f4254', fontSize: '18px' }} />}>
-            {ConstName.Const_Route.Master}
-          </MenuItem>
-
-          <MenuItem component={<Link to="/Dashboard" />}
-            icon={<Icon iconName="Diamond" style={{ color: '#3f4254', fontSize: '18px' }} />}>
-            {ConstName.Const_Route.Dashboard}
-          </MenuItem> */}
-
-
-          {/* <MenuItem component={<Link to="/" />}> {ConstName.Const_Route.Dashboard} </MenuItem>
-          <MenuItem component={<Link to="/Master" />}> {ConstName.Const_Route.Master} </MenuItem>
-          <MenuItem component={<Link to="/Dashboard" />}> {ConstName.Const_Route.Dashboard} </MenuItem>
-          <MenuItem component={<Link to="/e-commerce" />}> E-commerce</MenuItem>*/}
         </Menu>
       </Sidebar>
     </div>
