@@ -1,8 +1,13 @@
-import { DefaultButton, Dropdown, IDropdownOption, Panel, PanelType, TextField, Toggle } from "office-ui-fabric-react";
+import { DefaultButton, Dropdown, FontIcon, IconButton, IDropdownOption, IStackItemStyles, IStackStyles, IStackTokens, Panel, PanelType, Stack, TextField, Toggle } from "office-ui-fabric-react";
 import { ILabel } from '../Interface/ILabel';
 import * as React from "react";
 import styles from "./Master.module.scss";
 import { useEffect, useState } from "react";
+import { SPHttpClient } from "@microsoft/sp-http-base";
+import cls from '../HomePage.module.scss'
+import PopupBox from "../ResuableComponents/PopupBox";
+import { getConfidDataByID, getConfig, SaveconfigMaster } from "../../../../Services/ConfigService";
+import ReactTableComponent from '../ResuableComponents/ReusableDataTable';
 //import { getAllListFromSite } from "../../../../Services/ConfigService";
 
 
@@ -12,47 +17,242 @@ export default function ConfigMaster({ props }: any): JSX.Element {
     const [isPanelOpen, setIsPanelOpen] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [ColumnTypeID, setColumnTypeID] = useState('');
+    const [ListNameID, setListNameID] = useState('');
+    const [DisplayColumnID, setDisplayColumnID] = useState('');
     const [IsShowasFilter, setIsShowasFilter] = React.useState<boolean>(false);
     const [IsStaticValue, setIsStaticValues] = React.useState<boolean>(false);
-    // const [ListData, setListData] = useState([]);
+    // const [SiteListData, setSiteListData] = useState([]);
+    const [options, setOptions] = React.useState<string[]>([]);
+    const [newOption, setNewOption] = React.useState<string>('');
+    const [ListData, setListData] = useState([]);
+    const [DisplaycolumnListData, setDisplaycolumnListData] = useState([]);
+    const [isToggleDisabled, setIsToggleDisabled] = useState(false);
+    const [isToggleVisible, setToggleVisible] = React.useState<boolean>(false);
+    const [isToggleVisible1, setToggleVisible1] = React.useState<boolean>(false);
+    const [isDropdownVisible, setDropdownVisible] = React.useState<boolean>(false);
+    const [isSecondaryDropdownVisible, setSecondaryDropdownVisible] = React.useState<boolean>(false);
+    const [isTableVisible, setTableVisible] = React.useState<boolean>(false);
+    const [showLoader, setShowLoader] = useState({ display: "none" });
+    const [isPopupVisible, setisPopupVisible] = useState(false);
+    const [MainTableSetdata, setData] = useState<any[]>([]);
 
     //const [ColumnTypeText, setColumnTypeText] = useState('');
-    //const [setFieldName, setFieldName] = useState("");
+    const [FieldName, setFieldName] = useState("");
+
+
 
 
     useEffect(() => {
         let DisplayLabel: ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}');
         setDisplayLabel(DisplayLabel);
+        getAllListFromSite();
+        fetchData();
         //   getAllListSite();
 
 
     }, []);
 
-    // const getAllListSite = async () => {
 
-    //     let ListData: any = await getAllListFromSite(props.SiteURL, props.spHttpClient);
+    const stackStyles: IStackStyles = { root: { height: "100vh", marginTop: 15 } };
+    const stackItemStyles: IStackItemStyles = {
+        root: {
+            padding: 10,
+            border: "1px solid #ddd",
+            overflow: "auto",
+            background: "#fff",
+            boxShadow: "0 10px 30px 0 rgba(82, 63, 105, .05)"
+        },
+    };
+    const stackTokens: IStackTokens = { childrenGap: 10 };
 
-    //     let ListvalueData = ListData.value;
+    const fetchData = async () => {
+        let FetchallConfigData: any = await getConfig(props.SiteURL, props.spHttpClient);
 
-    //     console.log(ListvalueData);
+        let ConfigData = FetchallConfigData.value;
+
+        setData(ConfigData);
+
+        console.log(ConfigData);
+    };
+
+    const Tablecolumns = [
+        { Header: "FIELD NAME", accessor: "Title" },
+        { Header: "COLUMN TYPE", accessor: "ColumnType", },
+        { Header: "LIST NAME", accessor: "InternalListName" },
+        {
+            Header: "IS ACTIVE",
+            accessor: "IsActive",
+            Cell: ({ row }: { row: any }) => (row.IsActive === true ? "Yes" : "No")
+        },
+        {
+            Header: "IS STATIC DATA",
+            accessor: "IsStaticValue",
+            Cell: ({ row }: { row: any }) => (row.IsStaticValue === true ? "Yes" : "No")
+        },
+        {
+            Header: "ACTION",
+            Cell: ({ row }: { row: any }) => (
+                <FontIcon aria-label="Edit" onClick={() => openEditPanel(row._original.Id)} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer' }}></FontIcon>
+            )
+        }
+    ];
+    const openEditPanel = async (rowData: any) => {
+
+        setIsEditMode(true);
+        setIsPanelOpen(true);
+
+        let GetEditData = await getConfidDataByID(props.SiteURL, props.spHttpClient, rowData);
+        const EditConfigData = GetEditData.value;
+        const CurrentItemId: number = EditConfigData[0].ID;
+        console.log(CurrentItemId);
+
+        await setFieldName(EditConfigData[0].Title);
+        const columntypeData = dropdownOptions.filter((item: any) => item.Title === EditConfigData[0].ColumnType);
+        const options = columntypeData.map((item: any) => ({
+            key: item.Title,
+            text: item.Title,
+        }));
+        console.log(options);
+
+        setColumnTypeID(EditConfigData[0].ColumnType);
+
+        const ListData = dropdownOptions.filter((item: any) => item.Title === EditConfigData[0].InternalListName);
+        const Listoptions = ListData.map((item: any) => ({
+            key: item.Title,
+            text: item.Title,
+        }));
+        console.log(Listoptions);
+
+        setListNameID(EditConfigData[0].ColumnType);
 
 
-    //     let options: any = [];
 
-    //     ListvalueData.forEach((InternalTitleNameData: { Title: any; ID: any; InternalTitleName: any; }) => {
+        if (EditConfigData[0].ColumnType === "Single line of Text") {
+            setToggleVisible(false);
+            setToggleVisible1(false);
+            setDropdownVisible(false);
+            setSecondaryDropdownVisible(false);
+            setTableVisible(false);
+            setIsToggleDisabled(false);
+        } else if (EditConfigData[0].ColumnType === "Multiple lines of Text") {
+            setToggleVisible(false);
+            setToggleVisible1(false);
+            setDropdownVisible(false);
+            setSecondaryDropdownVisible(false);
+            setTableVisible(false);
+            setIsToggleDisabled(false);
+        }
+        else if (EditConfigData[0].ColumnType === "Dropdown") {
+            setToggleVisible(true);
+            setToggleVisible1(true);
+            setDropdownVisible(true);
+            setSecondaryDropdownVisible(true);
+            setTableVisible(false);
+            setIsToggleDisabled(false);
+        }
+        else if (EditConfigData[0].ColumnType === "Multiple Select") {
+            setToggleVisible(true);
+            setToggleVisible1(true);
+            setDropdownVisible(true);
+            setSecondaryDropdownVisible(true);
+            setTableVisible(false);
+            setIsToggleDisabled(false);
+        }
+        else if (EditConfigData[0].ColumnType === "Radio") {
+            setToggleVisible(true);
+            setToggleVisible1(true);
+            setDropdownVisible(false);
+            setSecondaryDropdownVisible(false);
+            setTableVisible(true);
+            setIsStaticValues(true);
+            setIsToggleDisabled(true);
 
-    //         options.push({
+        }
+        else if (EditConfigData[0].ColumnType === "Date and Time") {
+            setToggleVisible(true);
+            setToggleVisible1(false);
+            setDropdownVisible(false);
+            setSecondaryDropdownVisible(false);
+            setTableVisible(false);
+            setIsToggleDisabled(false);
+        }
+        else if (EditConfigData[0].ColumnType === "Person or Group") {
+            setToggleVisible(true);
+            setToggleVisible1(false);
+            setDropdownVisible(false);
+            setSecondaryDropdownVisible(false);
+            setTableVisible(false);
+            setIsToggleDisabled(false);
+        }
+        else {
+            setToggleVisible(false);
+            setToggleVisible1(false);
+            setDropdownVisible(false);
+            setSecondaryDropdownVisible(false);
+            setTableVisible(false);
+            setIsToggleDisabled(false);
+        }
 
-    //             key: InternalTitleNameData.ID,
+        await setIsShowasFilter(EditConfigData[0].IsShowAsFilter);
 
-    //             text: InternalTitleNameData.Title
+        await setIsStaticValues(EditConfigData[0].IsStaticValue);
 
-    //         });
 
-    //     });
 
-    //     setListData(options);
-    // }
+    }
+
+    // Add a new option
+    const addOption = () => {
+        if (newOption.trim() !== '') {
+            setOptions([...options, newOption.trim()]);
+            setNewOption('');
+        }
+    };
+
+    // Remove an existing option
+    const removeOption = (index: number) => {
+        setOptions(options.filter((_, i) => i !== index));
+    };
+
+
+    async function getAllListFromSite() {
+        var url = props.SiteURL + "/_api/web/lists?$select=Title&$filter=(Hidden eq false) and (BaseType ne 1) and Title ne 'ConfigEntryMaster'";
+        const data = await GetListData(url)
+        var ListNamedata = data.d.results;
+        //setSiteListData(ListNamedata);
+
+        let options: any = [];
+
+        ListNamedata.forEach((InternalTitleNameData: { Title: any; InternalTitleName: any; }) => {
+
+            options.push({
+
+                key: InternalTitleNameData.Title,
+
+                text: InternalTitleNameData.Title
+
+            });
+
+        });
+
+        setListData(options);
+
+    }
+
+
+
+    async function GetListData(query: string) {
+        const response = await props.context.spHttpClient.get(query, SPHttpClient.configurations.v1, {
+            headers: {
+                'Accept': 'application/json;odata=verbose',
+                'odata-version': '',
+            },
+        });
+        return await response.json();
+
+
+    };
+
     const openAddPanel = () => {
         // clearField();
         setIsEditMode(false);
@@ -65,10 +265,21 @@ export default function ConfigMaster({ props }: any): JSX.Element {
 
     const handleIsShowasFilterToggleChange = (checked: boolean): void => {
         setIsShowasFilter(checked);
+
     };
 
     const handleIsStaticValueToggleChange = (checked: boolean): void => {
         setIsStaticValues(checked);
+        if (checked) {
+            setDropdownVisible(false);
+            setSecondaryDropdownVisible(false);
+            setTableVisible(true);
+        }
+        else {
+            setDropdownVisible(true);
+            setSecondaryDropdownVisible(true);
+            setTableVisible(false);
+        }
     };
 
 
@@ -82,12 +293,196 @@ export default function ConfigMaster({ props }: any): JSX.Element {
         { key: 'Person or Group', text: 'Person or Group' },
     ];
 
-    const handleColumnTypeonChange = (
-        event: React.FormEvent<HTMLDivElement>, option?: IDropdownOption) => {
+    const handleColumnTypeonChange = (event: React.FormEvent<HTMLDivElement>, option?: IDropdownOption) => {
         setColumnTypeID(option?.key as string);
-        //setColumnTypeText(option?.text as string);
+
+        if (option) {
+
+            if (option.key === "Single line of Text") {
+                setToggleVisible(false);
+                setToggleVisible1(false);
+                setDropdownVisible(false);
+                setSecondaryDropdownVisible(false);
+                setTableVisible(false);
+                setIsToggleDisabled(false);
+            } else if (option.key === "Multiple lines of Text") {
+                setToggleVisible(false);
+                setToggleVisible1(false);
+                setDropdownVisible(false);
+                setSecondaryDropdownVisible(false);
+                setTableVisible(false);
+                setIsToggleDisabled(false);
+            }
+            else if (option.key === "Dropdown") {
+                setToggleVisible(true);
+                setToggleVisible1(true);
+                setDropdownVisible(true);
+                setSecondaryDropdownVisible(true);
+                setTableVisible(false);
+                setIsToggleDisabled(false);
+            }
+            else if (option.key === "Multiple Select") {
+                setToggleVisible(true);
+                setToggleVisible1(true);
+                setDropdownVisible(true);
+                setSecondaryDropdownVisible(true);
+                setTableVisible(false);
+                setIsToggleDisabled(false);
+            }
+            else if (option.key === "Radio") {
+                setToggleVisible(true);
+                setToggleVisible1(true);
+                setDropdownVisible(false);
+                setSecondaryDropdownVisible(false);
+                setTableVisible(true);
+                setIsStaticValues(true);
+                setIsToggleDisabled(true);
+
+            }
+            else if (option.key === "Date and Time") {
+                setToggleVisible(true);
+                setToggleVisible1(false);
+                setDropdownVisible(false);
+                setSecondaryDropdownVisible(false);
+                setTableVisible(false);
+                setIsToggleDisabled(false);
+            }
+            else if (option.key === "Person or Group") {
+                setToggleVisible(true);
+                setToggleVisible1(false);
+                setDropdownVisible(false);
+                setSecondaryDropdownVisible(false);
+                setTableVisible(false);
+                setIsToggleDisabled(false);
+            }
+            else {
+                setToggleVisible(false);
+                setToggleVisible1(false);
+                setDropdownVisible(false);
+                setSecondaryDropdownVisible(false);
+                setTableVisible(false);
+                setIsToggleDisabled(false);
+            }
+        }
     };
 
+    const handleListNameonChange = async (event: React.FormEvent<HTMLDivElement>, option?: IDropdownOption) => {
+        if (option) {
+            console.log("Selected Option:", option.key, option.text);
+            let query = props.SiteURL + "/_api/web/lists/getbytitle('" + option.text + "')/Fields?$filter=(CanBeDeleted eq true) and (TypeAsString eq 'Text' or TypeAsString eq 'Number')";
+            const data = await GetListData(query)
+            let DisplayColumnData = data.d.results;
+            console.log(DisplayColumnData);
+
+            let optionsData: any = [];
+
+            DisplayColumnData.forEach((InternalTitleNameData: { Title: any; InternalTitleName: any; }) => {
+
+                optionsData.push({
+
+                    key: InternalTitleNameData.Title,
+
+                    text: InternalTitleNameData.Title
+
+                });
+
+            });
+            setDisplaycolumnListData(optionsData);
+
+            setListNameID(option?.key as string);
+
+        }
+    }
+
+    const handleDisplayColumnonChange = async (event: React.FormEvent<HTMLDivElement>, option?: IDropdownOption) => {
+        setDisplayColumnID(option?.key as string);
+    }
+
+    const hidePopup = () => {
+        setisPopupVisible(false);
+        clearField();
+        closePanel();
+        setShowLoader({ display: "none" });
+    };
+
+    const clearField = () => {
+
+        clearError();
+
+    };
+    const clearError = () => {
+
+    };
+
+    const validation = () => {
+        let isValidForm = true;
+        return isValidForm;
+    }
+    const SaveItemData = () => {
+        clearError();
+        let valid = validation();
+        valid ? saveData() : "";
+    };
+
+    const saveData = async () => {
+
+        try {
+            setShowLoader({ display: "block" });
+
+            let ddlListName = null;
+            let ddlColumn = null;
+
+            if (IsStaticValue === true) {
+                ddlListName = null;
+                ddlColumn = null;
+            } else {
+                ddlListName = ListNameID;
+                ddlColumn = DisplayColumnID;
+            }
+            let FieldNameNew = FieldName.split(" ").join("");
+            let Name = FieldName;
+
+
+            let option = {
+                __metadata: { type: "SP.Data.ConfigEntryMasterListItem" },
+                //'Title': $("#txtFieldName").val(),
+                Title: Name.trim(),
+                InternalTitleName: FieldNameNew,
+                IsActive: true,
+                ColumnType: ColumnTypeID,
+                IsStaticValue: IsStaticValue,
+                StaticDataObject: options.join(';'),
+                InternalListName: ddlListName,
+                DisplayValue: ddlColumn,
+                IsShowAsFilter: IsShowasFilter,
+                Abbreviation: "Abbreviation"
+            };
+
+            let LID = await SaveconfigMaster(props.SiteURL, props.spHttpClient, option);
+            console.log(LID);
+
+            if (LID != null) {
+
+                setShowLoader({ display: "none" });
+                setisPopupVisible(true);
+            }
+
+
+        } catch (error) {
+            console.error("Error during save operation:", error);
+            setShowLoader({ display: "none" });
+        }
+    };
+
+    const UpdateItemData = () => {
+        clearError();
+        let valid = validation();
+        valid ? UpdateData() : "";
+    };
+
+    const UpdateData = async () => {
+
+    };
 
 
     return (
@@ -95,6 +490,20 @@ export default function ConfigMaster({ props }: any): JSX.Element {
             <div className={styles.alignbutton} style={{ paddingRight: '0px' }}>
                 <DefaultButton id="requestButton" className={styles.submit} text={DisplayLabel?.Add} onClick={openAddPanel}  ></DefaultButton>
             </div>
+
+            <Stack horizontal styles={stackStyles} tokens={stackTokens}>
+                <Stack.Item grow={2} styles={stackItemStyles}>
+                    <ReactTableComponent
+                        TableClassName={styles.ReactTables}
+                        Tablecolumns={Tablecolumns}
+                        Tabledata={MainTableSetdata}
+                        PagedefaultSize={10}
+                        TableRows={1}
+                        TableshowPagination={MainTableSetdata.length > 10}
+                    //TableshowFilter={true}
+                    />
+                </Stack.Item>
+            </Stack>
 
             <Panel
                 isOpen={isPanelOpen}
@@ -111,11 +520,17 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                             <label className={styles.Headerlabel}>{DisplayLabel?.FieldName}<span style={{ color: "red" }}>*</span></label>
 
                             {/* <TextField label="Title" errorMessage={TileError} value={TileName} onChange={(e: any) => { setTileName(e.target.value); }} /> */}
+
                             <TextField
                                 placeholder="Enter Field Name"
-                                //errorMessage={FieldNameError}
-                                value={""}
-                            //  onChange={(el: React.ChangeEvent<HTMLInputElement>) => setFieldName(el.target.value)}
+                                // onChange={(e: any) => { setTileName(e.target.value); }}
+                                //onChange={(e: any) => { setTileName(e.target.value); }}
+                                //errorMessage={TileError}
+                                value={FieldName}
+                                onChange={(el: React.ChangeEvent<HTMLInputElement>) => setFieldName(el.target.value)}
+
+
+
                             />
                         </div>
                     </div>
@@ -134,52 +549,129 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                 </div>
                 <br /><br />
                 <div className={`ms-Grid ${styles.inlineFormContainer}`}>
-                    <div className="col-md-5">
-                        <div className="form-group">
-                            <label className={styles.Headerlabel}>{DisplayLabel?.IsShowasFilter}<span style={{ color: "red" }}>*</span></label>
+                    {isToggleVisible && (
+                        <div className="col-md-5">
+                            <div className="form-group">
+                                <label className={styles.Headerlabel}>{DisplayLabel?.IsShowasFilter}<span style={{ color: "red" }}>*</span></label>
 
-                            <Toggle checked={IsShowasFilter} onChange={(_, checked) => handleIsShowasFilterToggleChange(checked!)} />
+                                <Toggle checked={IsShowasFilter} onChange={(_, checked) => handleIsShowasFilterToggleChange(checked!)} />
 
+                            </div>
                         </div>
-                    </div>
-                    <div className="col-md-5">
-                        <div className="form-group">
-                            <label className={styles.Headerlabel}>{DisplayLabel?.IsStaticValue}<span style={{ color: "red" }}>*</span></label>
-                            <Toggle checked={IsStaticValue} onChange={(_, checked) => handleIsStaticValueToggleChange(checked!)} />
+                    )}
+                    {isToggleVisible1 && (
+                        <div className="col-md-5">
+                            <div className="form-group">
+                                <label className={styles.Headerlabel}>{DisplayLabel?.IsStaticValue}<span style={{ color: "red" }}>*</span></label>
+                                <Toggle checked={IsStaticValue} onChange={(_, checked) => handleIsStaticValueToggleChange(checked!)} disabled={isToggleDisabled} />
 
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
+
 
                 <br /><br />
                 <div className={`ms-Grid ${styles.inlineFormContainer}`}>
-                    <div className="col-md-5">
-                        <div className="form-group">
-                            <label className={styles.Headerlabel}>{DisplayLabel?.ListName}<span style={{ color: "red" }}>*</span></label>
+                    {isDropdownVisible && (
+                        <div className="col-md-5">
+                            <div className="form-group">
+                                <label className={styles.Headerlabel}>{DisplayLabel?.ListName}<span style={{ color: "red" }}>*</span></label>
 
-                            <Dropdown
-                                placeholder="Select an Option"
-                                options={dropdownOptions}
-                                onChange={handleColumnTypeonChange}
-                                selectedKey={ColumnTypeID}
-                                errorMessage=''
-                            />
-                        </div>
-                    </div>
-                    <div className="col-md-5">
-                        <div className="form-group">
-                            <label className={styles.Headerlabel}>{DisplayLabel?.DisplayColumn}<span style={{ color: "red" }}>*</span></label>
-                            <Dropdown
-                                placeholder="Select an Option"
-                                options={dropdownOptions}
-                                onChange={handleColumnTypeonChange}
-                                selectedKey={ColumnTypeID}
-                                errorMessage=''
-                            />
-                        </div>
-                    </div>
+                                <Dropdown
+                                    placeholder="Select an Option"
+                                    options={ListData}
+                                    onChange={handleListNameonChange}
+                                    selectedKey={ListNameID}
+                                    errorMessage=''
+                                />
+                            </div>
+                        </div>)}
+                    {isSecondaryDropdownVisible && (
+                        <div className="col-md-5">
+                            <div className="form-group">
+                                <label className={styles.Headerlabel}>{DisplayLabel?.DisplayColumn}<span style={{ color: "red" }}>*</span></label>
+                                <Dropdown
+                                    placeholder="Select an Option"
+                                    options={DisplaycolumnListData}
+                                    onChange={handleDisplayColumnonChange}
+                                    selectedKey={DisplayColumnID}
+                                    errorMessage=''
+                                />
+                            </div>
+                        </div>)}
+                </div>
+                <br /><br />
+                <div className={`ms-Grid ${styles.inlineFormContainer}`}>
+                    {isTableVisible && (
+                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                            <thead>
+                                <tr>
+                                    <th style={{ textAlign: 'left', width: '10%' }}>Sr. No.</th>
+                                    <th style={{ textAlign: 'left', width: '70%' }}>
+                                        Option *
+                                        <div style={{ marginTop: '8px' }}>
+                                            <TextField
+                                                placeholder="Enter Option"
+                                                value={newOption}
+                                                onChange={(_, value) => setNewOption(value || '')}
+                                                styles={{ root: { width: '100%' } }}
+                                            />
+                                        </div>
+                                    </th>
+                                    <th style={{ textAlign: 'center', width: '20%' }}>
+                                        Action
+                                        <IconButton
+                                            iconProps={{ iconName: 'Add' }}
+                                            title="Add Option"
+                                            ariaLabel="Add Option"
+                                            onClick={addOption}
+                                            styles={{ root: { marginTop: '8px' }, icon: { color: '#0078d4' } }}
+                                        />
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {options.map((option, index) => (
+                                    <tr key={index} style={{ borderBottom: '1px solid #ddd' }}>
+                                        <td style={{ padding: '8px' }}>{index + 1}</td>
+                                        <td style={{ padding: '8px' }}>{option}</td>
+                                        <td style={{ textAlign: 'center' }}>
+                                            <IconButton
+                                                iconProps={{ iconName: 'Delete' }}
+                                                title="Remove Option"
+                                                ariaLabel="Remove Option"
+                                                onClick={() => removeOption(index)}
+                                                styles={{ icon: { color: '#e81123' } }}
+                                            />
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
                 </div>
 
+                <div className={styles.container} >
+                    <div className={styles.containerOne} >
+                        <div className={cls["modal"]} style={showLoader}></div>
+
+                        {!isEditMode ? (
+
+                            <DefaultButton onClick={SaveItemData} text={DisplayLabel?.Submit} className={styles['sub-btn']} />
+                        ) :
+                            <DefaultButton onClick={UpdateItemData} text={DisplayLabel?.Update} className={styles['sub-btn']} />
+                        }
+
+
+                        <PopupBox isPopupBoxVisible={isPopupVisible} hidePopup={hidePopup} />
+
+
+                        <DefaultButton text={DisplayLabel?.Cancel} onClick={closePanel} className={styles['can-btn']} allowDisabledFocus />
+
+                    </div>
+
+                </div>
 
 
             </Panel>
