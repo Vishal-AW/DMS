@@ -48,7 +48,7 @@ interface IPopupboxProps {
 }
 
 const PopupBox: React.FC<IPopupboxProps> = ({ isPopupBoxVisible, hidePopup }) => {
-
+    console.log("Alert Box");
     if (!isPopupBoxVisible) {
         return null; // Instead of returning 'false', return 'null' when you don't want to render anything
     }
@@ -86,7 +86,7 @@ const PopupBox: React.FC<IPopupboxProps> = ({ isPopupBoxVisible, hidePopup }) =>
     );
 };
 
-export default PopupBox;
+export default React.memo(PopupBox);
 
 
 
