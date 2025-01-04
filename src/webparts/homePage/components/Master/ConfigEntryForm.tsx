@@ -721,12 +721,24 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                 <br /><br />
                 <div className={`ms-Grid ${styles.inlineFormContainer}`}>
                     {isTableVisible && (
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <table className="addoption" style={{ width: '100%', borderCollapse: 'collapse' }}>
                             <thead>
                                 <tr>
                                     <th style={{ textAlign: 'left', width: '10%' }}>Sr. No.</th>
                                     <th style={{ textAlign: 'left', width: '70%' }}>
                                         Option *
+
+                                    </th>
+                                    <th style={{ textAlign: 'center', width: '20%' }}>
+                                        Action
+
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style={{ textAlign: 'left', width: '10%' }}></td>
+                                    <td style={{ textAlign: 'left', width: '70%' }}>
                                         <div style={{ marginTop: '8px' }}>
                                             <TextField
                                                 placeholder="Enter Option"
@@ -735,19 +747,19 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                                                 styles={{ root: { width: '100%' } }}
                                             />
                                         </div>
-                                    </th>
-                                    <th style={{ textAlign: 'center', width: '20%' }}>
-                                        Action
+                                    </td>
+                                    <td style={{ textAlign: 'center', width: '20%' }}>
                                         <IconButton
                                             iconProps={{ iconName: 'Add' }}
                                             title="Add Option"
                                             ariaLabel="Add Option"
                                             onClick={addOption}
-                                            styles={{ root: { marginTop: '8px' }, icon: { color: '#0078d4' } }}
+                                            styles={{ root: { marginTop: '8px', backgroundColor: '#009ef7 ', borderRadius: '50px !important', padding: '0px !important' }, icon: { color: '#fff' } }}
                                         />
-                                    </th>
+                                    </td>
                                 </tr>
-                            </thead>
+
+                            </tbody>
                             <tbody>
                                 {options.map((option, index) => (
                                     <tr key={index} style={{ borderBottom: '1px solid #ddd' }}>
