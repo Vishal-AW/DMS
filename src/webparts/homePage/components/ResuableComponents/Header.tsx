@@ -1,9 +1,9 @@
+
 import * as React from "react";
 import styles from '../GlobalCSS/global.module.scss';
 import { Icon } from '@fluentui/react/lib/Icon';
 import { useState } from "react";
 //import { Dropdown, IDropdownStyles, IDropdownOption, DropdownMenuItemType} from '@fluentui/react/lib/Dropdown';
-
 
 export default function Header(): JSX.Element {
 
@@ -43,4 +43,3 @@ export default function Header(): JSX.Element {
     </div>
   )
 }
-

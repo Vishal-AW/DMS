@@ -10,12 +10,13 @@ export function getConfigActive(WebUrl: string, spHttpClient: any) {
 
   return getMethod(WebUrl, spHttpClient, filter);
 }
-
-export function getAllListFromSite(WebUrl: string, spHttpClient: any) {
-  let filter = "(Hidden eq false) and (BaseType ne 1) and Title ne 'ConfigEntryMaster'";
+export function getConfidDataByID(WebUrl: string, spHttpClient: any, ID: number) {
+  let filter = "ID eq " + ID;
 
   return getMethod(WebUrl, spHttpClient, filter);
 }
+
+
 
 async function getMethod(WebUrl: string, spHttpClient: any, filter: any) {
 
@@ -31,14 +32,14 @@ async function getMethod(WebUrl: string, spHttpClient: any, filter: any) {
 }
 
 
-export function SaveCountryMaster(WebUrl: string, spHttpClient: any, savedata: any) {
+export function SaveconfigMaster(WebUrl: string, spHttpClient: any, savedata: any) {
 
   return CreateItem(WebUrl, spHttpClient, "ConfigEntryMaster", savedata);
 
 }
 
 
-export function UpdateCountryMaster(WebUrl: string, spHttpClient: any, savedata: any, LID: number) {
+export function UpdateconfigMaster(WebUrl: string, spHttpClient: any, savedata: any, LID: number) {
 
   return UpdateItem(WebUrl, spHttpClient, "ConfigEntryMaster", savedata, LID);
 

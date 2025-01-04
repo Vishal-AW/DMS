@@ -46,24 +46,11 @@ const ProjectEntryForm: React.FC<IAdvanceProps> = ({
     const [OtherSuffix, setOtherSuffix] = useState<string>("");
     const [configData, setConfigData] = useState<any[]>([]);
     const [dynamicControl, setDynamicControl] = useState<any[]>([]);
-    const [libraryDetails, setLibraryDetails] = useState<any>({});
-    const [options, setOptions] = useState<any>({});
-    const [dynamicValues, setDynamicValues] = useState<{ [key: string]: any; }>({});
-    const buttonStyles = { root: { marginRight: 8 } };
-    const [folderAccess, setFolderAccess] = useState<any[]>([]);
-    // const [pSType, setPSType] = useState([]);
-    const [isPopupBoxVisible, setIsPopupBoxVisible] = useState(false);
-    const handleInputChange = (fieldName: string, value: any) => {
-        setDynamicValues((prevValues) => ({
-            ...prevValues,
-            [fieldName]: value,
-        }));
-    };
 
     const peoplePickerContext: IPeoplePickerContext = {
         absoluteUrl: context.pageContext.web.absoluteUrl,
         msGraphClientFactory: context.msGraphClientFactory,
-        spHttpClient: context.spHttpClient,
+        spHttpClient: context.spHttpClient
     };
 
 

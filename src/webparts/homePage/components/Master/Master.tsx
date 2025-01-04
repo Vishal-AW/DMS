@@ -2,7 +2,7 @@ import * as React from "react";
 import { useState, useEffect } from 'react';
 import * as moment from "moment";
 import styles from '../Master/Master.module.scss';
-import cls from '../HomePage.module.scss'
+import cls from '../HomePage.module.scss';
 //import { SPHttpClient, SPHttpClientResponse, ISPHttpClientOptions } from '@microsoft/sp-http';
 //import { HTTPServices, _getListItem } from "../../../HTTPServices";
 import {
@@ -71,7 +71,7 @@ export default function Master({ props }: any): JSX.Element {
   // const [DuplicateTileError, setDuplicateTileError] = useState("");
   // const [TileLowerUpperError, setTileLowerUpperError] = useState("");
   const [DisplayLabel, setDisplayLabel] = useState<ILabel>();
-  const [selectedFile, setSelectedFile] = useState<File | { name: string } | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | { name: string; } | null>(null);
   //const [attachments, setAttachments]: any = useState([]);
   const [assignName, setAssignName] = useState<string>("");
   const [assignID, setAssignID] = useState<string[]>([]);
@@ -113,7 +113,7 @@ export default function Master({ props }: any): JSX.Element {
   const [separator, setSeparator] = useState<string>("-");
   const [increment, setIncrement] = useState<string>("Continue");
   const [refExample, setRefExample] = useState<string>("");
-  const [customSeparators, setCustomSeparators] = useState<{ [key: number]: string }>({});
+  const [customSeparators, setCustomSeparators] = useState<{ [key: number]: string; }>({});
 
   const [CurrentEditID, setCurrentEditID] = useState<number>(0);
 
@@ -140,13 +140,13 @@ export default function Master({ props }: any): JSX.Element {
     setIsPanelOpen(true);
   };
 
-  const hidePopup = () => {
+
+  const hidePopup = React.useCallback(() => {
     setisPopupVisible(false);
     clearField();
     closePanel();
     setShowLoader({ display: "none" });
-  };
-
+  }, [isPopupVisible]);
 
 
 
@@ -193,11 +193,11 @@ export default function Master({ props }: any): JSX.Element {
     {
       Header: "ALLOW APPROVER",
       accessor: "AllowApprover",
-      Cell: ({ row }: { row: any }) => (row.AllowApprover === true ? "Yes" : "No")
+      Cell: ({ row }: { row: any; }) => (row.AllowApprover === true ? "Yes" : "No")
     },
     {
       Header: "LAST MODIFIED",
-      Cell: ({ row }: { row: any }) => {
+      Cell: ({ row }: { row: any; }) => {
         const rowData = row._original;
         const formattedDate = new Date(rowData.Modified).toLocaleDateString("en-US", {
           month: "2-digit",
@@ -216,11 +216,11 @@ export default function Master({ props }: any): JSX.Element {
     {
       Header: "ACTIVE",
       accessor: "Active",
-      Cell: ({ row }: { row: any }) => (row.Active === true ? "Yes" : "No")
+      Cell: ({ row }: { row: any; }) => (row.Active === true ? "Yes" : "No")
     },
     {
       Header: "ACTION",
-      Cell: ({ row }: { row: any }) => (
+      Cell: ({ row }: { row: any; }) => (
         <FontIcon aria-label="Edit" onClick={() => openEditPanel(row._original.Id)} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer' }}></FontIcon>
       )
     }
@@ -258,7 +258,7 @@ export default function Master({ props }: any): JSX.Element {
     }
 
     if (!isEditMode) {
-      const TileAdminData: any = EditSettingData[0].TileAdmin ? ([EditSettingData[0].TileAdmin.EMail]) : []
+      const TileAdminData: any = EditSettingData[0].TileAdmin ? ([EditSettingData[0].TileAdmin.EMail]) : [];
       await setTileAdminID(TileAdminData);
     } else {
       setTileAdminID([]);
@@ -371,12 +371,12 @@ export default function Master({ props }: any): JSX.Element {
 
     let icheckbox;
     if (obj.ColumnType === 'Dropdown' && !obj.IsStaticValue && obj.IsRequired === true && obj.IsFieldAllowInFile != true && obj.IsActiveControl === true) {
-      icheckbox = <Checkbox label={obj.Title} checked={refFormatData.includes(obj.Title)} onChange={(e, checked) => handleCheckboxToggle(obj.Title, checked!)} />
+      icheckbox = <Checkbox label={obj.Title} checked={refFormatData.includes(obj.Title)} onChange={(e, checked) => handleCheckboxToggle(obj.Title, checked!)} />;
 
 
     }
     return icheckbox;
-  }
+  };
 
 
 
@@ -475,7 +475,7 @@ export default function Master({ props }: any): JSX.Element {
     prefixValue: string,
     separatorValue: string,
     incrementValue: string,
-    customSeparatorData: { [key: number]: string } = customSeparators
+    customSeparatorData: { [key: number]: string; } = customSeparators
   ) => {
     let formula = prefixValue ? `${prefixValue}${separatorValue}` : "";
 
@@ -572,7 +572,7 @@ export default function Master({ props }: any): JSX.Element {
     });
 
     setConfigData(options);
-  }
+  };
 
   const RedundancyDaysData = async () => {
 
@@ -598,7 +598,7 @@ export default function Master({ props }: any): JSX.Element {
     });
 
     setRedundancyData(options);
-  }
+  };
 
 
   const handleArchiveDropdownChange = (
@@ -932,13 +932,13 @@ export default function Master({ props }: any): JSX.Element {
         { ColName: "UploadFlag", ColType: 2, DefaultValue: "Backend" },
         { ColName: "NewFolderAccess", ColType: 2 },
       ],
-    }]
+    }];
 
     if (tableData.length > 0) {
       tableData.map(function (el) {
         let colType = getColumnType(el.ColumnType);
         Columns[0].Columns.push({ "ColName": el.InternalTitleName, "ColType": colType });
-      })
+      });
     }
 
     if (IsArchiveAllowed && !isUpdate) {
@@ -947,11 +947,11 @@ export default function Master({ props }: any): JSX.Element {
         ListType: "101",
         Columns: Columns[0].Columns
 
-      }
+      };
       Columns.push(obj);
     }
 
-    CreateList(Columns, TileLID, false)
+    CreateList(Columns, TileLID, false);
 
   };
 
@@ -960,37 +960,37 @@ export default function Master({ props }: any): JSX.Element {
   const getColumnType = (val: any) => {
     switch (val) {
       case 'Multiple lines of Text':
-        return 3
+        return 3;
         break;
 
       case 'Date and Time':
-        return 4
+        return 4;
         break;
 
       case 'Choice':
-        return 6
+        return 6;
         break;
 
       case 'Lookup':
-        return 7
+        return 7;
         break;
 
       case 'Yes/No':
-        return 8
+        return 8;
         break;
 
       case 'Number':
-        return 9
+        return 9;
         break;
 
       case 'Person or Group':
-        return 20
+        return 20;
         break;
 
       default:
-        return 2
+        return 2;
     }
-  }
+  };
 
 
 
@@ -1112,7 +1112,7 @@ export default function Master({ props }: any): JSX.Element {
 
     // }
     return isValidForm;
-  }
+  };
 
 
 
@@ -1268,32 +1268,32 @@ export default function Master({ props }: any): JSX.Element {
   };
 
   const UpdateSequenceNumber = async (startIndex: number, changeIndex: any, data: any, flag: string) => {
-    const NewSequencedata = []
+    const NewSequencedata = [];
     for (let p = 0; p < data.length; p++) {
 
       const NextSequencedata = data.filter((item: any) => item.Order0 === startIndex);
       if (NextSequencedata.length > 0) {
-        let obj = { Id: NextSequencedata[0].Id, Order0: changeIndex }
-        NewSequencedata.push(obj)
-        startIndex = startIndex + 1
-        changeIndex = changeIndex + 1
+        let obj = { Id: NextSequencedata[0].Id, Order0: changeIndex };
+        NewSequencedata.push(obj);
+        startIndex = startIndex + 1;
+        changeIndex = changeIndex + 1;
       }
       if (startIndex > data.length) {
-        startIndex = 1
+        startIndex = 1;
       }
       if (changeIndex > data.length) {
-        changeIndex = 1
+        changeIndex = 1;
       }
     }
-    return NewSequencedata
-  }
+    return NewSequencedata;
+  };
 
   const UpdateTileSequence = async (NewSequencedata: any) => {
     for (let i = 0; i < NewSequencedata.length; i++) {
-      let obj = { Order0: NewSequencedata[i].Order0 }
+      let obj = { Order0: NewSequencedata[i].Order0 };
       await UpdateTileSetting(props.SiteURL, props.spHttpClient, obj, NewSequencedata[i].Id);
     }
-  }
+  };
 
   const [allLibColumn, setAllLibColumn] = useState([]);
   const getAllColumns = async (TileName: any) => {
@@ -1302,7 +1302,7 @@ export default function Master({ props }: any): JSX.Element {
     setAllLibColumn(response.d.results);
 
     console.log(allLibColumn);
-  }
+  };
 
   const createAndUpdateColumn = async (Internal: string) => {
     for (var i = 0; i < tableData.length; i++) {
@@ -1317,7 +1317,7 @@ export default function Master({ props }: any): JSX.Element {
 
       }
     }
-  }
+  };
 
 
 
@@ -1337,7 +1337,7 @@ export default function Master({ props }: any): JSX.Element {
       }
 
     }
-  }
+  };
 
 
 
@@ -1421,7 +1421,7 @@ export default function Master({ props }: any): JSX.Element {
         IsArchiveRequired: IsArchiveAllowed,
         //LibraryName: Internal
 
-      }
+      };
       await UpdateTileSetting(props.SiteURL, props.spHttpClient, option, CurrentEditID);
       let UpdateData = await getDataById(props.SiteURL, props.spHttpClient, CurrentEditID);
       console.log(UpdateData);
@@ -1432,7 +1432,7 @@ export default function Master({ props }: any): JSX.Element {
         saveAttachment(UpdateTileID[0].Id);
         if (Sequencedata[0].Order0 != TileSequence) {
           if (NewSequencedata.length > 0) {
-            await UpdateTileSequence(NewSequencedata)
+            await UpdateTileSequence(NewSequencedata);
           }
         }
 
@@ -1451,7 +1451,7 @@ export default function Master({ props }: any): JSX.Element {
             ArchiveLibraryName: ArchiveInternal,
             RetentionDays: parseInt(RedundancyDataText),
             ArchiveVersionCount: parseInt(ArchiveVersions),
-          }
+          };
           await UpdateTileSetting(props.SiteURL, props.spHttpClient, items, CurrentEditID);
 
           // let ArchUpdateData = await getDataById(props.SiteURL, props.spHttpClient, CurrentEditID);
@@ -2223,14 +2223,14 @@ export default function Master({ props }: any): JSX.Element {
         .then((response: SPHttpClientResponse) => {
           response.json().then(async (results: any) => {
             ListGuid.push(results);
-            let obj = { LibGuidName: ListGuid[0].Id }
+            let obj = { LibGuidName: ListGuid[0].Id };
 
             console.log(obj);
 
             isArchive ? "" : await UpdateTileSetting(props.SiteURL, props.spHttpClient, obj, TileLID);
             count++;
             if (count === IListItem.length) {
-              createAllColumns(IListItem)
+              createAllColumns(IListItem);
               console.log("GUID", ListGuid);
             }
           });
@@ -2238,7 +2238,7 @@ export default function Master({ props }: any): JSX.Element {
     }
   }
   async function createAllColumns(IListItem: any) {
-    let listCount = 0
+    let listCount = 0;
     for (let list = 0; list < IListItem.length; list++) {
       listCount++;
       // let columnCount = 0;
@@ -2254,7 +2254,7 @@ export default function Master({ props }: any): JSX.Element {
             'FieldTypeKind': 6,
             'Title': ColumnsObj[col]["ColName"],
             'Choices': { '__metadata': { 'type': 'Collection(Edm.String)' }, 'results': ColumnsObj[col]["Choices"] }
-          }
+          };
 
           let filterGUID = ListGuid.filter((x: any) => IListItem[list]["ListName"].includes(x.Title));
           await CreateChoiceCloumn(filterGUID[0].Id, obj);
@@ -2325,7 +2325,7 @@ export default function Master({ props }: any): JSX.Element {
       },
       "body": JSON.stringify(obj)
     };
-    return await props.context.spHttpClient.post(url, SPHttpClient.configurations.v1, spHttpClientOptions)
+    return await props.context.spHttpClient.post(url, SPHttpClient.configurations.v1, spHttpClientOptions);
   }
 
   async function CreateChoiceCloumn(listID: string, obj: any) {
@@ -2339,7 +2339,7 @@ export default function Master({ props }: any): JSX.Element {
       },
       "body": JSON.stringify(obj)
     };
-    return await props.context.spHttpClient.post(url, SPHttpClient.configurations.v1, spHttpClientOptions)
+    return await props.context.spHttpClient.post(url, SPHttpClient.configurations.v1, spHttpClientOptions);
   }
 
 
@@ -2379,13 +2379,13 @@ export default function Master({ props }: any): JSX.Element {
           }
         }).then((response: SPHttpClientResponse) => {
           response.json().then((result: any) => {
-            console.log(result)
+            console.log(result);
             defaulttViewID.push(result["d"]["Id"]);
             if (defaulttViewID.length === IListItem.length) {
-              addColumnOnView(IListItem, defaulttViewID)
+              addColumnOnView(IListItem, defaulttViewID);
             }
-          })
-        })
+          });
+        });
     }
   }
 
@@ -2398,7 +2398,7 @@ export default function Master({ props }: any): JSX.Element {
       let ColumnsObj: any = IListItem[listName]["Columns"];
       for (let colName = 0; colName < ColumnsObj.length; colName++) {
         // Count++;
-        let obj = { 'strField': ColumnsObj[colName]["ColName"] }
+        let obj = { 'strField': ColumnsObj[colName]["ColName"] };
         var resURL = props.SiteURL + "/_api/web/lists/getbytitle('" + IListItem[listName]["ListName"] + "')/Views/getbyId('" + defaultView[listName] + "')/ViewFields/AddViewField";
 
         await addDefaultViewColumn(resURL, obj).then((r: any) => {
@@ -2410,7 +2410,7 @@ export default function Master({ props }: any): JSX.Element {
             // closePanel();
 
           }
-        })
+        });
       }
     }
   }
@@ -2424,7 +2424,7 @@ export default function Master({ props }: any): JSX.Element {
           'odata-version': '',
         },
         body: JSON.stringify(obj)
-      })
+      });
   }
 }
 

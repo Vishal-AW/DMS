@@ -13,11 +13,8 @@ import Datatable from '../components/ResuableComponents/Header';
 import Dashboard from '../components/Home/Dashboard';
 //import ParentComponent from './GeneralDocumentTreeView/ParentTreeView';
 import { GetAllLabel } from "../../../Services/ControlLabel";
-
 import '../components/Hidedesign.css';
-
 import TreeView from './GeneralDocumentTreeView/TreeView';
-
 import ConfigMaster from './Master/ConfigEntryForm';
 
 

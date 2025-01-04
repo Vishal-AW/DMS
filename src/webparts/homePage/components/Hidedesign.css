@@ -4,6 +4,18 @@ body {
     font-family: 'Poppins', sans-serif;
 }*/
 
+::-webkit-scrollbar {
+    width: 9px !important;
+    background-color: transparent !important;
+    height: 8px !important;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: #b5b7b9 !important;
+    border-radius: 10px !important;
+}
+
 #sp-appBar {
     display: none;
 }
@@ -254,6 +266,12 @@ label {
     border-radius: .475rem !important;
 }
 
+.ms-TextField-fieldGroup::after,
+.ms-BasePicker-text::after,
+.ms-Dropdown::after {
+    border: none !important;
+}
+
 .ms-BasePicker-input:active {
     width: 100%;
     background-color: #f5f8fa !important;
@@ -474,4 +492,9 @@ div:focus-visible,
     color: #009ef7 !important;
     background-color: #f0f0f000 !important;
 
+}
+
+.addoption .ms-Button--icon {
+    border-radius: 50% !important;
+    padding: 0px !important;
 }

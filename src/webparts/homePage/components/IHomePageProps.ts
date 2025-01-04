@@ -10,7 +10,7 @@ export interface IHomePageProps {
   SiteURL: string;
   UserEmailID: string;
   spHttpClient: SPHttpClient;
-  userID: number
+  userID: number;
 
 
 }
