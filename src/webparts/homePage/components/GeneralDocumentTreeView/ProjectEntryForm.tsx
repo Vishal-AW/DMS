@@ -1,325 +1,167 @@
-import React, { memo, useCallback, useEffect, useState } from "react";
-import {
-    ChoiceGroup,
-    DefaultButton,
-    Dropdown,
-    Panel,
-    PanelType,
-    PrimaryButton,
-    TextField,
-    Toggle,
-} from "@fluentui/react";
+import { ChoiceGroup, Dropdown, IChoiceGroupOption, Panel, PanelType, TextField, Toggle } from "@fluentui/react";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
-import {
-    IPeoplePickerContext,
-    PeoplePicker,
-    PrincipalType,
-} from "@pnp/spfx-controls-react/lib/PeoplePicker";
+import React, { useEffect, useState } from 'react';
 import styles from "./TreeView.module.scss";
 import { getActiveTypeData } from "../../../../Services/PrefixSuffixMasterService";
 import { getConfigActive } from "../../../../Services/ConfigService";
-import { getDataByLibraryName } from "../../../../Services/MasTileService";
-import { getListData, updateLibrary } from "../../../../Services/GeneralDocument";
-import { FolderStructure } from "../../../../Services/FolderStructure";
-import { getUserIdFromLoginName } from "../../../../DAL/Commonfile";
-import PopupBox from "../ResuableComponents/PopupBox";
-
+import { IPeoplePickerContext, PeoplePicker, PrincipalType } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 export interface IAdvanceProps {
     isOpen: boolean;
-    dismissPanel: (value: boolean) => void;
+    dismissPanel: () => void;
     context: WebPartContext;
     LibraryDetails: any;
-    folderPath: string;
 }
-
-const ProjectEntryForm: React.FC<IAdvanceProps> = ({
-    isOpen,
-    dismissPanel,
-    context,
-    LibraryDetails,
-    folderPath
-}) => {
-    const [folderName, setFolderName] = useState<string>("");
+const ProjectEntryForm: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, context, LibraryDetails }) => {
+    const [folderName, setFolderName] = useState<string>('');
     const [isSuffixRequired, setIsSuffixRequired] = useState<boolean>(false);
     const [SuffixData, setSuffixData] = useState<any[]>([]);
-    const [Suffix, setSuffix] = useState<string>("");
-    const [OtherSuffix, setOtherSuffix] = useState<string>("");
+    const [Suffix, setSuffix] = useState<string>('');
+    const [OtherSuffix, setOtherSuffix] = useState<string>('');
     const [configData, setConfigData] = useState<any[]>([]);
     const [dynamicControl, setDynamicControl] = useState<any[]>([]);
 
+    // const peoplePickerContext: IPeoplePickerContext = {
+    //     absoluteUrl: context.pageContext.web.absoluteUrl,
+    //     msGraphClientFactory: context.msGraphClientFactory,
+    //     spHttpClient: context.spHttpClient
+    // };
+
     const peoplePickerContext: IPeoplePickerContext = {
         absoluteUrl: context.pageContext.web.absoluteUrl,
-        msGraphClientFactory: context.msGraphClientFactory,
-        spHttpClient: context.spHttpClient
+        msGraphClientFactory: context.msGraphClientFactory as any as import("@pnp/spfx-controls-react/node_modules/@microsoft/sp-http-msgraph/dist/index-internal").MSGraphClientFactory,
+        spHttpClient: context.spHttpClient as any as import("@pnp/spfx-controls-react/node_modules/@microsoft/sp-http-base/dist/index-internal").SPHttpClient
     };
+    const handelPeoplePicker = (items: any[]) => { };
 
-
-
-    const handleToggleChange = (_: React.MouseEvent<HTMLElement>, checked?: boolean) => {
+    const _onChange = (ev: React.MouseEvent<HTMLElement>, checked?: boolean) => {
         setIsSuffixRequired(!!checked);
     };
-
     useEffect(() => {
-        fetchLibraryDetails();
-        fetchSuffixData();
-        fetchConfigData();
-        console.log(libraryDetails);
+        getSuffixData();
+        getConfigData();
     }, []);
-
-    const fetchSuffixData = async () => {
-        const data = await getActiveTypeData(
-            context.pageContext.web.absoluteUrl,
-            context.spHttpClient,
-            "Suffix"
-        );
-        const column = data.value.map((item: any) => ({
-            key: item.PSName,
-            text: item.PSName,
-        }));
+    const getSuffixData = async () => {
+        const data = await getActiveTypeData(context.pageContext.web.absoluteUrl, context.spHttpClient, 'Suffix');
+        const column = data.value.map((item: any) => ({ key: item.PSName, text: item.PSName }));
         setSuffixData(column);
     };
 
-    const fetchConfigData = async () => {
-        const data = await getConfigActive(
-            context.pageContext.web.absoluteUrl,
-            context.spHttpClient
-        );
+    const getConfigData = async () => {
+        const data = await getConfigActive(context.pageContext.web.absoluteUrl, context.spHttpClient);
         setConfigData(data.value);
-    };
-
-    const fetchLibraryDetails = async () => {
-        const dataConfig = await getConfigActive(context.pageContext.web.absoluteUrl, context.spHttpClient);
-        const libraryData = await getDataByLibraryName(context.pageContext.web.absoluteUrl, context.spHttpClient, LibraryDetails.LibraryName);
-
-        setLibraryDetails(libraryData.value[0]);
-        setConfigData(dataConfig.value);
-
-        if (libraryData.value[0]?.DynamicControl) {
-            let jsonData = JSON.parse(libraryData.value[0].DynamicControl);
+        if (LibraryDetails.DynamicControl != "" && LibraryDetails.DynamicControl != null) {
+            let jsonData = JSON.parse(LibraryDetails.DynamicControl);
             jsonData = jsonData.filter((ele: any) => ele.IsActiveControl);
             setDynamicControl(jsonData);
-            bindDropdown(jsonData);
         }
     };
-
-    const bindDropdown = (dynamic: any) => {
-        let dropdownOptions = [{ key: "", text: "Select an option" }];
-        dynamic.map(async (item: any, index: number) => {
-            if (item.ColumnType === "Dropdown" || item.ColumnType === "Multiple Select") {
-                if (item.IsStaticValue) {
-                    dropdownOptions = item.StaticDataObject.split(";").map((ele: string) => ({
-                        key: ele,
-                        text: ele,
-                    }));
-                } else {
-                    const data = await getListData(
-                        `${context.pageContext.web.absoluteUrl}/_api/web/lists/getbytitle('${item.InternalListName}')/items?$top=5000&$filter=Active eq 1&$orderby=${item.DisplayValue} asc`,
-                        context
-                    );
-                    dropdownOptions = data.value.map((ele: any) => ({
-                        key: ele[item.DisplayValue],
-                        text: ele[item.DisplayValue],
-                    }));
-                }
-                setOptions((prev: any) => ({ ...prev, [item.InternalTitleName]: dropdownOptions }));
-            }
-        });
+    const _onChangeRedio = (ev: React.FormEvent<HTMLInputElement>, option: IChoiceGroupOption): void => {
+        console.dir(option);
     };
-
-    const renderDynamicControls = useCallback(() => {
+    const bindControl = () => {
         return dynamicControl.map((item: any, index: number) => {
-            const filterObj = configData.find((ele) => ele.Id === item.Id);
-
-            if (!filterObj) return null;
-
-            switch (item.ColumnType) {
-                case "Dropdown":
-                case "Multiple Select":
-                    return (
-                        <div className={dynamicControl.length > 5 ? styles.col6 : styles.col12} key={index}>
-                            <Dropdown
-                                placeholder="Select an option"
-                                label={item.Title}
-                                options={options[item.InternalTitleName] || []}
-                                required={item.IsRequired}
-                                multiSelect={item.ColumnType === "Multiple Select"}
-                                onChange={(ev, option) => handleInputChange(item.InternalTitleName, option?.key)}
-                                selectedKey={dynamicValues[item.InternalTitleName] || ""}
-                            />
-                        </div>
-                    );
-
-                case "Person or Group":
-                    return (
-                        <div className={dynamicControl.length > 5 ? styles.col6 : styles.col12} key={index}>
-                            <PeoplePicker
-                                titleText={item.Title}
-                                context={peoplePickerContext}
-                                personSelectionLimit={10}
-                                showtooltip={true}
-                                required={item.IsRequired}
-                                showHiddenInUI={false}
-                                principalTypes={[PrincipalType.User]}
-                                onChange={(items) => handleInputChange(item.InternalTitleName, items)}
-                            />
-                        </div>
-                    );
-
-                case "Radio":
-                    const radioOptions = filterObj.StaticDataObject.split(";").map((ele: string) => ({
-                        key: ele,
-                        text: ele,
-                    }));
-                    return (
-                        <div className={dynamicControl.length > 5 ? styles.col6 : styles.col12} key={index}>
-                            <ChoiceGroup
-                                options={radioOptions}
-                                onChange={(ev, option) => handleInputChange(item.InternalTitleName, option?.key)}
-                                selectedKey={dynamicValues[item.InternalTitleName] || ""}
-                                label={item.Title}
-                                required={item.IsRequired}
-                            />
-                        </div>
-                    );
-
-                default:
-                    return (
-                        <div className={dynamicControl.length > 5 ? styles.col6 : styles.col12} key={index}>
-                            <TextField
-                                type={item.ColumnType === "Date and Time" ? "date" : "text"}
-                                label={item.Title}
-                                value={dynamicValues[item.InternalTitleName] || ""}
-                                onChange={(ev, value) => handleInputChange(item.InternalTitleName, value)}
-                                multiline={item.ColumnType === "Multiple lines of Text"}
-                                required={item.IsRequired}
-                            />
-                        </div>
-                    );
-            }
-        });
-    }, [dynamicControl, options, dynamicValues]);
-
-    const submit = () => {
-        setIsPopupBoxVisible(true);
-        FolderStructure(context, `${folderPath}/${folderName}`, folderAccess, [], LibraryDetails.LibraryName).then((response) => {
-            console.log(response);
-            let obj = {
-                ...dynamicValues,
-                // IsSuffixRequired: isSuffixRequired,
-                DocumentSuffix: Suffix,
-                OtherSuffix: OtherSuffix,
-            };
-            updateLibrary(context.pageContext.web.absoluteUrl, context.spHttpClient, obj, response, LibraryDetails.LibraryName).then((response) => {
-                setIsPopupBoxVisible(false);
-                dismissPanel(false);
-            });
-        });
-    };
-    const hidePopup = useCallback(() => { setIsPopupBoxVisible(false); }, [isPopupBoxVisible]);
-    return (
-        <Panel
-            headerText="Advance Permission"
-            isOpen={isOpen}
-            onDismiss={() => dismissPanel(false)}
-            closeButtonAriaLabel="Close"
-            type={PanelType.large}
-            onRenderFooterContent={() => (<>
-                <PrimaryButton onClick={() => { submit(); console.log(dynamicValues); }} styles={buttonStyles} className={styles["sub-btn"]}>Submit</PrimaryButton>
-                <DefaultButton onClick={() => dismissPanel(false)} className={styles["can-btn"]}>Cancel</DefaultButton>
-            </>)}
-            isFooterAtBottom={true}
-        >
-            <div className={styles.grid}>
-                <div className={styles.row}>
-                    <div className={styles.col6}>
-                        <TextField
-                            label="Tile"
-                            value={LibraryDetails.TileName}
-                            disabled
-                        />
-                    </div>
-                    <div className={styles.col6}>
-                        <TextField
-                            label="Folder Name"
-                            value={folderName}
-                            required
-                            onChange={(el: React.ChangeEvent<HTMLInputElement>) =>
-                                setFolderName(el.target.value)
-                            }
-                        />
-                    </div>
-                </div>
-
-                <div className={styles.row}>
-                    <div className={styles.col12}>
-                        <Toggle
-                            label="Is Suffix required?"
-                            onChange={handleToggleChange}
-                        />
-                    </div>
-                </div>
-
-                {isSuffixRequired && (
-                    <>
-                        <div className={styles.row}>
-                            <div className={styles.col12}>
-                                <Dropdown
-                                    placeholder="Select an option"
-                                    label="Document Suffix"
-                                    options={SuffixData}
-                                    required
-                                    onChange={(ev, option: any) => setSuffix(option.key as string)}
-                                    selectedKey={Suffix}
-                                />
-                            </div>
-                        </div>
-
-                        {Suffix === "Other" && (
-                            <div className={styles.row}>
-                                <div className={styles.col12}>
-                                    <TextField
-                                        label="Other Suffix Name"
-                                        value={OtherSuffix}
-                                        onChange={(el: React.ChangeEvent<HTMLInputElement>) =>
-                                            setOtherSuffix(el.target.value)
-                                        }
-                                    />
-                                </div>
-                            </div>
-                        )}
-                    </>
-                )}
-                <div className={styles.row}>{renderDynamicControls()}</div>
-                <div className={styles.row}>
-                    <div className={styles.col12}>
+            const filterObj = configData.filter((ele, ind) => (ele.Id == item.Id))[0];
+            let htm;
+            if (filterObj) {
+                // if (dynamicControl.length > 5) {
+                if (item.ColumnType === "Dropdown" || item.ColumnType === "Choice") {
+                    htm = <div className={styles.col6}>
+                        <TextField label={item.Title} value={item.ControlValue} />
+                    </div>;
+                }
+                else if (item.ColumnType === "Person or Group") {
+                    htm = <div className={styles.col6}>
                         <PeoplePicker
-                            titleText={"Folder Access"}
+                            titleText={item.Title}
                             context={peoplePickerContext}
                             personSelectionLimit={10}
                             showtooltip={true}
-                            required
+                            required={true}
+                            onChange={handelPeoplePicker}
                             showHiddenInUI={false}
                             principalTypes={[PrincipalType.User]}
-                            onChange={async (items) => {
-                                try {
-                                    const userIds = await Promise.all(
-                                        items.map(async (item: any) => {
-                                            const data = await getUserIdFromLoginName(context, item.id);
-                                            return data.Id;
-                                        })
-                                    );
-                                    setFolderAccess(userIds);
-                                } catch (error) {
-                                    console.error("Error fetching user IDs:", error);
-                                }
-                            }}
                         />
+                    </div>;
+                }
+                else if (item.ColumnType === "Multiple lines of Text") {
+                    htm = <div className={styles.col6}>
+                        <TextField multiline label={item.Title} value={item.ControlValue} />
+                    </div>;
+                }
+                else if (item.ColumnType === "Radio") {
+                    const radioOption = filterObj.StaticDataObject.split(';');
+                    const option = radioOption.map((ele: any, ind: number) => ({ key: ele, text: ele }));
+                    htm = <div className={styles.col6}>
+                        <ChoiceGroup options={option} onChange={_onChangeRedio} label="Pick one" required={true} />
+                    </div>;
+                }
+                else {
+                    htm = <div className={styles.col6}>
+                        <TextField type={item.ColumnType === "Date and Time" ? "date" : "text"} label={item.Title} value={item.ControlValue} />
+                    </div>;
+                }
+
+                // }
+            }
+            return htm;
+        });
+
+    };
+    return (
+        <>
+            <Panel
+                headerText="Advance Permission"
+                isOpen={isOpen}
+                onDismiss={() => dismissPanel()}
+                closeButtonAriaLabel="Close"
+                type={PanelType.medium}
+            >
+                <div className={styles.grid}>
+                    <div className={styles.row}>
+                        <div className={styles.col6}>
+                            <TextField label="Tile" value={LibraryDetails.TileName} disabled />
+                        </div>
+                        <div className={styles.col6}>
+                            <TextField label="Folder Name" value={folderName} required aria-required onChange={(el: React.ChangeEvent<HTMLInputElement>) => setFolderName(el.target.value)} />
+                        </div>
                     </div>
+                    <div className={styles.row}>
+                        <div className={styles.col12}>
+                            <Toggle label="Is Suffix required?" onChange={_onChange} />
+                        </div>
+                    </div>
+                    {
+                        isSuffixRequired && <>
+                            <div className={styles.row}>
+                                <div className={styles.col12}>
+                                    <Dropdown
+                                        placeholder="Select an option"
+                                        label="Document Suffix"
+                                        options={SuffixData}
+                                        required
+                                        onChange={(ev: any, option: any) => setSuffix(option.key)}
+                                        selectedKey={Suffix}
+                                    />
+                                </div>
+                            </div>
+                            {Suffix === "Other" ? <div className={styles.row}>
+                                <div className={styles.col12}>
+                                    <TextField label="Other Suffix Name" value={OtherSuffix} onChange={(el: React.ChangeEvent<HTMLInputElement>) => setOtherSuffix(el.target.value)} />
+                                </div>
+                            </div> : <></>}
+                        </>
+                    }
+                    <div className={styles.row} >
+                        {
+                            bindControl()
+                        }
+                    </div>
+
                 </div>
-            </div>
-            <PopupBox isPopupBoxVisible={isPopupBoxVisible} hidePopup={hidePopup} />
-        </Panel>
+
+            </Panel>
+        </>
     );
 };
 
-export default memo(ProjectEntryForm);
+export default ProjectEntryForm;
