@@ -493,3 +493,8 @@ div:focus-visible,
     background-color: #f0f0f000 !important;
 
 }
+
+.addoption .ms-Button--icon {
+    border-radius: 50% !important;
+    padding: 0px !important;
+}
