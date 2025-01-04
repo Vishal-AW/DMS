@@ -22,7 +22,7 @@ export function getTileAdmin(WebUrl: string, spHttpClient: any, ID: number) {
   return getMethod(WebUrl, spHttpClient, filter);
 }
 export function getDataByLibraryName(WebUrl: string, spHttpClient: any, name: any) {
-  let filter = "LibraryName eq " + name;
+  let filter = `LibraryName eq '${name}'`;
 
   return getMethod(WebUrl, spHttpClient, filter);
 }

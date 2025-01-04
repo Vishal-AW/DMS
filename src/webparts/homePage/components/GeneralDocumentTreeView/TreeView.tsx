@@ -2,12 +2,13 @@ import * as React from 'react';
 import { getAllFolder } from "../../../../Services/GeneralDocument";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./TreeView.module.scss";
-import { DialogType, Icon, IStackItemStyles, IStackStyles, IStackTokens, Stack } from "@fluentui/react";
+import { DialogType, Icon, IStackItemStyles, IStackStyles, IStackTokens, PrimaryButton, Stack } from "@fluentui/react";
 import ReactTableComponent from '../ResuableComponents/ReusableDataTable';
 import { ContextualMenu, ContextualMenuItemType } from '@fluentui/react/lib/ContextualMenu';
 // import { SPComponentLoader } from "@microsoft/sp-loader";
 import IFrameDialog from "./IFrameDialog";
 import AdvancePermission from "./AdvancePermission";
+import ProjectEntryForm from "./ProjectEntryForm";
 
 
 interface Folder {
@@ -35,14 +36,15 @@ export default function TreeView({ props }: any) {
     const [rightFolders, setRightFolders] = useState<Folder[]>([]);
     const [childFolders, setChildFolders] = useState<Record<string, Folder[]>>({});
     const [files, setFiles] = useState([]);
-    const libName = "Finance";
     const [iFrameDialogOpened, setIFrameDialogOpened] = useState(false);
     const [shareURL, setShareURL] = useState("");
     const tileObject: string | null = sessionStorage.getItem("LibDetails");
     const libDetails: any = JSON.parse(tileObject as string);
+    const libName = libDetails.LibraryName;
     const portalUrl = new URL(props.SiteURL).origin;
     const [isPanelOpen, setIsPanelOpen] = useState(false);
     const [itemId, setItemId] = useState<number>(0);
+    const [isCreateProjectPopupOpen, setIsCreateProjectPopupOpen] = useState(false);
 
 
     useEffect(() => {
@@ -189,7 +191,7 @@ export default function TreeView({ props }: any) {
                 key: 'share',
                 text: 'Share',
                 onClick: () => {
-                    setShareURL(`${props.SiteURL}/_layouts/15/sharedialog.aspx?listId=${libDetails[0].GuidID}&listItemId=${node.ListItemAllFields.Id}&clientId=sharePoint&policyTip=0&folderColor=undefined&ma=0&fullScreenMode=true&itemName=${node.Name}&origin=${portalUrl}`);
+                    setShareURL(`${props.SiteURL}/_layouts/15/sharedialog.aspx?listId=${libDetails.LibGuidName}&listItemId=${node.ListItemAllFields.Id}&clientId=sharePoint&policyTip=0&folderColor=undefined&ma=0&fullScreenMode=true&itemName=${node.Name}&origin=${portalUrl}`);
                     setIFrameDialogOpened(true);
                 }
             },
@@ -214,7 +216,8 @@ export default function TreeView({ props }: any) {
 
 
     const onDismiss: any = useCallback(() => { setIsPanelOpen(false); }, []);
-
+    const projectCreation = useCallback(() => { setIsCreateProjectPopupOpen(true); }, []);
+    const dissmissProjectCreationPanel = useCallback((value: boolean) => { setIsCreateProjectPopupOpen(value); }, []);
 
     return (
         <div>
@@ -236,7 +239,7 @@ export default function TreeView({ props }: any) {
                                         className={styles["folder-icon"]}
                                         style={{ marginRight: "5px", color: "#0162e8" }}
                                     />
-                                    <span className={styles["node-name"]}>{libName}</span>
+                                    <span className={styles["node-name"]}>{libDetails.TileName}</span>
                                 </span>
                             </div>
                             <ul className="nested-list">
@@ -246,7 +249,14 @@ export default function TreeView({ props }: any) {
                     </ul>
                 </Stack.Item>
                 <Stack.Item grow={3} styles={stackItemStyles}>
-                    <div>Dashboard/{folderPath}</div>
+                    <div className={styles.grid}>
+                        <div className={styles.row}>
+                            <div className={styles.col6}>Dashboard/{folderPath}</div>
+                            <div className={styles.col6}>
+                                <PrimaryButton text="New Project" onClick={projectCreation} />
+                            </div>
+                        </div>
+                    </div>
                     <div className={styles.grid}>
                         <div className={styles.row}>
                             {renderRightFolder(rightFolders)}
@@ -283,6 +293,7 @@ export default function TreeView({ props }: any) {
                 }}
             />;
             <AdvancePermission isOpen={isPanelOpen} context={props.context} folderId={itemId} LibraryName={libName} dismissPanel={onDismiss} />
+            <ProjectEntryForm isOpen={isCreateProjectPopupOpen} dismissPanel={dissmissProjectCreationPanel} context={props.context} LibraryDetails={libDetails} folderPath={folderPath} />
         </div>
     );
 }

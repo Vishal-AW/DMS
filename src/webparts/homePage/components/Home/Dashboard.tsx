@@ -22,7 +22,7 @@ export default function Dashboard({ props }: any): JSX.Element {
   dinamicurl = dinamicurl + " Permission/ID eq " + props.userID + " or TileAdmin/ID eq " + props.userID + " or Permission/Title eq 'Everyone except external users'";
   React.useEffect(() => {
     getTileData();
-  }, [])
+  }, []);
   function getTileData() {
     FindUserGroupMain(props.spHttpClient).then(function (response) {
       Findusergroupdata();
@@ -65,11 +65,11 @@ export default function Dashboard({ props }: any): JSX.Element {
         else if (checkUserGroupMember.length > 0) {
           UserRole = "ProjectMember";
         }
-        setuserRole(UserRole)
+        setuserRole(UserRole);
       }
     });
 
-    setuserRole(UserRole)
+    setuserRole(UserRole);
   }
 
   const Findusergroupdata = async () => {
@@ -78,8 +78,8 @@ export default function Dashboard({ props }: any): JSX.Element {
 
     console.log(userData);
 
-  }
-  const [tileData, setTileData] = useState<any>([])
+  };
+  const [tileData, setTileData] = useState<any>([]);
   async function FindUserGroup(WebUrl: string, spHttpClient: any, loginName: number): Promise<any> {
 
     let TotalDisplayTiles: any[] = [];
@@ -119,7 +119,7 @@ export default function Dashboard({ props }: any): JSX.Element {
 
             AllTileMainData.map(async (index: any, value: any) => {
 
-              let Permission = await checkUserPermissions(index.LibraryName)
+              let Permission = await checkUserPermissions(index.LibraryName);
               console.log(Permission);
               TileCount++;
               console.log("libraray:" + Permission.libraryName + " and hasPermission:" + Permission.hasPermission);
@@ -129,7 +129,7 @@ export default function Dashboard({ props }: any): JSX.Element {
 
               if (AllTileMainData.length == TileCount) {
                 TotalDisplayTiles.sort((a: any, b: any) => a.Order0 - b.Order0);
-                setTileData(TotalDisplayTiles)
+                setTileData(TotalDisplayTiles);
                 //createTileFinal(TotalDisplayTiles);
               }
 
@@ -226,16 +226,16 @@ export default function Dashboard({ props }: any): JSX.Element {
     const url = props.SiteURL + "/_api/web/lists/GetByTitle('" + LibraryName + "')/effectiveBasePermissions";
 
 
-    const data = await GetListData(url)
+    const data = await GetListData(url);
     console.log(data.value);
 
     if (data !== undefined) {
-      hasPermissionData = true
+      hasPermissionData = true;
     }
     return {
       libraryName: LibraryName,
       hasPermission: hasPermissionData
-    }
+    };
   }
 
   async function GetListData(query: string) {
@@ -275,7 +275,7 @@ export default function Dashboard({ props }: any): JSX.Element {
     // }
 
     // sessionStorage.setItem("TileObject", JSON.stringify(TileObject));
-
+    sessionStorage.setItem("LibDetails", JSON.stringify(obj));
     if (item.LibraryName === "ProjectMasterDocument") {
 
     } else if (item.TileType === "Community") {
@@ -283,7 +283,7 @@ export default function Dashboard({ props }: any): JSX.Element {
 
       }
     } else {
-      location.href = "#/TreeView"
+      location.href = "#/TreeView";
 
     }
   };
@@ -295,7 +295,7 @@ export default function Dashboard({ props }: any): JSX.Element {
     <div className={styles["row1-container"]}>
       {
         tileData.length > 0 ? tileData.map((el: any) => (
-          <div className="col-xl-3 col-lg-6 col-md-12 mb-4" onClick={() => { openLib(el) }}>
+          <div className="col-xl-3 col-lg-6 col-md-12 mb-4" onClick={() => { openLib(el); }}>
             <div className={styles["card-container"]}>
               <div className={styles["card-content"]}>
                 <div className={styles["card-image"]}>
@@ -349,6 +349,6 @@ export default function Dashboard({ props }: any): JSX.Element {
     //     </>
     //   }
     // </div>
-  )
+  );
 
 }

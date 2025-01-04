@@ -13,5 +13,5 @@ async function getMethod(WebUrl: string, spHttpClient: any, filter: any) {
         orderby: "Id desc"
     };
 
-    return await GetListItem(WebUrl, spHttpClient, "DMS_Sector", option);
+    return await GetListItem(WebUrl, spHttpClient, "PrefixSuffixMaster", option);
 }

@@ -15,12 +15,11 @@ import Dashboard from '../components/Home/Dashboard';
 import { GetAllLabel } from "../../../Services/ControlLabel";
 
 import '../components/Hidedesign.css';
-<<<<<<< HEAD
+
 import TreeView from './GeneralDocumentTreeView/TreeView';
-=======
-import TestTreeView from './GeneralDocumentTreeView/TestTreeView';
+
 import ConfigMaster from './Master/ConfigEntryForm';
->>>>>>> 8beb01e6ac489732f5ad9f1b5e689412896207b2
+
 
 
 
