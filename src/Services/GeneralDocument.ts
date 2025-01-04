@@ -1,6 +1,7 @@
 
 import { SPHttpClient, SPHttpClientResponse } from '@microsoft/sp-http-base';
 import { WebPartContext } from "@microsoft/sp-webpart-base";
+import { UpdateItem } from "../DAL/Commonfile";
 
 
 export async function getAllFolder(WebUrl: string, context: WebPartContext, FolderName: string) {
@@ -53,4 +54,25 @@ export async function commonPostMethod(url: string, context: WebPartContext) {
             return response;
         }
     });
+}
+
+export async function getListData(url: string, context: WebPartContext) {
+
+    return await context.spHttpClient.get(url,
+        SPHttpClient.configurations.v1,
+        {
+            headers: {
+                'Accept': 'application/json;odata=nometadata',
+                'odata-version': ''
+            }
+        }).then(async (response: SPHttpClientResponse) => {
+            return response.json();
+        }).catch((err: any) => {
+            console.log(err);
+        });
+
+}
+
+export function updateLibrary(WebUrl: string, spHttpClient: SPHttpClient, metaData: any, Id: number, listName: string) {
+    return UpdateItem(WebUrl, spHttpClient, listName, metaData, Id);
 }
