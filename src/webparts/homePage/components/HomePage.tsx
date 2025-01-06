@@ -16,6 +16,7 @@ import { GetAllLabel } from "../../../Services/ControlLabel";
 import '../components/Hidedesign.css';
 import TreeView from './GeneralDocumentTreeView/TreeView';
 import ConfigMaster from './Master/ConfigEntryForm';
+import SearchFilter from './GeneralDocumentTreeView/SearchFilter';
 
 
 
@@ -71,6 +72,7 @@ export default function HomePage(props: IHomePageProps): JSX.Element {
               <Route path='/TreeView' element={<TreeView props={props}></TreeView>}></Route>
               <Route path='/Datatable' element={<Datatable></Datatable>}></Route>
               <Route path='/ConfigMaster' element={<ConfigMaster props={props}></ConfigMaster>}></Route>
+              <Route path='/GeneralDocumentTreeView/SearchFilter' element={<SearchFilter props={props}></SearchFilter>}></Route>
 
             </Routes>
 
