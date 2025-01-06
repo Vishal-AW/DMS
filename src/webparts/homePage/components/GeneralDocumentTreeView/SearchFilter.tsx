@@ -3,51 +3,119 @@ import { Accordion, Form } from "react-bootstrap";
 import styles from "../Master/Master.module.scss";
 import { useEffect, useState } from "react";
 import { ILabel } from '../Interface/ILabel';
-import { DefaultButton } from "office-ui-fabric-react";
+import { ChoiceGroup, DatePicker, DefaultButton, Dropdown, IChoiceGroupOption, IDropdownOption, TextField } from "office-ui-fabric-react";
 
 export default function SearchFilter({ props }: any): JSX.Element {
 
     const [DisplayLabel, setDisplayLabel] = useState<ILabel>();
-    const [tileObjectJson, setTileObjectJson] = useState<string | null>(null);
+    // const [dropdownOptions, setDropdownOptions] = useState<IDropdownOption[]>([]);
+    const tileObject: string | null = sessionStorage.getItem("TileObject");
+    const libDetails: any = JSON.parse(tileObject as string);
+    console.log(libDetails);
 
-    const [tileObject, setTileObject] = useState<Record<string, any> | null>(null);
-    const [libraryName, setLibraryName] = useState<string>('');
-    const [controlData, setControlData] = useState<Record<string, any> | null>(null);
-    const [filterObj, setFilterObj] = useState<Record<string, any> | null>(null);
+    const controlData: string | null = sessionStorage.getItem('controlData');
+    const controlDataMain: any = JSON.parse(controlData as string);
+    console.log(controlDataMain);
+
+    const filterObj: string | null = sessionStorage.getItem('filterObj');
+    const filterObjMain: any = JSON.parse(filterObj as string);
+    console.log(filterObjMain);
+
 
     useEffect(() => {
         let DisplayLabel: ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}');
         setDisplayLabel(DisplayLabel);
 
-        const tileObjectFromStorage = sessionStorage.getItem('TileObject');
-        const controlDataFromStorage = sessionStorage.getItem('controlData');
-        const filterObjFromStorage = sessionStorage.getItem('filterObj');
-
-
-        // Parse and update state
-        setTileObjectJson(tileObjectFromStorage);
-        if (tileObjectFromStorage) {
-            const parsedTileObject = JSON.parse(tileObjectFromStorage);
-            setTileObject(parsedTileObject);
-            setLibraryName(parsedTileObject.LibraryName);
-        }
-
-        if (controlDataFromStorage) {
-            setControlData(JSON.parse(controlDataFromStorage));
-        }
-
-        if (filterObjFromStorage) {
-            setFilterObj(JSON.parse(filterObjFromStorage));
-        }
-
-        console.log('TileObjectJson:', tileObjectJson);
-        console.log('TileObject:', tileObject);
-        console.log('libraryName:', libraryName);
-        console.log('controlData:', controlData);
-        console.log('filterObj:', filterObj);
-
-
     }, []);
+
+
+
+    // const libraryName = "Test Tile Data1";
+    const controlDataStatic: string = `[{"field":10,"IsRequired":true,"IsActiveControl":true,"IsFieldAllowInFile":false,"isShowAsFilter":false,"Flag":"New","editingIndex":-1,"Id":10,"Title":"Arbitration","ColumnType":"Single line of Text","InternalListName":null,"IsActive":true,"IsStaticValue":false,"StaticDataObject":null,"DisplayValue":null,"InternalTitleName":"Arbitration","IsShowAsFilter":false,"Abbreviation":"Abbreviation","ID":10},{"field":1,"IsRequired":true,"IsActiveControl":true,"IsFieldAllowInFile":false,"isShowAsFilter":true,"Flag":"New","editingIndex":-1,"Id":1,"Title":"City","ColumnType":"Dropdown","InternalListName":"DMS_City","IsActive":true,"IsStaticValue":false,"StaticDataObject":null,"DisplayValue":"City","InternalTitleName":"City","IsShowAsFilter":true,"Abbreviation":"Abbreviation","ID":1},{"field":15,"IsRequired":true,"IsActiveControl":true,"IsFieldAllowInFile":false,"isShowAsFilter":false,"Flag":"New","editingIndex":-1,"Id":15,"Title":"Confidentiality","ColumnType":"Single line of Text","InternalListName":null,"IsActive":true,"IsStaticValue":false,"StaticDataObject":null,"DisplayValue":null,"InternalTitleName":"Confidentiality","IsShowAsFilter":false,"Abbreviation":"Abbreviation","ID":15}]`;
+
+    const control = JSON.parse(controlDataStatic);
+
+    console.log(control);
+
+    const renderControl = async (control: any) => {
+        const isRequired = control.IsRequired;
+
+        switch (control.ColumnType) {
+            case "Dropdown": {
+
+                // const response = await fetch(`${props.SiteURL}/_api/getOptions?listName=${control.InternalListName}&titleName=${control.InternalTitleName}`);
+                // const data = await response.json();
+                // const options = data.map((item: any) => ({
+                //     key: item.id || item.value,
+                //     text: item.name || item.label,
+                // }));
+
+                // setDropdownOptions(options);
+                const dropdownOptions: IDropdownOption[] = []; // Replace with actual data
+                return (
+                    <Dropdown
+                        label={control.Title}
+                        placeholder={`Select `}
+                        options={dropdownOptions}
+                        required={isRequired}
+                    />
+                );
+            }
+
+            case "Single line of Text":
+                return (
+                    <TextField
+                        label={control.Title}
+                        placeholder={`Enter ${control.Title}`}
+                        required={isRequired}
+                    />
+                );
+
+            case "Multiple lines of Text":
+                return (
+                    <TextField
+                        label={control.Title}
+                        placeholder={`Enter ${control.Title}`}
+                        required={isRequired}
+                        multiline
+                        rows={4}
+                    />
+                );
+
+            case "Date and Time":
+                return (
+                    <DatePicker
+                        label={control.Title}
+                        placeholder={`Select ${control.Title}`}
+                        ariaLabel={`Select ${control.Title}`}
+                    //required={isRequired}
+                    />
+                );
+
+            case "Radio":
+                const radioOptions: IChoiceGroupOption[] = (control.StaticDataObject || "")
+                    .split(";")
+                    .map((option: string) => ({
+                        key: option,
+                        text: option,
+                    }));
+                return (
+                    <ChoiceGroup
+                        label={control.Title}
+                        options={radioOptions}
+                        required={isRequired}
+                    />
+                );
+
+            default:
+                return null;
+        }
+    };
+
+
+
+
+
 
 
 
@@ -73,10 +141,15 @@ export default function SearchFilter({ props }: any): JSX.Element {
                     <Accordion.Body>
                         <Form>
                             <div className={`ms-Grid ${styles.inlineFormContainer}`}>
-                                <div className="col-md-3">
+                                <div className="col-md-12">
                                     <div className="form-group">
-
-
+                                        <div>
+                                            {control.map((control: any) => (
+                                                <div key={control.Id} style={{ marginBottom: "20px" }}>
+                                                    {renderControl(control)}
+                                                </div>
+                                            ))}
+                                        </div>
 
                                     </div>
                                 </div>

@@ -39,7 +39,6 @@ export default function TreeView({ props }: any) {
     const [iFrameDialogOpened, setIFrameDialogOpened] = useState(false);
     const [shareURL, setShareURL] = useState("");
     const tileObject: string | null = sessionStorage.getItem("LibDetails");
-    // tileObject === null ? window.location=props.SiteURL : "";
     const libDetails: any = JSON.parse(tileObject as string);
     const libName = libDetails.LibraryName;
     const portalUrl = new URL(props.SiteURL).origin;
@@ -220,6 +219,7 @@ export default function TreeView({ props }: any) {
     const projectCreation = useCallback(() => { setIsCreateProjectPopupOpen(true); }, []);
     const dissmissProjectCreationPanel = useCallback((value: boolean) => { setIsCreateProjectPopupOpen(value); }, []);
 
+
     return (
         <div>
             <Stack horizontal styles={stackStyles} tokens={stackTokens}>
@@ -254,7 +254,7 @@ export default function TreeView({ props }: any) {
                         <div className={styles.row}>
                             <div className={styles.col6}>Dashboard/{folderPath}</div>
                             <div className={styles.col6}>
-                                <PrimaryButton text="New Request" onClick={projectCreation} />
+                                <PrimaryButton text="New Project" onClick={projectCreation} />
                             </div>
                         </div>
                     </div>
