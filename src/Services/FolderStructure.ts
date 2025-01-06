@@ -2,7 +2,7 @@ import { SPHttpClient, SPHttpClientResponse } from "@microsoft/sp-http-base";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 
 
-export const FolderStructure = async (context: WebPartContext, FolderPath: string, uid: number[], AdminID: number[], LibraryName: string) => {
+export const FolderStructure = async (context: WebPartContext, FolderPath: string, uid: number[], LibraryName: string) => {
 
     const folderUrl = `${context.pageContext.web.absoluteUrl}/${FolderPath}`;
     return await context.spHttpClient.post(
@@ -20,7 +20,7 @@ export const FolderStructure = async (context: WebPartContext, FolderPath: strin
     ).then(async (response: SPHttpClientResponse) => {
         if (response.ok) {
             const data = await response.json();
-            await breakRoleInheritance(context, FolderPath, uid, AdminID, data.ListItemAllFields.ID);
+            await breakRoleInheritance(context, FolderPath, uid);
             return data.ListItemAllFields.ID;
         }
     }).catch((error) => {
@@ -28,7 +28,7 @@ export const FolderStructure = async (context: WebPartContext, FolderPath: strin
     });
 };
 
-const breakRoleInheritance = async (context: WebPartContext, folderUrl: string, userIds: number[], adminIds: number[], itemId: number) => {
+const breakRoleInheritance = async (context: WebPartContext, folderUrl: string, userIds: number[]) => {
 
     const breakInheritanceUrl = `${context.pageContext.web.absoluteUrl}/_api/web/GetFolderByServerRelativeUrl('${folderUrl}')/ListItemAllFields/breakroleinheritance(true)`;
     return await context.spHttpClient.post(
@@ -43,7 +43,7 @@ const breakRoleInheritance = async (context: WebPartContext, folderUrl: string, 
     ).then(async (response: SPHttpClientResponse) => {
         if (response.ok) {
             await removeAllPermissions(context, folderUrl);
-            return await grantPermissions(context, folderUrl, [...userIds, ...adminIds]);
+            return await grantPermissions(context, folderUrl, [...userIds]);
         }
     });
 

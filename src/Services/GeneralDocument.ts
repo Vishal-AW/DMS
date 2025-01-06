@@ -70,7 +70,6 @@ export async function getListData(url: string, context: WebPartContext) {
         }).catch((err: any) => {
             console.log(err);
         });
-
 }
 
 export function updateLibrary(WebUrl: string, spHttpClient: SPHttpClient, metaData: any, Id: number, listName: string) {

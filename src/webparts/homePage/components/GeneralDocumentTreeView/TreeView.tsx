@@ -39,6 +39,7 @@ export default function TreeView({ props }: any) {
     const [iFrameDialogOpened, setIFrameDialogOpened] = useState(false);
     const [shareURL, setShareURL] = useState("");
     const tileObject: string | null = sessionStorage.getItem("LibDetails");
+    // tileObject === null ? window.location=props.SiteURL : "";
     const libDetails: any = JSON.parse(tileObject as string);
     const libName = libDetails.LibraryName;
     const portalUrl = new URL(props.SiteURL).origin;
@@ -253,7 +254,7 @@ export default function TreeView({ props }: any) {
                         <div className={styles.row}>
                             <div className={styles.col6}>Dashboard/{folderPath}</div>
                             <div className={styles.col6}>
-                                <PrimaryButton text="New Project" onClick={projectCreation} />
+                                <PrimaryButton text="New Request" onClick={projectCreation} />
                             </div>
                         </div>
                     </div>
@@ -293,7 +294,7 @@ export default function TreeView({ props }: any) {
                 }}
             />;
             <AdvancePermission isOpen={isPanelOpen} context={props.context} folderId={itemId} LibraryName={libName} dismissPanel={onDismiss} />
-            <ProjectEntryForm isOpen={isCreateProjectPopupOpen} dismissPanel={dissmissProjectCreationPanel} context={props.context} LibraryDetails={libDetails} folderPath={folderPath} />
+            <ProjectEntryForm isOpen={isCreateProjectPopupOpen} dismissPanel={dissmissProjectCreationPanel} context={props.context} LibraryDetails={libDetails} />
         </div>
     );
 }
