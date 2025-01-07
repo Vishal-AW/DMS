@@ -187,10 +187,10 @@ export default function SearchFilter({ props }: any): JSX.Element {
 
     const SearchData = () => {
 
-        let filter = "";
-        filter += "InternalStatus eq 'Published' and Active eq 1";
-        let level = true;
-        console.log(level);
+        // let filter = "";
+        // filter += "InternalStatus eq 'Published' and Active eq 1";
+        // let level = true;
+        // console.log(level);
     };
 
     const Reset = () => {
