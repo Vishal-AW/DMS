@@ -29,13 +29,15 @@ export interface IAdvanceProps {
     dismissPanel: (value: boolean) => void;
     context: WebPartContext;
     LibraryDetails: any;
+    admin: any;
 }
 
 const ProjectEntryForm: React.FC<IAdvanceProps> = ({
     isOpen,
     dismissPanel,
     context,
-    LibraryDetails
+    LibraryDetails,
+    admin
 }) => {
     const [folderName, setFolderName] = useState<string>("");
     const [isSuffixRequired, setIsSuffixRequired] = useState<boolean>(false);
@@ -55,7 +57,6 @@ const ProjectEntryForm: React.FC<IAdvanceProps> = ({
     const [approver, setApprover] = useState<any[]>([]);
     const [isPopupBoxVisible, setIsPopupBoxVisible] = useState(false);
     const [isApprovalRequired, setIsApprovalRequired] = useState<boolean>(false);
-    const [admin, setAdmin] = useState<any>([]);
     const [allUsers, setAllUsers] = useState<any>([]);
 
     const [folderNameErr, setFolderNameErr] = useState<string>("");
@@ -89,7 +90,6 @@ const ProjectEntryForm: React.FC<IAdvanceProps> = ({
         fetchLibraryDetails();
         fetchSuffixData();
         getAllUsers();
-        getAdmin();
     }, []);
 
     useEffect(() => {
@@ -104,10 +104,10 @@ const ProjectEntryForm: React.FC<IAdvanceProps> = ({
             setAllUsers(data.value);
         }
     };
-    const getAdmin = async () => {
-        const data = await getListData(`${context.pageContext.web.absoluteUrl}/_api/web/lists/getbytitle('DMS_GroupName')/items`, context);
-        setAdmin(data.value.map((el: any) => (el.GroupNameId)));
-    };
+    // const getAdmin = async () => {
+    //     const data = await getListData(`${context.pageContext.web.absoluteUrl}/_api/web/lists/getbytitle('DMS_GroupName')/items`, context);
+    //     setAdmin(data.value.map((el: any) => (el.GroupNameId)));
+    // };
     const fetchSuffixData = async () => {
         const data = await getActiveTypeData(
             context.pageContext.web.absoluteUrl,
@@ -329,7 +329,7 @@ const ProjectEntryForm: React.FC<IAdvanceProps> = ({
     };
 
     const createFolder = () => {
-        setIsPopupBoxVisible(true);
+
         const users = [...folderAccess, ...usersIds, ...publisher, ...approver, ...admin];
         FolderStructure(context, `${LibraryDetails.LibraryName}/${folderName}`, users, LibraryDetails.LibraryName).then((response) => {
             console.log(response);
@@ -338,7 +338,8 @@ const ProjectEntryForm: React.FC<IAdvanceProps> = ({
                 DocumentSuffix: Suffix || "",
                 OtherSuffix: OtherSuffix || "",
                 IsSuffixRequired: isSuffixRequired,
-                PSType: "Suffix"
+                PSType: "Suffix",
+                DefineRole: isApprovalRequired
             };
             if (isApprovalRequired) {
                 const filterApprover = allUsers.filter((el: any) => el.Id === approver[0])[0];
@@ -347,23 +348,22 @@ const ProjectEntryForm: React.FC<IAdvanceProps> = ({
                 obj.ProjectmanagerEmail = filterApprover.Email;
                 const filterPublisher = allUsers.filter((el: any) => el.Id === publisher[0])[0];
                 obj.PublisherAllow = true;
-                obj.PublisherId = filterPublisher.ID;
+                obj.PublisherId = filterPublisher.Id;
                 obj.PublisherEmail = filterPublisher.Email;
             }
 
             updateLibrary(context.pageContext.web.absoluteUrl, context.spHttpClient, obj, response, LibraryDetails.LibraryName).then((response) => {
-                setIsPopupBoxVisible(false);
-                dismissPanel(false);
+                setIsPopupBoxVisible(true);
             });
         });
     };
 
-    const hidePopup = useCallback(() => { setIsPopupBoxVisible(false); }, [isPopupBoxVisible]);
+    const hidePopup = useCallback(() => { setIsPopupBoxVisible(false); dismissPanel(false); }, [isPopupBoxVisible]);
 
     const removeSepcialCharacters = (newValue?: string) => newValue?.replace(/[^a-zA-Z0-9\s]/g, '') || '';
     return (
         <Panel
-            headerText="Advance Permission"
+            headerText="Add New Project"
             isOpen={isOpen}
             onDismiss={() => dismissPanel(false)}
             closeButtonAriaLabel="Close"

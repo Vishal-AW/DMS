@@ -82,6 +82,11 @@
     @include ms-md6;
 }
 
+.col10 {
+    @include ms-Grid-col;
+    @include ms-md10;
+}
+
 .col12 {
     @include ms-Grid-col;
     @include ms-md12;

@@ -1,14 +1,19 @@
 import * as React from 'react';
-import { getAllFolder } from "../../../../Services/GeneralDocument";
+import { getAllFolder, getListData, updateLibrary } from "../../../../Services/GeneralDocument";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./TreeView.module.scss";
-import { DialogType, Icon, IStackItemStyles, IStackStyles, IStackTokens, PrimaryButton, Stack } from "@fluentui/react";
+import { DefaultButton, DialogType, Icon, IStackItemStyles, IStackStyles, IStackTokens, Panel, PanelType, PrimaryButton, Stack } from "@fluentui/react";
 import ReactTableComponent from '../ResuableComponents/ReusableDataTable';
 import { ContextualMenu, ContextualMenuItemType } from '@fluentui/react/lib/ContextualMenu';
 // import { SPComponentLoader } from "@microsoft/sp-loader";
 import IFrameDialog from "./IFrameDialog";
 import AdvancePermission from "./AdvancePermission";
 import ProjectEntryForm from "./ProjectEntryForm";
+import { TextField } from "office-ui-fabric-react";
+import { FolderStructure } from "../../../../Services/FolderStructure";
+import PopupBox from "../ResuableComponents/PopupBox";
+import UploadFile from "./UploadFile";
+import { useNavigate } from "react-router-dom";
 
 
 interface Folder {
@@ -28,6 +33,7 @@ const stackTokens: IStackTokens = { childrenGap: 10 };
 export default function TreeView({ props }: any) {
     const linkRef = useRef<Record<string, HTMLDivElement | null>>({});
     // const [showContextualMenu, setShowContextualMenu] = useState(false);
+    const navigate = useNavigate();
     const [showContextualMenu, setShowContextualMenu] = React.useState<{ [key: string]: boolean; }>({});
     const [nodeId, setNodeId] = useState(0);
 
@@ -39,17 +45,24 @@ export default function TreeView({ props }: any) {
     const [iFrameDialogOpened, setIFrameDialogOpened] = useState(false);
     const [shareURL, setShareURL] = useState("");
     const tileObject: string | null = sessionStorage.getItem("LibDetails");
-    // tileObject === null ? window.location=props.SiteURL : "";
+    const [admin, setAdmin] = useState([]);
+    tileObject === null ? navigate("/Dashboard") : "";
     const libDetails: any = JSON.parse(tileObject as string);
     const libName = libDetails.LibraryName;
     const portalUrl = new URL(props.SiteURL).origin;
     const [isPanelOpen, setIsPanelOpen] = useState(false);
+    const [isOpenFolderPanel, setIsOpenFolderPanel] = useState(false);
+    const [isOpenUploadPanel, setIsOpenUploadPanel] = useState(false);
     const [itemId, setItemId] = useState<number>(0);
     const [isCreateProjectPopupOpen, setIsCreateProjectPopupOpen] = useState(false);
-
+    const [folderName, setFolderName] = useState("");
+    const [folderNameErr, setFolderNameErr] = useState("");
+    const [folderObject, setFolderObject] = useState<any>({});
+    const [isPopupBoxVisible, setIsPopupBoxVisible] = useState<boolean>(false);
 
     useEffect(() => {
         fetchFolders(libName, "");
+        getAdmin();
     }, []);
 
     const fetchFolders = async (folderPath: string, nodeName: string) => {
@@ -81,11 +94,17 @@ export default function TreeView({ props }: any) {
             console.error("Error fetching folders:", error);
         }
     };
+    const getAdmin = async () => {
+        const data = await getListData(`${props.SiteURL}/_api/web/lists/getbytitle('DMS_GroupName')/items`, props.context);
+        setAdmin(data.value.map((el: any) => (el.GroupNameId)));
+    };
 
     const [expandedNodes, setExpandedNodes] = useState<string[]>([libName]);
 
-    const toggleNode = (nodeName: string, folderPath: string) => {
-
+    const toggleNode = (nodeName: string, folderPath: string, obj: Folder) => {
+        setFolderName(nodeName);
+        setFolderPath(folderPath);
+        setFolderObject(obj);
         if (expandedNodes.includes(nodeName)) {
             setExpandedNodes(expandedNodes.filter((name) => name !== nodeName));
         } else {
@@ -111,7 +130,7 @@ export default function TreeView({ props }: any) {
                 <li key={node.ListItemAllFields.Id}>
                     <div className={styles["tree-node"]}>
                         <span
-                            onClick={() => toggleNode(node.Name, `${parentPath}/${node.Name}`)}
+                            onClick={() => toggleNode(node.Name, `${parentPath}/${node.Name}`, node)}
                             style={{ cursor: "pointer" }}
                         >
                             <Icon
@@ -160,7 +179,7 @@ export default function TreeView({ props }: any) {
                 <div key={node.Id} className={styles.col2}>
                     <div>
                         <span
-                            onClick={() => toggleNode(node.Name, `${node.folderPath}`)}
+                            onClick={() => toggleNode(node.Name, `${node.folderPath}`, node)}
                             style={{ cursor: "pointer" }}
                         >
                             <Icon
@@ -219,16 +238,48 @@ export default function TreeView({ props }: any) {
     const onDismiss: any = useCallback(() => { setIsPanelOpen(false); }, []);
     const projectCreation = useCallback(() => { setIsCreateProjectPopupOpen(true); }, []);
     const dissmissProjectCreationPanel = useCallback((value: boolean) => { setIsCreateProjectPopupOpen(value); }, []);
+    const dismissFolderPanel = () => { setIsOpenFolderPanel(false); };
+    const dismissUploadPanel = () => { setIsOpenUploadPanel(false); setFolderName(""); };
+
+    const createFolder = () => {
+        setFolderNameErr("");
+        if (folderName === "") {
+            setFolderNameErr("Folder Name is required");
+            return;
+        }
+        console.log(folderObject);
+        const users = [folderObject?.ListItemAllFields.ProjectmanagerId, folderObject?.ListItemAllFields.PublisherId, ...admin];
+        FolderStructure(props.context, `${folderPath}/${folderName}`, users, libName).then((response) => {
+            console.log(response);
+            let obj: any = {
+                ...folderObject?.ListItemAllFields
+            };
+
+            updateLibrary(props.SiteURL, props.spHttpClient, obj, response, libName).then((response) => {
+                setIsPopupBoxVisible(true);
+                toggleNode(folderName, `${folderPath}/${folderName}`, folderObject);
+            });
+        });
+    };
+
+    const hidePopup = useCallback(() => { setIsPopupBoxVisible(false); dismissFolderPanel(); }, [isPopupBoxVisible]);
 
     return (
         <div>
+            <div className={styles.grid}>
+                <div className={styles.row}>
+                    <div className={styles.col12}>
+                        <PrimaryButton text="New Request" onClick={projectCreation} style={{ float: "right" }} />
+                    </div>
+                </div>
+            </div>
             <Stack horizontal styles={stackStyles} tokens={stackTokens}>
                 <Stack.Item grow={2} styles={stackItemStyles}>
                     <ul className={styles["tree-view"]}>
                         <li>
                             <div className={styles["tree-node"]}>
                                 <span
-                                    onClick={() => toggleNode(libName, libName)}
+                                    onClick={() => toggleNode(libName, libName, {})}
                                     style={{ cursor: "pointer" }}
                                 >
                                     <Icon
@@ -252,9 +303,16 @@ export default function TreeView({ props }: any) {
                 <Stack.Item grow={3} styles={stackItemStyles}>
                     <div className={styles.grid}>
                         <div className={styles.row}>
-                            <div className={styles.col6}>Dashboard/{folderPath}</div>
-                            <div className={styles.col6}>
-                                <PrimaryButton text="New Request" onClick={projectCreation} />
+                            <div className={styles.col12}>Dashboard/{folderPath}</div>
+                        </div>
+                        <div className={styles.row}>
+                            <div className={styles.col12}>
+                                {folderPath === libName ? <></> :
+                                    <div style={{ float: "right" }}>
+                                        <DefaultButton text="Upload" onClick={() => setIsOpenUploadPanel(true)} styles={{ root: { marginRight: 8 } }} />
+                                        {files.length === 0 ? <PrimaryButton text="New Folder" onClick={() => { setIsOpenFolderPanel(true); setFolderName(""); }} /> : <></>}
+                                    </div>
+                                }
                             </div>
                         </div>
                     </div>
@@ -294,7 +352,36 @@ export default function TreeView({ props }: any) {
                 }}
             />;
             <AdvancePermission isOpen={isPanelOpen} context={props.context} folderId={itemId} LibraryName={libName} dismissPanel={onDismiss} />
-            <ProjectEntryForm isOpen={isCreateProjectPopupOpen} dismissPanel={dissmissProjectCreationPanel} context={props.context} LibraryDetails={libDetails} />
+            <ProjectEntryForm isOpen={isCreateProjectPopupOpen} dismissPanel={dissmissProjectCreationPanel} context={props.context} LibraryDetails={libDetails} admin={admin} />
+            <UploadFile context={props.context} isOpenUploadPanel={isOpenUploadPanel} folderName={folderName} folderPath={folderPath} dismissUploadPanel={dismissUploadPanel} libName={libName} files={files} />
+            <Panel
+                headerText="Add New Folder"
+                isOpen={isOpenFolderPanel}
+                onDismiss={dismissFolderPanel}
+                closeButtonAriaLabel="Close"
+                type={PanelType.medium}
+                onRenderFooterContent={() => (<>
+                    <PrimaryButton onClick={createFolder} styles={{ root: { marginRight: 8 } }} className={styles["sub-btn"]}>Submit</PrimaryButton>
+                    <DefaultButton onClick={dismissFolderPanel} className={styles["can-btn"]}>Cancel</DefaultButton>
+                </>)}
+                isFooterAtBottom={true}
+            >
+                <div className={styles.grid}>
+                    <div className={styles.row}>
+                        <div className={styles.col12}>
+                            <label>Path: <b>{folderPath}</b></label>
+                        </div>
+                    </div>
+                    <div className={styles.row}>
+                        <div className={styles.col12}>
+                            <TextField label="Folder Name" required value={folderName} onChange={(el: React.ChangeEvent<HTMLInputElement>) => setFolderName(el.target.value)} errorMessage={folderNameErr} />
+                        </div>
+                    </div>
+                </div>
+            </Panel>
+
+
+            <PopupBox isPopupBoxVisible={isPopupBoxVisible} hidePopup={hidePopup} />
         </div>
     );
 }
