@@ -292,6 +292,11 @@
   @include ms-md6;
 }
 
+.col8 {
+  @include ms-Grid-col;
+  @include ms-md8;
+}
+
 .col12 {
   @include ms-Grid-col;
   @include ms-md12;

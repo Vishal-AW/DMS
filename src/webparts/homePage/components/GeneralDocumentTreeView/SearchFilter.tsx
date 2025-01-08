@@ -9,7 +9,11 @@ import { getUserIdFromLoginName } from "../../../../DAL/Commonfile";
 import { getListData } from "../../../../Services/GeneralDocument";
 import { getConfigActive } from "../../../../Services/ConfigService";
 export default function SearchFilter({ props }: any): JSX.Element {
-    const controlDataStatic: string = `[{"field":10,"IsRequired":true,"IsActiveControl":true,"IsFieldAllowInFile":false,"isShowAsFilter":false,"Flag":"New","editingIndex":-1,"Id":10,"Title":"Arbitration","ColumnType":"Single line of Text","InternalListName":null,"IsActive":true,"IsStaticValue":false,"StaticDataObject":null,"DisplayValue":null,"InternalTitleName":"Arbitration","IsShowAsFilter":false,"Abbreviation":"Abbreviation","ID":10},{"field":1,"IsRequired":true,"IsActiveControl":true,"IsFieldAllowInFile":false,"isShowAsFilter":true,"Flag":"New","editingIndex":-1,"Id":1,"Title":"City","ColumnType":"Dropdown","InternalListName":"DMS_City","IsActive":true,"IsStaticValue":false,"StaticDataObject":null,"DisplayValue":"City","InternalTitleName":"City","IsShowAsFilter":true,"Abbreviation":"Abbreviation","ID":1},{"field":15,"IsRequired":true,"IsActiveControl":true,"IsFieldAllowInFile":false,"isShowAsFilter":false,"Flag":"New","editingIndex":-1,"Id":15,"Title":"Confidentiality","ColumnType":"Single line of Text","InternalListName":null,"IsActive":true,"IsStaticValue":false,"StaticDataObject":null,"DisplayValue":null,"InternalTitleName":"Confidentiality","IsShowAsFilter":false,"Abbreviation":"Abbreviation","ID":15}]`;
+    //const controlDataStatic: string = `[{"field":10,"IsRequired":true,"IsActiveControl":true,"IsFieldAllowInFile":false,"isShowAsFilter":false,"Flag":"New","editingIndex":-1,"Id":10,"Title":"Arbitration","ColumnType":"Single line of Text","InternalListName":null,"IsActive":true,"IsStaticValue":false,"StaticDataObject":null,"DisplayValue":null,"InternalTitleName":"Arbitration","IsShowAsFilter":false,"Abbreviation":"Abbreviation","ID":10},{"field":1,"IsRequired":true,"IsActiveControl":true,"IsFieldAllowInFile":false,"isShowAsFilter":true,"Flag":"New","editingIndex":-1,"Id":1,"Title":"City","ColumnType":"Dropdown","InternalListName":"DMS_City","IsActive":true,"IsStaticValue":false,"StaticDataObject":null,"DisplayValue":"City","InternalTitleName":"City","IsShowAsFilter":true,"Abbreviation":"Abbreviation","ID":1},{"field":15,"IsRequired":true,"IsActiveControl":true,"IsFieldAllowInFile":false,"isShowAsFilter":false,"Flag":"New","editingIndex":-1,"Id":15,"Title":"Confidentiality","ColumnType":"Single line of Text","InternalListName":null,"IsActive":true,"IsStaticValue":false,"StaticDataObject":null,"DisplayValue":null,"InternalTitleName":"Confidentiality","IsShowAsFilter":false,"Abbreviation":"Abbreviation","ID":15}]`;
+
+    const controlDataStatic: string = `[{"field":10,"IsRequired":true,"IsActiveControl":true,"IsFieldAllowInFile":false,"isShowAsFilter":false,"Flag":"New","editingIndex":-1,"Id":10,"Title":"Arbitration","ColumnType":"Single line of Text","InternalListName":null,"IsActive":true,"IsStaticValue":false,"StaticDataObject":null,"DisplayValue":null,"InternalTitleName":"Arbitration","IsShowAsFilter":false,"Abbreviation":"Abbreviation","ID":10},{"field":1,"IsRequired":false,"IsActiveControl":true,"IsFieldAllowInFile":false,"isShowAsFilter":true,"Flag":"New","editingIndex":-1,"Id":1,"Title":"City","ColumnType":"Dropdown","InternalListName":"DMS_City","IsActive":true,"IsStaticValue":false,"StaticDataObject":null,"DisplayValue":"City","InternalTitleName":"City","IsShowAsFilter":true,"Abbreviation":"Abbreviation","ID":1},{"field":15,"IsRequired":false,"IsActiveControl":true,"IsFieldAllowInFile":false,"isShowAsFilter":false,"Flag":"New","editingIndex":-1,"Id":15,"Title":"Confidentiality","ColumnType":"Single line of Text","InternalListName":null,"IsActive":true,"IsStaticValue":false,"StaticDataObject":null,"DisplayValue":null,"InternalTitleName":"Confidentiality","IsShowAsFilter":false,"Abbreviation":"Abbreviation","ID":15},{"field":19,"IsRequired":false,"IsActiveControl":true,"IsFieldAllowInFile":false,"isShowAsFilter":true,"Flag":"New","editingIndex":-1,"Id":19,"Title":"Mall Name","ColumnType":"Dropdown","InternalListName":"DMS_MallMaster","IsActive":true,"IsStaticValue":false,"StaticDataObject":null,"DisplayValue":"MallName","InternalTitleName":"MallName","IsShowAsFilter":true,"Abbreviation":"Abbreviation","ID":19},{"field":27,"IsRequired":false,"IsActiveControl":true,"IsFieldAllowInFile":true,"isShowAsFilter":false,"Flag":"New","editingIndex":-1,"Id":27,"Title":"Operator","ColumnType":"Single line of Text","InternalListName":null,"IsActive":true,"IsStaticValue":false,"StaticDataObject":null,"DisplayValue":null,"InternalTitleName":"Operator","IsShowAsFilter":false,"Abbreviation":"Abbreviation","ID":27},{"field":25,"IsRequired":false,"IsActiveControl":true,"IsFieldAllowInFile":false,"isShowAsFilter":false,"Flag":"New","editingIndex":-1,"Id":25,"Title":"Net Sales","ColumnType":"Single line of Text","InternalListName":null,"IsActive":true,"IsStaticValue":false,"StaticDataObject":null,"DisplayValue":null,"InternalTitleName":"NetSales","IsShowAsFilter":false,"Abbreviation":"Abbreviation","ID":25}]`;
+
+
 
     const control = JSON.parse(controlDataStatic);
 
@@ -187,10 +191,15 @@ export default function SearchFilter({ props }: any): JSX.Element {
 
     const SearchData = () => {
 
-        // let filter = "";
-        // filter += "InternalStatus eq 'Published' and Active eq 1";
-        // let level = true;
-        // console.log(level);
+
+        let filter = "InternalStatus eq 'Published' and Active eq 1";
+        const keys = Object.keys(dynamicValues).map((item: any) => (` and ${item} eq '${encodeURIComponent(dynamicValues[item])}'`));
+        let NewFilter = filter + keys.join("");
+        console.log(NewFilter);
+
+
+
+
     };
 
     const Reset = () => {
@@ -202,7 +211,7 @@ export default function SearchFilter({ props }: any): JSX.Element {
         <div>
             <Accordion alwaysOpen >
                 <Accordion.Item eventKey="0">
-                    <Accordion.Header className={styles.Accodordianherder}>Meta Data Search</Accordion.Header>
+                    <Accordion.Header className={styles.Accodordianherder}>Meta Data Search (Click here to search with Filters)</Accordion.Header>
                     <Accordion.Body>
                         <Form>
                             <div className={styles.row}>{renderDynamicControls()}</div>
