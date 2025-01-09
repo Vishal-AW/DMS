@@ -1,8 +1,14 @@
 
 import { SPHttpClient, SPHttpClientResponse } from '@microsoft/sp-http-base';
 import { WebPartContext } from "@microsoft/sp-webpart-base";
-import { UpdateItem } from "../DAL/Commonfile";
+import { GetListItem, UpdateItem } from "../DAL/Commonfile";
 
+
+export function getAllData(WebUrl: string, spHttpClient: any, option: any) {
+    let filter = "";
+
+    return getDocument(WebUrl, spHttpClient, filter, option);
+}
 
 export async function getAllFolder(WebUrl: string, context: WebPartContext, FolderName: string) {
     const url = WebUrl + "/_api/Web/GetFolderByServerRelativeUrl('" + FolderName + "')?$select=*&$orderby=Id desc&$expand=Files/CheckedOutByUser,Folders,Files,Files/ModifiedBy,Folders/ListItemAllFields,Files/ListItemAllFields,ListItemAllFields,Files/Status,FileLeafRef,FileRef,FileDirRef";
@@ -74,4 +80,23 @@ export async function getListData(url: string, context: WebPartContext) {
 
 export function updateLibrary(WebUrl: string, spHttpClient: SPHttpClient, metaData: any, Id: number, listName: string) {
     return UpdateItem(WebUrl, spHttpClient, listName, metaData, Id);
+}
+
+
+export async function getDocument(WebUrl: string, spHttpClient: any, filter: any, libName: string) {
+
+    var selectcols = "*,ID,File,DefineRole,ProjectmanagerAllow,Projectmanager/Id,Projectmanager/Title,ProjectmanagerEmail,PublisherAllow,Publisher/Id,";
+    selectcols += "Publisher/Title,PublisherEmail,CurrentApprover,InternalStatus,ProjectMasterLID,";
+    selectcols += "LatestRemark,AllowApprover,Created,Author/EMail,Author/Title,FileLeafRef,FileRef,FileDirRef,Active,ProjectmanagerId,PublisherId,File,ServerRedirectedEmbedUrl,DisplayStatus,Level,OCRStatus,";
+    selectcols += "Company,Template";
+    var option = {
+        select: selectcols,
+        expand: "File,Projectmanager,Publisher,Author",
+        filter: filter,
+        orderby: 'ID desc',
+        top: 5000
+    };
+
+
+    return await GetListItem(WebUrl, spHttpClient, libName, option);
 }
