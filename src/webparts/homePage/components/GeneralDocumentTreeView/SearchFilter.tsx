@@ -8,6 +8,7 @@ import { IPeoplePickerContext, PeoplePicker, PrincipalType } from "@pnp/spfx-con
 import { getUserIdFromLoginName } from "../../../../DAL/Commonfile";
 import { getListData, getDocument } from "../../../../Services/GeneralDocument";
 import { getConfigActive } from "../../../../Services/ConfigService";
+//import { useNavigate } from "react-router-dom";
 export default function SearchFilter({ props }: any): JSX.Element {
 
     const libraryName = "NewTileDocumentPath";
@@ -20,7 +21,7 @@ export default function SearchFilter({ props }: any): JSX.Element {
 
 
     const control = JSON.parse(controlDataStatic);
-
+    const [ContentSearchinput, setContentSearchinput] = useState("");
     const [DisplayLabel, setDisplayLabel] = useState<ILabel>();
     const [dynamicControl, setDynamicControl] = useState<any[]>([]);
     const [dynamicValues, setDynamicValues] = useState<{ [key: string]: any; }>({});
@@ -28,6 +29,7 @@ export default function SearchFilter({ props }: any): JSX.Element {
     const [options, setOptions] = useState<any>({});
     const [searchData, setSearchData] = useState<any>([]);
     const [DynamicDataTable, setDynamicDataTable] = React.useState<boolean>(false);
+    const [ContentSearch, setContentSearch] = useState("");
     // const [dropdownOptions, setDropdownOptions] = useState<IDropdownOption[]>([]);
     // const tileObject: string | null = sessionStorage.getItem("TileObject");
     // const libDetails: any = JSON.parse(tileObject as string);
@@ -195,6 +197,18 @@ export default function SearchFilter({ props }: any): JSX.Element {
     };
 
 
+    const ContentSearchData = async () => {
+        if (ContentSearchinput === "" || ContentSearchinput === undefined || ContentSearchinput === null) {
+            setContentSearch('Field is required');
+        }
+        else {
+            let query = ContentSearchinput == undefined ? "*" : ContentSearchinput;
+            let GetLibraryName = libraryName;
+            const routePath = `${props.SiteURL}?q=${query}&Library=${GetLibraryName}`;
+            console.log(routePath);
+
+        }
+    };
 
     const SearchData = async () => {
 
@@ -211,13 +225,17 @@ export default function SearchFilter({ props }: any): JSX.Element {
 
         });
 
-
-
-
-
     };
 
     const Reset = () => {
+
+
+        // setDynamicControl([]);
+        setDynamicValues({});
+        // setConfigData([]);
+        // setOptions({});
+        setSearchData([]);
+        setDynamicDataTable(false);
 
     };
 
@@ -226,7 +244,33 @@ export default function SearchFilter({ props }: any): JSX.Element {
         <div>
             <Accordion alwaysOpen >
                 <Accordion.Item eventKey="0">
-                    <Accordion.Header className={styles.Accodordianherder}>Meta Data Search (Click here to search with Filters)</Accordion.Header>
+                    <Accordion.Header className={styles.Accodordianherder}>Content Search(Click here to search)</Accordion.Header>
+                    <Accordion.Body>
+                        <Form>
+                            <div className={`ms-Grid ${styles.inlineFormContainer}`}>
+                                <div className="col-md-5">
+                                    <div className="form-group">
+                                        <TextField
+                                            placeholder={DisplayLabel?.SearchData}
+                                            errorMessage={ContentSearch}
+                                            value={ContentSearchinput}
+                                            onChange={(el: React.ChangeEvent<HTMLInputElement>) => setContentSearchinput(el.target.value)}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="col-md-2">
+                                    <div className="form-group">
+                                        <DefaultButton onClick={ContentSearchData} text={DisplayLabel?.SearchData} className={styles['sub-btn']} />
+                                    </div>
+                                </div>
+                            </div>
+
+                        </Form>
+                    </Accordion.Body>
+                </Accordion.Item><br /><br />
+
+                <Accordion.Item eventKey="1">
+                    <Accordion.Header className={styles.Accodordianherder}>Meta Data Search(Click here to search with Filters)</Accordion.Header>
                     <Accordion.Body>
                         <Form>
                             <div className={styles.row}>{renderDynamicControls()}</div>
@@ -251,9 +295,9 @@ export default function SearchFilter({ props }: any): JSX.Element {
 
 
 
-                                    <DefaultButton onClick={SearchData} text={DisplayLabel?.Submit} className={styles['sub-btn']} />
+                                    <DefaultButton onClick={SearchData} text={DisplayLabel?.SearchData} className={styles['sub-btn']} />
 
-                                    <DefaultButton onClick={Reset} text={DisplayLabel?.Cancel} className={styles['sub-btn']} />
+                                    <DefaultButton onClick={Reset} text={DisplayLabel?.Reset} className={styles['sub-btn']} />
 
                                 </div>
 

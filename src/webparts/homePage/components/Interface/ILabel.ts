@@ -47,4 +47,18 @@ export interface ILabel {
     IsStaticValue: string;
     ListName: string;
     DisplayColumn: string;
+    Rejected: string;
+    PendingWithApprover: string;
+    Selectanoption: string;
+    MultiplelinesofText: string;
+    text: string;
+    date: string;
+    DateandTime: string;
+    Radio: string;
+    PersonorGroup: string;
+    MultipleSelect: string;
+    Dropdown: string;
+    MetaDataSearch: string;
+    Reset: string;
+    SearchData: string;
 }

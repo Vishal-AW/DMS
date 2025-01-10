@@ -1,7 +1,7 @@
 
 import { SPHttpClient } from '@microsoft/sp-http';
 import { GetListItem, CreateItem, UpdateItem } from '../DAL/Commonfile';
-import { ILabel } from "../webparts/homePage/components/Interface/ILabel"
+import { ILabel } from "../webparts/homePage/components/Interface/ILabel";
 
 
 export async function GetAllLabel(WebUrl: string, spHttpClient: SPHttpClient, Language: string) {
@@ -63,10 +63,25 @@ export async function GetAllLabel(WebUrl: string, spHttpClient: SPHttpClient, La
       IsStaticValue: getValue("IsStaticValue", data, Language),
       ListName: getValue("ListName", data, Language),
       DisplayColumn: getValue("DisplayColumn", data, Language),
+      PendingWithApprover: getValue("PendingWithApprover", data, Language),
+
+      Rejected: getValue("Rejected", data, Language),
+      Selectanoption: getValue("Selectanoption", data, Language),
+      MultiplelinesofText: getValue("MultiplelinesofText", data, Language),
+      text: getValue("text", data, Language),
+      date: getValue("date", data, Language),
+      DateandTime: getValue("DateandTime", data, Language),
+      Radio: getValue("Radio", data, Language),
+      PersonorGroup: getValue("PersonorGroup", data, Language),
+      MultipleSelect: getValue("MultipleSelect", data, Language),
+      Dropdown: getValue("Dropdown", data, Language),
+      MetaDataSearch: getValue("MetaDataSearch", data, Language),
+      Reset: getValue("Reset", data, Language),
+      SearchData: getValue("SearchData", data, Language)
     };
 
     // 
-    return DisplayLabel
+    return DisplayLabel;
 
   });
   return data;
