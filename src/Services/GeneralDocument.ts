@@ -1,7 +1,7 @@
 
-import { SPHttpClient, SPHttpClientResponse } from '@microsoft/sp-http-base';
+import { ISPHttpClientOptions, SPHttpClient, SPHttpClientResponse } from '@microsoft/sp-http';
 import { WebPartContext } from "@microsoft/sp-webpart-base";
-import { UpdateItem } from "../DAL/Commonfile";
+import { GetListItem, UpdateItem } from "../DAL/Commonfile";
 
 
 export async function getAllFolder(WebUrl: string, context: WebPartContext, FolderName: string) {
@@ -74,4 +74,47 @@ export async function getListData(url: string, context: WebPartContext) {
 
 export function updateLibrary(WebUrl: string, spHttpClient: SPHttpClient, metaData: any, Id: number, listName: string) {
     return UpdateItem(WebUrl, spHttpClient, listName, metaData, Id);
+}
+
+export async function UploadFile(WebUrl: string, spHttpClient: any, file: string, DisplayName: string | File, DocumentLib: string, jsonBody: { __metadata: { type: string; }; Name: string; TileLID: any; DocumentType: string; Documentpath: string; } | null, FolderPath: string): Promise<any> {
+
+    // let fileupload = FolderPath +"/"+FolderName;
+    return new Promise((resolve) => {
+        const spOpts: ISPHttpClientOptions = {
+            body: file
+        };
+        var redirectionURL = WebUrl + "/_api/Web/GetFolderByServerRelativeUrl('" + FolderPath + "')/Files/Add(url='" + DisplayName + "', overwrite=true)?$expand=ListItemAllFields";
+        const responsedata = spHttpClient.post(redirectionURL, SPHttpClient.configurations.v1, spOpts).then((response: SPHttpClientResponse) => {
+            response.json().then(async (responseJSON: any) => {
+                // console.log(responseJSON.ListItemAllFields.ID);
+                var serverRelURL = await responseJSON.ServerRelativeUrl;
+                if (jsonBody != null) {
+                    await UpdateItem(WebUrl, spHttpClient, DocumentLib, jsonBody, responseJSON.ListItemAllFields.ID);
+
+                }
+                resolve(responseJSON);
+                console.log(responsedata);
+                console.log(serverRelURL);
+            });
+        });
+    });
+
+}
+
+export async function getApprovalData(context: WebPartContext, libeName: string, useremail: string) {
+    const filter = "CurrentApprover eq '" + useremail + "' and Active eq 1";
+    await getMethod(context.pageContext.web.absoluteUrl, context.spHttpClient, filter, libeName);
+}
+
+async function getMethod(WebUrl: string, spHttpClient: any, filter: any, libeName: string) {
+
+    let option = {
+        select: "*,Projectmanager/Id,Projectmanager/Title,Publisher/Id,Publisher/Title,Status/Id,Status/StatusName,Author/EMail,Author/Title",
+        expand: "File,Projectmanager,Publisher,Status,Author",
+        filter: filter,
+        orderby: 'ID desc',
+        top: 5000
+    };
+
+    return await GetListItem(WebUrl, spHttpClient, libeName, option);
 }

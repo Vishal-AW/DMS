@@ -2,7 +2,7 @@ import * as React from 'react';
 import { getAllFolder, getListData, updateLibrary } from "../../../../Services/GeneralDocument";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./TreeView.module.scss";
-import { DefaultButton, DialogType, Icon, IStackItemStyles, IStackStyles, IStackTokens, Panel, PanelType, PrimaryButton, Stack } from "@fluentui/react";
+import { CommandBarButton, DefaultButton, DialogType, Icon, IStackItemStyles, IStackStyles, IStackTokens, Panel, PanelType, PrimaryButton, Stack } from "@fluentui/react";
 import ReactTableComponent from '../ResuableComponents/ReusableDataTable';
 import { ContextualMenu, ContextualMenuItemType } from '@fluentui/react/lib/ContextualMenu';
 // import { SPComponentLoader } from "@microsoft/sp-loader";
@@ -12,8 +12,9 @@ import ProjectEntryForm from "./ProjectEntryForm";
 import { TextField } from "office-ui-fabric-react";
 import { FolderStructure } from "../../../../Services/FolderStructure";
 import PopupBox from "../ResuableComponents/PopupBox";
-import UploadFile from "./UploadFile";
+import UploadFiles from "./UploadFile";
 import { useNavigate } from "react-router-dom";
+import ApprovalFlow from "./ApprovalFlow";
 
 
 interface Folder {
@@ -46,7 +47,10 @@ export default function TreeView({ props }: any) {
     const [shareURL, setShareURL] = useState("");
     const tileObject: string | null = sessionStorage.getItem("LibDetails");
     const [admin, setAdmin] = useState([]);
-    tileObject === null ? navigate("/Dashboard") : "";
+    const [tables, setTables] = useState("");
+    if (tileObject === null)
+        navigate("/Dashboard");
+
     const libDetails: any = JSON.parse(tileObject as string);
     const libName = libDetails.LibraryName;
     const portalUrl = new URL(props.SiteURL).origin;
@@ -102,6 +106,7 @@ export default function TreeView({ props }: any) {
     const [expandedNodes, setExpandedNodes] = useState<string[]>([libName]);
 
     const toggleNode = (nodeName: string, folderPath: string, obj: Folder) => {
+        setTables("");
         setFolderName(nodeName);
         setFolderPath(folderPath);
         setFolderObject(obj);
@@ -239,9 +244,9 @@ export default function TreeView({ props }: any) {
     const projectCreation = useCallback(() => { setIsCreateProjectPopupOpen(true); }, []);
     const dissmissProjectCreationPanel = useCallback((value: boolean) => { setIsCreateProjectPopupOpen(value); }, []);
     const dismissFolderPanel = () => { setIsOpenFolderPanel(false); };
-    const dismissUploadPanel = () => { setIsOpenUploadPanel(false); setFolderName(""); };
+    const dismissUploadPanel = useCallback(() => { setIsOpenUploadPanel(false); setFolderName(""); }, []);
 
-    const createFolder = () => {
+    const createFolder = (): void => {
         setFolderNameErr("");
         if (folderName === "") {
             setFolderNameErr("Folder Name is required");
@@ -263,7 +268,27 @@ export default function TreeView({ props }: any) {
     };
 
     const hidePopup = useCallback(() => { setIsPopupBoxVisible(false); dismissFolderPanel(); }, [isPopupBoxVisible]);
+    const bindTable = () => {
 
+        if (tables === "Approver") {
+            return <ApprovalFlow context={props.context} libraryName={libName} userEmail={props.UserEmailID} />;
+        } else {
+
+            return rightFolders.length === 0 ? <ReactTableComponent
+                TableClassName="ReactTables"
+                Tablecolumns={columns}
+                Tabledata={files}
+                PagedefaultSize={10}
+                TableRows={1}
+                TableshowPagination={files.length > 10}
+            /> : <div className={styles.grid}>
+                <div className={styles.row}>
+                    {renderRightFolder(rightFolders)}
+                </div>
+            </div>;
+        }
+
+    };
     return (
         <div>
             <div className={styles.grid}>
@@ -275,6 +300,7 @@ export default function TreeView({ props }: any) {
             </div>
             <Stack horizontal styles={stackStyles} tokens={stackTokens}>
                 <Stack.Item grow={2} styles={stackItemStyles}>
+                    <CommandBarButton iconProps={{ iconName: "DocumentApproval" }} text="Approval" onClick={() => setTables("Approver")} />
                     <ul className={styles["tree-view"]}>
                         <li>
                             <div className={styles["tree-node"]}>
@@ -316,21 +342,8 @@ export default function TreeView({ props }: any) {
                             </div>
                         </div>
                     </div>
-                    <div className={styles.grid}>
-                        <div className={styles.row}>
-                            {renderRightFolder(rightFolders)}
-                        </div>
-                    </div>
 
-                    {rightFolders.length === 0 ? <ReactTableComponent
-                        TableClassName="ReactTables"
-                        Tablecolumns={columns}
-                        Tabledata={files}
-                        PagedefaultSize={10}
-                        TableRows={1}
-                        TableshowPagination={files.length > 10}
-                    // TableshowFilter={true}
-                    /> : <></>}
+                    {bindTable()}
 
                 </Stack.Item>
             </Stack>
@@ -353,7 +366,7 @@ export default function TreeView({ props }: any) {
             />;
             <AdvancePermission isOpen={isPanelOpen} context={props.context} folderId={itemId} LibraryName={libName} dismissPanel={onDismiss} />
             <ProjectEntryForm isOpen={isCreateProjectPopupOpen} dismissPanel={dissmissProjectCreationPanel} context={props.context} LibraryDetails={libDetails} admin={admin} />
-            <UploadFile context={props.context} isOpenUploadPanel={isOpenUploadPanel} folderName={folderName} folderPath={folderPath} dismissUploadPanel={dismissUploadPanel} libName={libName} files={files} />
+            <UploadFiles context={props.context} isOpenUploadPanel={isOpenUploadPanel} folderName={folderName} folderPath={folderPath} dismissUploadPanel={dismissUploadPanel} libName={libName} files={files} folderObject={folderObject?.ListItemAllFields} />
             <Panel
                 headerText="Add New Folder"
                 isOpen={isOpenFolderPanel}
@@ -379,8 +392,6 @@ export default function TreeView({ props }: any) {
                     </div>
                 </div>
             </Panel>
-
-
             <PopupBox isPopupBoxVisible={isPopupBoxVisible} hidePopup={hidePopup} />
         </div>
     );
