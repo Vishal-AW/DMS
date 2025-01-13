@@ -17,6 +17,7 @@ import '../components/Hidedesign.css';
 import TreeView from './GeneralDocumentTreeView/TreeView';
 import ConfigMaster from './Master/ConfigEntryForm';
 import SearchFilter from './GeneralDocumentTreeView/SearchFilter';
+import SearchComponent from './GeneralDocumentTreeView/Search';
 
 
 
@@ -73,6 +74,7 @@ export default function HomePage(props: IHomePageProps): JSX.Element {
               <Route path='/Datatable' element={<Datatable></Datatable>}></Route>
               <Route path='/ConfigMaster' element={<ConfigMaster props={props}></ConfigMaster>}></Route>
               <Route path='/SearchFilter' element={<SearchFilter props={props}></SearchFilter>}></Route>
+              <Route path='/SearchComponent' element={<SearchComponent context={props.context}></SearchComponent>}></Route>
 
             </Routes>
 
