@@ -3,10 +3,12 @@ import React, { useCallback, useEffect, useState } from 'react';
 import styles from "./TreeView.module.scss";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import { IPeoplePickerContext, PeoplePicker, PrincipalType } from "@pnp/spfx-controls-react/lib/PeoplePicker";
-import { getUserIdFromLoginName } from "../../../../DAL/Commonfile";
+import { getUserIdFromLoginName, uuidv4 } from "../../../../DAL/Commonfile";
 import { getConfigActive } from "../../../../Services/ConfigService";
-import { getListData } from "../../../../Services/GeneralDocument";
+import { getListData, UploadFile } from "../../../../Services/GeneralDocument";
 import { getDataByLibraryName } from "../../../../Services/MasTileService";
+import PopupBox from "../ResuableComponents/PopupBox";
+import { getStatusByInternalStatus } from "../../../../Services/StatusSerivce";
 interface IUploadFileProps {
     isOpenUploadPanel: boolean;
     dismissUploadPanel: () => void;
@@ -15,9 +17,9 @@ interface IUploadFileProps {
     folderName: string;
     context: WebPartContext;
     files: any;
+    folderObject: any;
 }
-const submit = () => { };
-export default function UploadFile({ context, isOpenUploadPanel, dismissUploadPanel, folderPath, libName, folderName, files }: IUploadFileProps) {
+function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPath, libName, folderName, files, folderObject }: IUploadFileProps) {
 
     const [configData, setConfigData] = useState<any[]>([]);
     const [dynamicControl, setDynamicControl] = useState<any[]>([]);
@@ -29,6 +31,8 @@ export default function UploadFile({ context, isOpenUploadPanel, dismissUploadPa
     const [attachment, setAttachment] = useState<{ [key: string]: any; }>({});
     const [attachmentErr, setAttachmentErr] = useState<string>('');
     const filesData = files.map((item: any) => ({ key: item.name, text: item.ActualName }));
+    const [isUpdateExistingFile, setIsUpdateExistingFile] = useState<boolean>(false);
+    const [isPopupBoxVisible, setIsPopupBoxVisible] = useState<boolean>(false);
 
     // const peoplePickerContext: IPeoplePickerContext = {
     //     absoluteUrl: context.pageContext.web.absoluteUrl,
@@ -52,6 +56,7 @@ export default function UploadFile({ context, isOpenUploadPanel, dismissUploadPa
     useEffect(() => {
         setDynamicValuesErr({});
         setDynamicValues({});
+        setAttachmentsFiles([]);
     }, [isOpenUploadPanel]);
 
     const handleInputChange = (key: string, value: any) => {
@@ -197,15 +202,83 @@ export default function UploadFile({ context, isOpenUploadPanel, dismissUploadPa
         }
         setAttachmentErr('');
         const newAttachment = {
-            ...attachment,
+            attachment: attachment,
             isUpdateExistingFile: "No",
             OldFileName: "",
             version: "1.0",
+            isDisabled: true,
         };
-
         setAttachmentsFiles((prev) => [...prev, newAttachment]);
+        setAttachment({});
     };
 
+    const onClickDetails = (index: number) => {
+        setAttachmentsFiles((prev) => prev.map((ele, i) => i === index ? { ...ele, isDisabled: !ele.isDisabled } : ele));
+    };
+    const submit = () => {
+        let isValid = true;
+        if (dynamicControl.length > 0) {
+            dynamicControl.forEach((item: any) => {
+                if (item.IsRequired && !dynamicValues[item.InternalTitleName]) {
+                    setDynamicValuesErr((prev) => ({
+                        ...prev,
+                        [item.InternalTitleName]: `${item.Title} is required`,
+                    }));
+                    isValid = false;
+                    return;
+                }
+            });
+        }
+        if (attachmentsFiles.length === 0) {
+            setAttachmentErr('Please select a file');
+            isValid = false;
+        }
+        if (!isValid) return;
+        let count = 0;
+        attachmentsFiles.forEach(async (item) => {
+            const Fileuniqueid = await uuidv4();
+            let obj: any = {
+                ...folderObject,
+                ...dynamicValues,
+                ActualName: item.attachment.name,
+                FolderDocumentPath: `/${folderPath}`,
+                OCRStatus: "Pending",
+                UploadFlag: "Frontend"
+            };
+            let InternalStatus = "Published";
+            if (folderObject.DefineRole) {
+                obj.CurrentApprover = folderObject.ProjectmanagerEmail === null ? folderObject.PublisherEmail : folderObject.ProjectmanagerEmail;
+                InternalStatus = folderObject.ProjectmanagerEmail == null ? "PendingWithPublisher" : "PendingWithPM";
+            }
+
+            const res = item.attachment.name.split('.').slice(0, -1).join('.');
+            const extension = item.attachment.name.split('.').pop();
+            const rename = (res).replace(/[^a-z0-9-\s]/gi, '');
+            if (folderObject.DocumentSuffix !== null && folderObject.DocumentSuffix !== "") {
+                let suffix = folderObject.DocumentSuffix;
+
+                if (folderObject.DocumentSuffix === "Other") {
+                    suffix = folderObject.OtherSuffix;
+                }
+                obj.ActualName = folderObject.PSType === "Prefix" ? `${suffix}_${rename}.${extension}` : obj.ActualName = `${rename}_${suffix}.${extension}`;
+            }
+            const status = await getStatusByInternalStatus(context.pageContext.web.absoluteUrl, context.spHttpClient, InternalStatus);
+
+            obj.StatusId = status.value[0].ID;
+            obj.InternalStatus = status.value[0].InternalStatus;
+            obj.DisplayStatus = status.value[0].StatusName;
+            obj.Active = true;
+            await UploadFile(context.pageContext.web.absoluteUrl, context.spHttpClient, item.attachment, `${Fileuniqueid}-${item.attachment.name}`, libName, obj, folderPath);
+            count++;
+
+            if (count === attachmentsFiles.length) {
+                setIsPopupBoxVisible(true);
+            }
+
+        });
+    };
+
+    const hidePopup = useCallback(() => { setIsPopupBoxVisible(false); dismissUploadPanel(); }, [isPopupBoxVisible]);
 
     return (
         <div>
@@ -261,16 +334,16 @@ export default function UploadFile({ context, isOpenUploadPanel, dismissUploadPa
                                         <th>Sr. No.</th>
                                         <th>File Name</th>
                                         <th>Is this an update to existing file</th>
-                                        <th>File Name</th>
+                                        {isUpdateExistingFile ? <th>File Name</th> : <></>}
                                         <th>Version</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {attachmentsFiles.map((item, index) => (
+                                    {attachmentsFiles?.map((item, index) => (
                                         <tr key={index}>
                                             <td>{index + 1}</td>
-                                            <td>{item.name}</td>
+                                            <td>{item.attachment.name}</td>
                                             <td>
                                                 <Dropdown
                                                     options={[
@@ -278,25 +351,37 @@ export default function UploadFile({ context, isOpenUploadPanel, dismissUploadPa
                                                         { key: 'No', text: 'No' },
                                                     ]}
                                                     selectedKey={item.isUpdateExistingFile}
+                                                    onChange={(ev, option) => {
+                                                        setAttachmentsFiles((prev) => prev.map((ele, i) => i === index ? { ...ele, isUpdateExistingFile: option?.key } : ele));
+                                                        const filterD = attachmentsFiles.filter((el, i) => el.isUpdateExistingFile === "Yes" && el.i !== index);
+                                                        filterD.length === 1 ? setIsUpdateExistingFile(option?.key === "Yes" ? true : false) : "";
+                                                    }}
+                                                    disabled={item.isDisabled}
                                                 />
                                             </td>
-                                            <td>
+                                            {isUpdateExistingFile ? <td>
                                                 <Dropdown
                                                     options={filesData}
                                                     selectedKey={item.OldFileName}
+                                                    onChange={(ev, option) => setAttachmentsFiles((prev) => prev.map((ele, i) => i === index ? { ...ele, OldFileName: option?.key } : ele))}
+                                                    disabled={item.isDisabled}
+                                                />
+                                            </td> : <></>}
+                                            <td>
+                                                <TextField value={item.version}
+                                                    disabled
                                                 />
                                             </td>
                                             <td>
-                                                <TextField value={item.Version} />
-                                            </td>
-                                            <td>
                                                 <IconButton
-                                                    iconProps={{ iconName: 'Edit' }}
+                                                    iconProps={{ iconName: item.isDisabled ? 'Edit' : 'Save' }}
                                                     style={{ color: '009ef7' }}
+                                                    onClick={() => onClickDetails(index)}
                                                 />
                                                 <IconButton
                                                     iconProps={{ iconName: 'Delete' }}
                                                     style={{ color: 'red' }}
+                                                    onClick={() => setAttachmentsFiles((prev) => prev.filter((ele, i) => i !== index))}
                                                 />
                                             </td>
                                         </tr>
@@ -308,6 +393,9 @@ export default function UploadFile({ context, isOpenUploadPanel, dismissUploadPa
                     </div>
                 </div>
             </Panel>
+            <PopupBox isPopupBoxVisible={isPopupBoxVisible} hidePopup={hidePopup} />
         </div>
     );
 }
+
+export default React.memo(UploadFiles);

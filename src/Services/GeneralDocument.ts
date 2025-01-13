@@ -1,5 +1,5 @@
 
-import { SPHttpClient, SPHttpClientResponse } from '@microsoft/sp-http-base';
+import { ISPHttpClientOptions, SPHttpClient, SPHttpClientResponse } from '@microsoft/sp-http';
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import { GetListItem, UpdateItem } from "../DAL/Commonfile";
 
