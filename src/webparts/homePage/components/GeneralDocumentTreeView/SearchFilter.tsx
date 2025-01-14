@@ -220,7 +220,7 @@ export default function SearchFilter({ props }: any): JSX.Element {
         let NewFilter = filter + keys.join("");
         console.log(NewFilter);
 
-        await getDocument(props.SiteURL, props.spHttpClient, NewFilter, libraryName).then(function (response) {
+        await getDocument(props.SiteURL, props.spHttpClient, NewFilter, libraryName).then(function (response: any) {
             let DataArr = response.value;
             console.log(DataArr);
             setSearchData(DataArr);
