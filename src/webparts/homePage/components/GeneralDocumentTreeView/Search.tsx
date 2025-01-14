@@ -16,7 +16,7 @@ const SearchComponent = (props: { context: any; }) => {
             return;
         }
 
-        const searchUrl = `${props.context.pageContext.web.absoluteUrl}/_api/search/query?querytext='${query.replace(/'/g, "''")}'`;
+        const searchUrl = `${props.context.pageContext.web.absoluteUrl}/_api/search/query?querytext='${query}'`;
 
         try {
             const response = await props.context.spHttpClient.get(

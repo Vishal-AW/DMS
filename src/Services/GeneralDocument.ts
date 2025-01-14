@@ -82,6 +82,49 @@ export function updateLibrary(WebUrl: string, spHttpClient: SPHttpClient, metaDa
     return UpdateItem(WebUrl, spHttpClient, listName, metaData, Id);
 }
 
+export async function getApprovalData(context: WebPartContext, libeName: string, useremail: string) {
+    const filter = "CurrentApprover eq '" + useremail + "' and Active eq 1";
+    await getMethod(context.pageContext.web.absoluteUrl, context.spHttpClient, filter, libeName);
+}
+
+async function getMethod(WebUrl: string, spHttpClient: any, filter: any, libeName: string) {
+
+    let option = {
+        select: "*,Projectmanager/Id,Projectmanager/Title,Publisher/Id,Publisher/Title,Status/Id,Status/StatusName,Author/EMail,Author/Title",
+        expand: "File,Projectmanager,Publisher,Status,Author",
+        filter: filter,
+        orderby: 'ID desc',
+        top: 5000
+    };
+
+    return await GetListItem(WebUrl, spHttpClient, libeName, option);
+}
+
+export async function UploadFile(WebUrl: string, spHttpClient: any, file: string, DisplayName: string | File, DocumentLib: string, jsonBody: { __metadata: { type: string; }; Name: string; TileLID: any; DocumentType: string; Documentpath: string; } | null, FolderPath: string): Promise<any> {
+
+    // let fileupload = FolderPath +"/"+FolderName;
+    return new Promise((resolve) => {
+        const spOpts: ISPHttpClientOptions = {
+            body: file
+        };
+        var redirectionURL = WebUrl + "/_api/Web/GetFolderByServerRelativeUrl('" + FolderPath + "')/Files/Add(url='" + DisplayName + "', overwrite=true)?$expand=ListItemAllFields";
+        const responsedata = spHttpClient.post(redirectionURL, SPHttpClient.configurations.v1, spOpts).then((response: SPHttpClientResponse) => {
+            response.json().then(async (responseJSON: any) => {
+                // console.log(responseJSON.ListItemAllFields.ID);
+                var serverRelURL = await responseJSON.ServerRelativeUrl;
+                if (jsonBody != null) {
+                    await UpdateItem(WebUrl, spHttpClient, DocumentLib, jsonBody, responseJSON.ListItemAllFields.ID);
+
+                }
+                resolve(responseJSON);
+                console.log(responsedata);
+                console.log(serverRelURL);
+            });
+        });
+    });
+
+}
+
 
 export async function getDocument(WebUrl: string, spHttpClient: any, filter: any, libName: string) {
 
