@@ -204,10 +204,12 @@ export default function SearchFilter({ props }: any): JSX.Element {
         else {
             let query = ContentSearchinput == undefined ? "*" : ContentSearchinput;
             let GetLibraryName = libraryName;
-            const routePath = `${props.SiteURL}?q=${query}&Library=${GetLibraryName}`;
+            const routePath = `${props.SiteURL}/_api/search/query?querytext='${query}'&Library='${GetLibraryName}'`;
+            //const routePath = `${props.SiteURL}?q=${query}&Library=${GetLibraryName}`;
             console.log(routePath);
-
         }
+
+
     };
 
     const SearchData = async () => {
