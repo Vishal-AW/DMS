@@ -14,7 +14,7 @@ import { FolderStructure } from "../../../../Services/FolderStructure";
 import PopupBox from "../ResuableComponents/PopupBox";
 import UploadFiles from "./UploadFile";
 import { useNavigate } from "react-router-dom";
-// import ApprovalFlow from "./ApprovalFlow";
+import ApprovalFlow from "./ApprovalFlow";
 
 
 interface Folder {
@@ -55,6 +55,7 @@ export default function TreeView({ props }: any) {
     const libName = libDetails.LibraryName;
     const portalUrl = new URL(props.SiteURL).origin;
     const [isPanelOpen, setIsPanelOpen] = useState(false);
+    //const [isApprovalPanel, setApprovalPanel] = useState(false);
     const [isOpenFolderPanel, setIsOpenFolderPanel] = useState(false);
     const [isOpenUploadPanel, setIsOpenUploadPanel] = useState(false);
     const [itemId, setItemId] = useState<number>(0);
@@ -241,6 +242,7 @@ export default function TreeView({ props }: any) {
 
 
     const onDismiss: any = useCallback(() => { setIsPanelOpen(false); }, []);
+    //const ApprovalFlow = useCallback(() => { setApprovalPanel(false); }, []);
     const projectCreation = useCallback(() => { setIsCreateProjectPopupOpen(true); }, []);
     const dissmissProjectCreationPanel = useCallback((value: boolean) => { setIsCreateProjectPopupOpen(value); }, []);
     const dismissFolderPanel = () => { setIsOpenFolderPanel(false); };
@@ -271,7 +273,7 @@ export default function TreeView({ props }: any) {
     const bindTable = () => {
 
         if (tables === "Approver") {
-            // return <ApprovalFlow context={props.context} libraryName={libName} userEmail={props.UserEmailID} />;
+            return <ApprovalFlow context={props.context} libraryName={libName} userEmail={props.UserEmailID} />;
             return <>NK</>;
         } else {
 

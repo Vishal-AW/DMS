@@ -101,10 +101,11 @@ export async function UploadFile(WebUrl: string, spHttpClient: any, file: string
 
 }
 
-export async function getApprovalData(context: WebPartContext, libeName: string, useremail: string) {
+export function getApprovalData(context: WebPartContext, libeName: string, useremail: string) {
     const filter = "CurrentApprover eq '" + useremail + "' and Active eq 1";
-    await getMethod(context.pageContext.web.absoluteUrl, context.spHttpClient, filter, libeName);
+    return getMethod(context.pageContext.web.absoluteUrl, context.spHttpClient, filter, libeName);
 }
+
 
 async function getMethod(WebUrl: string, spHttpClient: any, filter: any, libeName: string) {
 
