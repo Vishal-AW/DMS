@@ -14,7 +14,7 @@ import { FolderStructure } from "../../../../Services/FolderStructure";
 import PopupBox from "../ResuableComponents/PopupBox";
 import UploadFiles from "./UploadFile";
 import { useNavigate } from "react-router-dom";
-// import ApprovalFlow from "./ApprovalFlow";
+import ApprovalFlow from "./ApprovalFlow";
 
 
 interface Folder {
@@ -271,8 +271,7 @@ export default function TreeView({ props }: any) {
     const bindTable = () => {
 
         if (tables === "Approver") {
-            // return <ApprovalFlow context={props.context} libraryName={libName} userEmail={props.UserEmailID} />;
-            return <>NK</>;
+            return <ApprovalFlow context={props.context} libraryName={libName} userEmail={props.UserEmailID} />;
         } else {
 
             return rightFolders.length === 0 ? <ReactTableComponent
