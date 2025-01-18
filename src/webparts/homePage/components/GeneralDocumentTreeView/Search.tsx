@@ -15,8 +15,9 @@ const SearchComponent = (props: { context: any; }) => {
             alert('Please enter a search term.');
             return;
         }
-
-        const searchUrl = `${props.context.pageContext.web.absoluteUrl}/_api/search/query?querytext='${query.replace(/'/g, "''")}'`;
+        const libraryName = 'AWNK';
+        const searchUrl = `${props.context.pageContext.web.absoluteUrl}/_api/search/query?querytext='${query} Path:${props.context.pageContext.web.absoluteUrl}/Shared%20Documents/${libraryName}'`;
+        //const searchUrl = `${props.context.pageContext.web.absoluteUrl}/_api/search/query?querytext=${query}`;
 
         try {
             const response = await props.context.spHttpClient.get(

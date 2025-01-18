@@ -87,7 +87,7 @@ export default function Master({ props }: any): JSX.Element {
   const [order0DataDataText, setorder0DataText] = useState('');
   const [isToggleDisabled, setIsToggleDisabled] = useState(false);
 
-  const [isTileStatus, setIsTileStatus] = React.useState<boolean>(false);
+  const [isTileStatus, setIsTileStatus] = React.useState<boolean>(true);
   const [isAllowApprover, setIsAllowApprover] = React.useState<boolean>(false);
   const [isDropdownVisible, setIsDropdownVisible] = React.useState<boolean>(false);
 
@@ -891,48 +891,7 @@ export default function Master({ props }: any): JSX.Element {
     const Columns: any = [{
       ListName: isUpdate ? ArchiveInternal : Internal,
       ListType: "101",
-      // Columns: [
-      //   { ColName: "DefineRole", ColType: 8 },
-      //   { ColName: "ProjectmanagerAllow", ColType: 8 },
-      //   { ColName: "Projectmanager", ColType: 20 },
-      //   { ColName: "ProjectmanagerEmail", ColType: 2 },
-      //   { ColName: "PublisherAllow", ColType: 8 },
-      //   { ColName: "Publisher", ColType: 20 },
-      //   { ColName: "PublisherEmail", ColType: 2 },
-      //   { ColName: "CurrentApprover", ColType: 2 },
-      //   {
-      //     ColName: "Status",
-      //     ColType: 7,
-      //     LookupField: "StatusName",
-      //     LookupList: "DMS_Mas_Status",
-      //   },
-      //   { ColName: "InternalStatus", ColType: 2 },
-      //   { ColName: "ProjectMasterLID", ColType: 2 },
-      //   { ColName: "LatestRemark", ColType: 3 },
-      //   { ColName: "AllowApprover", ColType: 8 },
-      //   { ColName: "Active", ColType: 8 },
-      //   { ColName: "DisplayStatus", ColType: 2 },
-      //   { ColName: "ReferenceNo", ColType: 2 },
-      //   { ColName: "RefSequence", ColType: 9 },
-      //   { ColName: "Level", ColType: 2 },
-      //   { ColName: "Revision", ColType: 2 },
-      //   { ColName: "DocStatus", ColType: 2 },
-      //   { ColName: "Template", ColType: 2 },
-      //   { ColName: "CreateFolder", ColType: 8 },
-      //   { ColName: "Company", ColType: 2 },
-      //   { ColName: "ActualName", ColType: 2 },
-      //   { ColName: "DocumentSuffix", ColType: 2 },
-      //   { ColName: "OtherSuffix", ColType: 2 },
-      //   { ColName: "PSType", ColType: 2 },
-      //   { ColName: "IsArchiveFlag", ColType: 8 },
-      //   { ColName: "IsExistingRefID", ColType: 9 },
-      //   { ColName: "IsExistingFlag", ColType: 2 },
-      //   { ColName: "OCRText", ColType: 3 },
-      //   { ColName: "DeleteFlag", ColType: 2 },
-      //   { ColName: "OCRStatus", ColType: 2 },
-      //   { ColName: "UploadFlag", ColType: 2, DefaultValue: "Backend" },
-      //   { ColName: "NewFolderAccess", ColType: 2 },
-      // ],
+
       "Columns": [
         { "ColName": "DefineRole", "ColType": "8" },
         { "ColName": "ProjectmanagerAllow", "ColType": "8" },

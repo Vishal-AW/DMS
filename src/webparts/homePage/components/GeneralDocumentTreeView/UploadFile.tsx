@@ -5,10 +5,12 @@ import { WebPartContext } from "@microsoft/sp-webpart-base";
 import { IPeoplePickerContext, PeoplePicker, PrincipalType } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 import { getUserIdFromLoginName, uuidv4 } from "../../../../DAL/Commonfile";
 import { getConfigActive } from "../../../../Services/ConfigService";
-import { getListData, UploadFile } from "../../../../Services/GeneralDocument";
+import { generateAutoRefNumber, getListData, UploadFile } from "../../../../Services/GeneralDocument";
 import { getDataByLibraryName } from "../../../../Services/MasTileService";
 import PopupBox from "../ResuableComponents/PopupBox";
 import { getStatusByInternalStatus } from "../../../../Services/StatusSerivce";
+import cls from '../HomePage.module.scss';
+
 interface IUploadFileProps {
     isOpenUploadPanel: boolean;
     dismissUploadPanel: () => void;
@@ -18,8 +20,9 @@ interface IUploadFileProps {
     context: WebPartContext;
     files: any;
     folderObject: any;
+    LibraryDetails: any;
 }
-function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPath, libName, folderName, files, folderObject }: IUploadFileProps) {
+function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPath, libName, folderName, files, folderObject, LibraryDetails }: IUploadFileProps) {
 
     const [configData, setConfigData] = useState<any[]>([]);
     const [dynamicControl, setDynamicControl] = useState<any[]>([]);
@@ -30,9 +33,10 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
     const [attachmentsFiles, setAttachmentsFiles] = useState<any[]>([]);
     const [attachment, setAttachment] = useState<{ [key: string]: any; }>({});
     const [attachmentErr, setAttachmentErr] = useState<string>('');
-    const filesData = files.map((item: any) => ({ key: item.name, text: item.ActualName }));
+    const filesData = files.map((item: any) => ({ key: item.name, text: item.ListItemAllFields.ActualName }));
     const [isUpdateExistingFile, setIsUpdateExistingFile] = useState<boolean>(false);
     const [isPopupBoxVisible, setIsPopupBoxVisible] = useState<boolean>(false);
+    const [showLoader, setShowLoader] = useState({ display: "none" });
 
     const peoplePickerContext: IPeoplePickerContext = {
         absoluteUrl: context.pageContext.web.absoluteUrl,
@@ -215,7 +219,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
     const onClickDetails = (index: number) => {
         setAttachmentsFiles((prev) => prev.map((ele, i) => i === index ? { ...ele, isDisabled: !ele.isDisabled } : ele));
     };
-    const submit = () => {
+    const submit = async () => {
         let isValid = true;
         if (dynamicControl.length > 0) {
             dynamicControl.forEach((item: any) => {
@@ -234,7 +238,14 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
             isValid = false;
         }
         if (!isValid) return;
+        setShowLoader({ display: "block" });
         let count = 0;
+        const queryURL = `${context.pageContext.web.absoluteUrl}/_api/web/lists/getByTitle('${libName}')/items?$select=EncodedAbsUrl,*,File/Name&$expand=File&$top=1&$orderby=RefSequence desc`;
+        const LastDocRes = await getListData(queryURL, context);
+        if (LastDocRes.value[0].RefSequence == null || LastDocRes.value[0].RefSequence == undefined) {
+            LastDocRes.value[0].RefSequence = 0;
+        }
+
         attachmentsFiles.forEach(async (item) => {
             const Fileuniqueid = await uuidv4();
             let obj: any = {
@@ -243,7 +254,8 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                 ActualName: item.attachment.name,
                 FolderDocumentPath: `/${folderPath}`,
                 OCRStatus: "Pending",
-                UploadFlag: "Frontend"
+                UploadFlag: "Frontend",
+                Level: item.version
             };
             let InternalStatus = "Published";
             if (folderObject.DefineRole) {
@@ -268,6 +280,11 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
             obj.InternalStatus = status.value[0].InternalStatus;
             obj.DisplayStatus = status.value[0].StatusName;
             obj.Active = true;
+            const refCount = LastDocRes.value[0].RefSequence == null ? 0 : LastDocRes.value[0].RefSequence + count;
+            const ReferenceNo = generateAutoRefNumber(refCount, folderObject, LastDocRes.value[0].Created, LibraryDetails);
+
+            obj.ReferenceNo = ReferenceNo.refNo.replace(/null/, "");
+
             await UploadFile(context.pageContext.web.absoluteUrl, context.spHttpClient, item.attachment, `${Fileuniqueid}-${item.attachment.name}`, libName, obj, folderPath);
             count++;
 
@@ -278,7 +295,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
         });
     };
 
-    const hidePopup = useCallback(() => { setIsPopupBoxVisible(false); dismissUploadPanel(); }, [isPopupBoxVisible]);
+    const hidePopup = useCallback(() => { setIsPopupBoxVisible(false); dismissUploadPanel(); setShowLoader({ display: "none" }); }, [isPopupBoxVisible]);
 
     return (
         <div>
@@ -351,10 +368,12 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                                                         { key: 'No', text: 'No' },
                                                     ]}
                                                     selectedKey={item.isUpdateExistingFile}
-                                                    onChange={(ev, option) => {
-                                                        setAttachmentsFiles((prev) => prev.map((ele, i) => i === index ? { ...ele, isUpdateExistingFile: option?.key } : ele));
-                                                        const filterD = attachmentsFiles.filter((el, i) => el.isUpdateExistingFile === "Yes" && el.i !== index);
-                                                        filterD.length === 1 ? setIsUpdateExistingFile(option?.key === "Yes" ? true : false) : "";
+                                                    onChange={async (ev, option) => {
+                                                        const attach = await Promise.all(attachmentsFiles.map((ele, i) => i === index ? { ...ele, isUpdateExistingFile: option?.key } : ele));
+                                                        setAttachmentsFiles(attach);
+                                                        // await setAttachmentsFiles((prev) => prev.map((ele, i) => i === index ? { ...ele, isUpdateExistingFile: option?.key } : ele));
+                                                        const filterD = attach.filter((el, i) => el.isUpdateExistingFile === "Yes");
+                                                        filterD.length > 0 ? setIsUpdateExistingFile(option?.key === "Yes" ? true : false) : "";
                                                     }}
                                                     disabled={item.isDisabled}
                                                 />
@@ -394,6 +413,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                 </div>
             </Panel>
             <PopupBox isPopupBoxVisible={isPopupBoxVisible} hidePopup={hidePopup} />
+            <div className={cls["modal"]} style={showLoader}></div>
         </div>
     );
 }

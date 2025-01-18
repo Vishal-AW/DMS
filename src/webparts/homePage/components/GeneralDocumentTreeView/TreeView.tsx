@@ -13,8 +13,9 @@ import { TextField } from "office-ui-fabric-react";
 import { FolderStructure } from "../../../../Services/FolderStructure";
 import PopupBox from "../ResuableComponents/PopupBox";
 import UploadFiles from "./UploadFile";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import ApprovalFlow from "./ApprovalFlow";
+import cls from '../HomePage.module.scss';
 
 
 interface Folder {
@@ -34,7 +35,7 @@ const stackTokens: IStackTokens = { childrenGap: 10 };
 export default function TreeView({ props }: any) {
     const linkRef = useRef<Record<string, HTMLDivElement | null>>({});
     // const [showContextualMenu, setShowContextualMenu] = useState(false);
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
     const [showContextualMenu, setShowContextualMenu] = React.useState<{ [key: string]: boolean; }>({});
     const [nodeId, setNodeId] = useState(0);
 
@@ -48,13 +49,17 @@ export default function TreeView({ props }: any) {
     const tileObject: string | null = sessionStorage.getItem("LibDetails");
     const [admin, setAdmin] = useState([]);
     const [tables, setTables] = useState("");
+    const [showLoader, setShowLoader] = useState({ display: "none" });
+    const [formType, setFormType] = useState("EntryForm");
+
     if (tileObject === null)
-        navigate("/Dashboard");
+        location.href = "#/Dashboard";
 
     const libDetails: any = JSON.parse(tileObject as string);
     const libName = libDetails.LibraryName;
     const portalUrl = new URL(props.SiteURL).origin;
     const [isPanelOpen, setIsPanelOpen] = useState(false);
+    //const [isApprovalPanel, setApprovalPanel] = useState(false);
     const [isOpenFolderPanel, setIsOpenFolderPanel] = useState(false);
     const [isOpenUploadPanel, setIsOpenUploadPanel] = useState(false);
     const [itemId, setItemId] = useState<number>(0);
@@ -63,11 +68,13 @@ export default function TreeView({ props }: any) {
     const [folderNameErr, setFolderNameErr] = useState("");
     const [folderObject, setFolderObject] = useState<any>({});
     const [isPopupBoxVisible, setIsPopupBoxVisible] = useState<boolean>(false);
+    const [projectUpdateData, setProjectUpdateData] = useState<any>({});
+    const [actionFolderPath, setActionFolderPath] = useState("");
 
     useEffect(() => {
         fetchFolders(libName, "");
         getAdmin();
-    }, []);
+    }, [isCreateProjectPopupOpen]);
 
     const fetchFolders = async (folderPath: string, nodeName: string) => {
         try {
@@ -120,12 +127,16 @@ export default function TreeView({ props }: any) {
     let count = 0;
     const columns = [
         { Header: 'Sr. No.', accessor: "Id", Cell: (props: any) => <span>{count + 1}</span> },
-        { Header: 'Name', accessor: 'Name' },
-        { Header: 'Uploaded On', accessor: 'TimeCreated' },
-        { Header: 'Reference No', accessor: 'UIVersionLabel' },
-        { Header: 'Version', accessor: 'UIVersionLabel' },
-        { Header: 'Status', accessor: 'UIVersionLabel' },
-        { Header: 'OCR Status', accessor: 'UIVersionLabel' },
+        { Header: 'Name', accessor: 'ListItemAllFields.ActualName' },
+        { Header: 'Reference No', accessor: 'ListItemAllFields.ReferenceNo' },
+        { Header: 'Version', accessor: 'ListItemAllFields.Level' },
+        { Header: 'Status', accessor: 'ListItemAllFields.DisplayStatus' },
+        // { Header: 'OCR Status', accessor: 'ListItemAllFields.OCRStatus' },
+        {
+            Header: 'Action', accessor: "Id", Cell: (props: any) => <span>
+
+            </span>
+        }
     ];
 
     const renderTree = (nodes: Folder[], parentPath: string = "") => {
@@ -157,7 +168,7 @@ export default function TreeView({ props }: any) {
                             />
                             {showContextualMenu[node.ListItemAllFields.Id] && nodeId === node.ListItemAllFields.Id ? (
                                 <ContextualMenu
-                                    items={bindMenu(node)}
+                                    items={bindMenu(node, `${parentPath}/${node.Name}`)}
                                     hidden={!showContextualMenu[node.ListItemAllFields.Id]}
                                     target={linkRef.current[node.ListItemAllFields.Id]}
                                     onItemClick={() => onHideContextualMenu(node.ListItemAllFields.Id)}
@@ -201,7 +212,7 @@ export default function TreeView({ props }: any) {
         ));
     };
 
-    const bindMenu = (node: any) => {
+    const bindMenu = (node: any, afolderPath: string) => {
         return [
             {
                 key: 'advancePermission',
@@ -223,12 +234,12 @@ export default function TreeView({ props }: any) {
             {
                 key: "view",
                 text: "View",
-                onClick: () => console.log('Rename clicked', node),
+                onClick: () => { setActionFolderPath(afolderPath); setProjectUpdateData(node); setIsCreateProjectPopupOpen(true); setFormType("ViewForm"); },
             },
             {
                 key: 'edit',
                 text: 'Edit',
-                onClick: () => console.log('Edit clicked', node),
+                onClick: () => { setActionFolderPath(afolderPath); setProjectUpdateData(node); setIsCreateProjectPopupOpen(true); setFormType("EditForm"); },
             },
         ];
     };
@@ -241,7 +252,8 @@ export default function TreeView({ props }: any) {
 
 
     const onDismiss: any = useCallback(() => { setIsPanelOpen(false); }, []);
-    const projectCreation = useCallback(() => { setIsCreateProjectPopupOpen(true); }, []);
+    //const ApprovalFlow = useCallback(() => { setApprovalPanel(false); }, []);
+    const projectCreation = useCallback(() => { setIsCreateProjectPopupOpen(true); setFormType("EntryForm"); setProjectUpdateData({}); }, []);
     const dissmissProjectCreationPanel = useCallback((value: boolean) => { setIsCreateProjectPopupOpen(value); }, []);
     const dismissFolderPanel = () => { setIsOpenFolderPanel(false); };
     const dismissUploadPanel = useCallback(() => { setIsOpenUploadPanel(false); setFolderName(""); }, []);
@@ -252,7 +264,7 @@ export default function TreeView({ props }: any) {
             setFolderNameErr("Folder Name is required");
             return;
         }
-        console.log(folderObject);
+        setShowLoader({ display: "block" });
         const users = [folderObject?.ListItemAllFields.ProjectmanagerId, folderObject?.ListItemAllFields.PublisherId, ...admin];
         FolderStructure(props.context, `${folderPath}/${folderName}`, users, libName).then((response) => {
             console.log(response);
@@ -262,12 +274,13 @@ export default function TreeView({ props }: any) {
 
             updateLibrary(props.SiteURL, props.spHttpClient, obj, response, libName).then((response) => {
                 setIsPopupBoxVisible(true);
-                toggleNode(folderName, `${folderPath}/${folderName}`, folderObject);
+                toggleNode(folderName, `${folderPath}`, folderObject);
+                fetchFolders(folderName, `${folderPath}`);
             });
         });
     };
 
-    const hidePopup = useCallback(() => { setIsPopupBoxVisible(false); dismissFolderPanel(); }, [isPopupBoxVisible]);
+    const hidePopup = useCallback(() => { setIsPopupBoxVisible(false); dismissFolderPanel(); setShowLoader({ display: "none" }); }, [isPopupBoxVisible]);
     const bindTable = () => {
 
         if (tables === "Approver") {
@@ -365,8 +378,8 @@ export default function TreeView({ props }: any) {
                 }}
             />;
             <AdvancePermission isOpen={isPanelOpen} context={props.context} folderId={itemId} LibraryName={libName} dismissPanel={onDismiss} />
-            <ProjectEntryForm isOpen={isCreateProjectPopupOpen} dismissPanel={dissmissProjectCreationPanel} context={props.context} LibraryDetails={libDetails} admin={admin} />
-            <UploadFiles context={props.context} isOpenUploadPanel={isOpenUploadPanel} folderName={folderName} folderPath={folderPath} dismissUploadPanel={dismissUploadPanel} libName={libName} files={files} folderObject={folderObject?.ListItemAllFields} />
+            <ProjectEntryForm isOpen={isCreateProjectPopupOpen} dismissPanel={dissmissProjectCreationPanel} context={props.context} LibraryDetails={libDetails} admin={admin} FormType={formType} folderObject={projectUpdateData} folderPath={actionFolderPath} />
+            <UploadFiles context={props.context} isOpenUploadPanel={isOpenUploadPanel} folderName={folderName} folderPath={folderPath} dismissUploadPanel={dismissUploadPanel} libName={libName} files={files} folderObject={folderObject?.ListItemAllFields} LibraryDetails={libDetails} />
             <Panel
                 headerText="Add New Folder"
                 isOpen={isOpenFolderPanel}
@@ -393,6 +406,7 @@ export default function TreeView({ props }: any) {
                 </div>
             </Panel>
             <PopupBox isPopupBoxVisible={isPopupBoxVisible} hidePopup={hidePopup} />
+            <div className={cls["modal"]} style={showLoader}></div>
         </div>
     );
 }

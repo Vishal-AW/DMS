@@ -19,25 +19,32 @@ import styles from "./TreeView.module.scss";
 import { getActiveTypeData } from "../../../../Services/PrefixSuffixMasterService";
 import { getConfigActive } from "../../../../Services/ConfigService";
 import { getDataByLibraryName } from "../../../../Services/MasTileService";
-import { getListData, updateLibrary } from "../../../../Services/GeneralDocument";
+import { getAllFolder, getListData, updateLibrary } from "../../../../Services/GeneralDocument";
 import { FolderStructure } from "../../../../Services/FolderStructure";
 import { getUserIdFromLoginName } from "../../../../DAL/Commonfile";
 import PopupBox from "../ResuableComponents/PopupBox";
+import cls from '../HomePage.module.scss';
 
-export interface IAdvanceProps {
+export interface IProjectEntryProps {
     isOpen: boolean;
     dismissPanel: (value: boolean) => void;
     context: WebPartContext;
     LibraryDetails: any;
     admin: any;
+    FormType: string;
+    folderObject: any;
+    folderPath: string;
 }
 
-const ProjectEntryForm: React.FC<IAdvanceProps> = ({
+const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
     isOpen,
     dismissPanel,
     context,
     LibraryDetails,
-    admin
+    admin,
+    FormType,
+    folderObject,
+    folderPath
 }) => {
     const [folderName, setFolderName] = useState<string>("");
     const [isSuffixRequired, setIsSuffixRequired] = useState<boolean>(false);
@@ -66,7 +73,10 @@ const ProjectEntryForm: React.FC<IAdvanceProps> = ({
     const [folderAccessErr, setFolderAccessErr] = useState<string>("");
     const [publisherErr, setPublisherErr] = useState<string>("");
     const [approverErr, setApproverErr] = useState<string>("");
-
+    const [showLoader, setShowLoader] = useState({ display: "none" });
+    const [isDisabled, setIsDisabled] = useState<boolean>(false);
+    const [projectManagerEmail, setProjectManagerEmail] = useState("");
+    const [publisherEmail, setPublisherEmail] = useState("");
     const handleInputChange = (fieldName: string, value: any) => {
         setDynamicValues((prevValues) => ({
             ...prevValues,
@@ -79,6 +89,12 @@ const ProjectEntryForm: React.FC<IAdvanceProps> = ({
         msGraphClientFactory: context.msGraphClientFactory,
         spHttpClient: context.spHttpClient
     };
+
+    // const peoplePickerContext: IPeoplePickerContext = {
+    //     absoluteUrl: context.pageContext.web.absoluteUrl,
+    //     msGraphClientFactory: context.msGraphClientFactory as any as import("@pnp/spfx-controls-react/node_modules/@microsoft/sp-http-msgraph/dist/index-internal").MSGraphClientFactory,
+    //     spHttpClient: context.spHttpClient as any as import("@pnp/spfx-controls-react/node_modules/@microsoft/sp-http-base/dist/index-internal").SPHttpClient
+    // };
 
 
 
@@ -95,6 +111,8 @@ const ProjectEntryForm: React.FC<IAdvanceProps> = ({
     useEffect(() => {
         clearErr();
         clearFeilds();
+        setIsDisabled(FormType === "ViewForm");
+        FormType !== "EntryForm" ? bindFormData() : "";
     }, [isOpen]);
 
 
@@ -181,6 +199,7 @@ const ProjectEntryForm: React.FC<IAdvanceProps> = ({
                                 onChange={(ev, option) => handleInputChange(item.InternalTitleName, option?.key)}
                                 selectedKey={dynamicValues[item.InternalTitleName] || ""}
                                 errorMessage={dynamicValuesErr[item.InternalTitleName]}
+                                disabled={isDisabled}
                             />
                         </div>
                     );
@@ -214,6 +233,7 @@ const ProjectEntryForm: React.FC<IAdvanceProps> = ({
                                         console.error("Error fetching user IDs:", error);
                                     }
                                 }}
+                                disabled={isDisabled}
                                 errorMessage={dynamicValuesErr[item.InternalTitleName]}
                             />
                         </div>
@@ -232,6 +252,7 @@ const ProjectEntryForm: React.FC<IAdvanceProps> = ({
                                 selectedKey={dynamicValues[item.InternalTitleName] || ""}
                                 label={item.Title}
                                 required={item.IsRequired}
+                                disabled={isDisabled}
                             />
                         </div>
                     );
@@ -247,6 +268,7 @@ const ProjectEntryForm: React.FC<IAdvanceProps> = ({
                                 multiline={item.ColumnType === "Multiple lines of Text"}
                                 required={item.IsRequired}
                                 errorMessage={dynamicValuesErr[item.InternalTitleName]}
+                                disabled={isDisabled}
                             />
                         </div>
                     );
@@ -309,7 +331,7 @@ const ProjectEntryForm: React.FC<IAdvanceProps> = ({
             });
         }
 
-        if (folderAccess.length === 0) {
+        if (FormType === "EntryForm" && folderAccess.length === 0) {
             setFolderAccessErr("Folder Access is required");
             isValid = false;
             return;
@@ -328,37 +350,76 @@ const ProjectEntryForm: React.FC<IAdvanceProps> = ({
             createFolder();
     };
 
-    const createFolder = () => {
-
-        const users = [...folderAccess, ...usersIds, ...publisher, ...approver, ...admin];
-        FolderStructure(context, `${LibraryDetails.LibraryName}/${folderName}`, users, LibraryDetails.LibraryName).then((response) => {
-            console.log(response);
-            let obj: any = {
-                ...dynamicValues,
-                DocumentSuffix: Suffix || "",
-                OtherSuffix: OtherSuffix || "",
-                IsSuffixRequired: isSuffixRequired,
-                PSType: "Suffix",
-                DefineRole: isApprovalRequired
-            };
-            if (isApprovalRequired) {
-                const filterApprover = allUsers.filter((el: any) => el.Id === approver[0])[0];
-                obj.ProjectmanagerAllow = true;
-                obj.ProjectmanagerId = filterApprover.Id;
-                obj.ProjectmanagerEmail = filterApprover.Email;
-                const filterPublisher = allUsers.filter((el: any) => el.Id === publisher[0])[0];
-                obj.PublisherAllow = true;
-                obj.PublisherId = filterPublisher.Id;
-                obj.PublisherEmail = filterPublisher.Email;
-            }
-
-            updateLibrary(context.pageContext.web.absoluteUrl, context.spHttpClient, obj, response, LibraryDetails.LibraryName).then((response) => {
-                setIsPopupBoxVisible(true);
+    const createFolder = async () => {
+        setShowLoader({ display: "block" });
+        if (FormType === "EntryForm") {
+            const users = [...folderAccess, ...usersIds, ...publisher, ...approver, ...admin];
+            FolderStructure(context, `${LibraryDetails.LibraryName}/${folderName}`, users, LibraryDetails.LibraryName).then((response) => {
+                updateFolderMetaData(response);
             });
+        }
+        else {
+            updateFolderMetaData(folderObject.ListItemAllFields.Id);
+            const folders = await getAllFolder(context.pageContext.web.absoluteUrl, context, folderPath);
+            folders.Folders.map((folder: any) => { updateFolderMetaData(folder.ListItemAllFields.Id); });
+        }
+    };
+
+    const updateFolderMetaData = (id: number) => {
+        let obj: any = {
+            ...dynamicValues,
+            DocumentSuffix: Suffix || "",
+            OtherSuffix: OtherSuffix || "",
+            IsSuffixRequired: isSuffixRequired,
+            PSType: "Suffix",
+            DefineRole: isApprovalRequired
+        };
+        if (isApprovalRequired) {
+            const filterApprover = allUsers.filter((el: any) => el.Id === approver[0])[0];
+            obj.ProjectmanagerAllow = true;
+            obj.ProjectmanagerId = filterApprover.Id;
+            obj.ProjectmanagerEmail = filterApprover.Email;
+            const filterPublisher = allUsers.filter((el: any) => el.Id === publisher[0])[0];
+            obj.PublisherAllow = true;
+            obj.PublisherId = filterPublisher.Id;
+            obj.PublisherEmail = filterPublisher.Email;
+        }
+
+        updateLibrary(context.pageContext.web.absoluteUrl, context.spHttpClient, obj, id, LibraryDetails.LibraryName).then((response) => {
+            setIsPopupBoxVisible(true);
         });
     };
 
-    const hidePopup = useCallback(() => { setIsPopupBoxVisible(false); dismissPanel(false); }, [isPopupBoxVisible]);
+    const bindFormData = () => {
+        setFolderName(folderObject.Name);
+        setIsSuffixRequired(folderObject.ListItemAllFields.IsSuffixRequired);
+        if (folderObject.ListItemAllFields.IsSuffixRequired) {
+            setSuffix(folderObject.ListItemAllFields.DocumentSuffix);
+            folderObject.ListItemAllFields.DocumentSuffix === "Other" ? setOtherSuffix(OtherSuffix) : "";
+        }
+        if (libraryDetails.AllowApprover) {
+            setIsApprovalRequired(folderObject.ListItemAllFields.DefineRole);
+            if (folderObject.ListItemAllFields.DefineRole) {
+                setProjectManagerEmail(folderObject.ListItemAllFields.ProjectmanagerEmail);
+                setPublisherEmail(folderObject.ListItemAllFields.PublisherEmail);
+                setApprover([folderObject.ListItemAllFields.ProjectmanagerId]);
+                setPublisher([folderObject.ListItemAllFields.PublisherId]);
+            }
+        }
+
+        dynamicControl.map((item: any, index: number) => {
+            const filterObj = configData.find((ele) => ele.Id === item.Id);
+            if (!filterObj) return null;
+
+            setDynamicValues((prevValues) => ({
+                ...prevValues,
+                [item.InternalTitleName]: folderObject.ListItemAllFields[item.InternalTitleName],
+            }));
+        });
+
+    };
+
+    const hidePopup = useCallback(() => { setIsPopupBoxVisible(false); dismissPanel(false); setShowLoader({ display: "none" }); }, [isPopupBoxVisible]);
 
     const removeSepcialCharacters = (newValue?: string) => newValue?.replace(/[^a-zA-Z0-9\s]/g, '') || '';
     return (
@@ -368,10 +429,12 @@ const ProjectEntryForm: React.FC<IAdvanceProps> = ({
             onDismiss={() => dismissPanel(false)}
             closeButtonAriaLabel="Close"
             type={PanelType.medium}
-            onRenderFooterContent={() => (<>
-                <PrimaryButton onClick={submit} styles={buttonStyles} className={styles["sub-btn"]}>Submit</PrimaryButton>
-                <DefaultButton onClick={() => dismissPanel(false)} className={styles["can-btn"]}>Cancel</DefaultButton>
-            </>)}
+            onRenderFooterContent={() => (
+                <>
+                    {FormType !== "ViewForm" ? <PrimaryButton onClick={submit} styles={buttonStyles} className={styles["sub-btn"]}>{FormType === "EntryForm" ? "Submit" : "Update"}</PrimaryButton> : <></>}
+                    <DefaultButton onClick={() => dismissPanel(false)} className={styles["can-btn"]}>Cancel</DefaultButton>
+                </>
+            )}
             isFooterAtBottom={true}
         >
             <div className={styles.grid}>
@@ -393,6 +456,7 @@ const ProjectEntryForm: React.FC<IAdvanceProps> = ({
                                 setFolderName(validName);
                             }}
                             errorMessage={folderNameErr}
+                            disabled={isDisabled || FormType === "EditForm"}
                         />
                     </div>
                 </div>
@@ -402,6 +466,8 @@ const ProjectEntryForm: React.FC<IAdvanceProps> = ({
                         <Toggle
                             label="Is Suffix required?"
                             onChange={handleToggleChange}
+                            checked={isSuffixRequired}
+                            disabled={isDisabled}
                         />
                     </div>
                 </div>
@@ -418,6 +484,7 @@ const ProjectEntryForm: React.FC<IAdvanceProps> = ({
                                     onChange={(ev, option: any) => setSuffix(option.key as string)}
                                     selectedKey={Suffix}
                                     errorMessage={SuffixErr}
+                                    disabled={isDisabled}
                                 />
                             </div>
                         </div>
@@ -433,18 +500,22 @@ const ProjectEntryForm: React.FC<IAdvanceProps> = ({
                                         }
                                         errorMessage={OtherSuffixErr}
                                         required
+                                        disabled={isDisabled}
                                     />
                                 </div>
                             </div>
                         )}
                     </>
                 )}
+                <div className={cls["modal"]} style={showLoader}></div>
                 <div className={styles.row}>{renderDynamicControls()}</div>
                 {libraryDetails.AllowApprover ? <div className={styles.row}>
                     <div className={styles.col12}>
                         <Toggle
                             label="Is Approval flow required?"
-                            onChange={() => { setIsApprovalRequired((pre) => !pre); console.log(isApprovalRequired); }}
+                            onChange={() => { setIsApprovalRequired((pre) => !pre); }}
+                            disabled={isDisabled}
+                            checked={isApprovalRequired}
                         />
                     </div>
                     {
@@ -460,19 +531,21 @@ const ProjectEntryForm: React.FC<IAdvanceProps> = ({
                                 principalTypes={[PrincipalType.User]}
                                 onChange={async (items) => {
                                     try {
+                                        setProjectManagerEmail(items[0].secondaryText as string);
                                         const userIds = await Promise.all(
                                             items.map(async (item: any) => {
                                                 const data = await getUserIdFromLoginName(context, item.id);
                                                 return data.Id;
                                             })
                                         );
-                                        console.log(userIds);
                                         setApprover(userIds);
                                     } catch (error) {
                                         console.error("Error fetching user IDs:", error);
                                     }
                                 }}
+                                defaultSelectedUsers={[projectManagerEmail]}
                                 errorMessage={approverErr}
+                                disabled={isDisabled}
                             />
                         </div>
                             <div className={styles.col6}>
@@ -484,21 +557,23 @@ const ProjectEntryForm: React.FC<IAdvanceProps> = ({
                                     required
                                     showHiddenInUI={false}
                                     principalTypes={[PrincipalType.User]}
+                                    defaultSelectedUsers={[publisherEmail]}
                                     onChange={async (items) => {
                                         try {
+                                            setPublisherEmail(items[0].secondaryText as string);
                                             const userIds = await Promise.all(
                                                 items.map(async (item: any) => {
                                                     const data = await getUserIdFromLoginName(context, item.id);
                                                     return data.Id;
                                                 })
                                             );
-                                            console.log(userIds);
                                             setPublisher(userIds);
                                         } catch (error) {
                                             console.error("Error fetching user IDs:", error);
                                         }
                                     }}
                                     errorMessage={publisherErr}
+                                    disabled={isDisabled}
                                 />
 
                             </div>
@@ -507,7 +582,7 @@ const ProjectEntryForm: React.FC<IAdvanceProps> = ({
                 </div> : <></>}
                 <div className={styles.row}>
                     <div className={styles.col12}>
-                        <PeoplePicker
+                        {FormType === "EntryForm" ? <PeoplePicker
                             titleText={"Folder Access"}
                             context={peoplePickerContext}
                             personSelectionLimit={10}
@@ -530,6 +605,8 @@ const ProjectEntryForm: React.FC<IAdvanceProps> = ({
                             }}
                             errorMessage={folderAccessErr}
                         />
+                            : <></>
+                        }
                     </div>
                 </div>
             </div>
