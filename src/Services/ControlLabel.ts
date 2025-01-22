@@ -77,7 +77,19 @@ export async function GetAllLabel(WebUrl: string, spHttpClient: SPHttpClient, La
       Dropdown: getValue("Dropdown", data, Language),
       MetaDataSearch: getValue("MetaDataSearch", data, Language),
       Reset: getValue("Reset", data, Language),
-      SearchData: getValue("SearchData", data, Language)
+      SearchData: getValue("SearchData", data, Language),
+      Active: getValue("Active", data, Language),
+      LastModified: getValue("LastModified", data, Language),
+      Tiles: getValue("Tiles", data, Language),
+      ThisFieldisRequired: getValue("ThisFieldisRequired", data, Language),
+      Archive: getValue("Archive", data, Language),
+      IsActive: getValue("IsActive", data, Language),
+      Atleasttwooptionrecordrequired: getValue("Atleasttwooptionrecordrequired", data, Language),
+      AddNewRecords: getValue("AddNewRecords", data, Language),
+      EditNewRecords: getValue("EditNewRecords", data, Language),
+      AddTileManagment: getValue("AddTileManagment", data, Language),
+      EditTileManagment: getValue("EditTileManagment", data, Language)
+
     };
 
     // 

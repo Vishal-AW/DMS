@@ -61,4 +61,16 @@ export interface ILabel {
     MetaDataSearch: string;
     Reset: string;
     SearchData: string;
+    Active: string;
+    LastModified: string;
+    Tiles: string;
+    ThisFieldisRequired: string;
+    Archive: string;
+    IsActive: string;
+    Atleasttwooptionrecordrequired: string;
+    AddNewRecords: string;
+    EditNewRecords: string;
+    AddTileManagment: string;
+    EditTileManagment: string;
+
 }

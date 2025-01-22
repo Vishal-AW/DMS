@@ -506,3 +506,17 @@ div:focus-visible,
     border-radius: 50% !important;
     padding: 0px !important;
 }
+
+@media screen and (min-width: 1024px) {
+    .a_b_50a7110f:not(.b_b_50a7110f) .m_b_50a7110f {
+        max-width: 100% !important;
+    }
+}
+
+.r_c_50a7110f {
+    max-width: 100% !important
+}
+
+.ControlZone {
+    padding: 0px !important;
+}

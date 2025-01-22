@@ -7,7 +7,7 @@ import { HashRouter, Routes, Route } from 'react-router-dom';
 //import { escape } from '@microsoft/sp-lodash-subset';
 import SideMenu from '../components/Route/SideMenu';
 import Master from '../components/Master/Master';
-import Header from '../components/ResuableComponents/Header';
+//import Header from '../components/ResuableComponents/Header';
 import Footer from '../components/ResuableComponents/Footer';
 import Datatable from '../components/ResuableComponents/Header';
 import Dashboard from '../components/Home/Dashboard';
@@ -46,10 +46,10 @@ export default function HomePage(props: IHomePageProps): JSX.Element {
   return (
     <>
       <HashRouter>
-        <div className={styles.header}>
+        {/* <div className={styles.header}>
           <Header></Header>
 
-        </div>
+        </div> */}
 
 
         <section>

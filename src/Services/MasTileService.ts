@@ -34,7 +34,7 @@ async function getMethod(WebUrl: string, spHttpClient: any, filter: any) {
     select: "ID,TileName,TileImageURL,SystemCreated,Permission/EMail,Permission/Id,Permission/Title,Documentpath,Active,Order0,AllowApprover,Editor/Title,Modified,LibraryName,LibGuidName,AllowOrder,DynamicControl,IsDynamicReference,ReferenceFormula,Separator,ShowMoreActions,IsArchiveRequired,RetentionDays,ArchiveVersionCount,ArchiveLibraryName,TileAdmin/Id,TileAdmin/Title,TileAdmin/EMail,IsAllowFieldsInFile",
     expand: "Permission,Editor,TileAdmin",
     filter: filter,
-    orderby: 'TileName',
+    orderby: "ID desc",
     top: 5000
   };
 
