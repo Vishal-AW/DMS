@@ -8,19 +8,16 @@ import { IPeoplePickerContext, PeoplePicker, PrincipalType } from "@pnp/spfx-con
 import { getUserIdFromLoginName } from "../../../../DAL/Commonfile";
 import { getListData, getDocument } from "../../../../Services/GeneralDocument";
 import { getConfigActive } from "../../../../Services/ConfigService";
+import { getDataByLibraryName } from "../../../../Services/MasTileService";
 //import { useNavigate } from "react-router-dom";
 export default function SearchFilter({ props }: any): JSX.Element {
 
-    const libraryName = "NewTileDocumentPath";
-    //const controlDataStatic: string = `[{"field":10,"IsRequired":true,"IsActiveControl":true,"IsFieldAllowInFile":false,"isShowAsFilter":false,"Flag":"New","editingIndex":-1,"Id":10,"Title":"Arbitration","ColumnType":"Single line of Text","InternalListName":null,"IsActive":true,"IsStaticValue":false,"StaticDataObject":null,"DisplayValue":null,"InternalTitleName":"Arbitration","IsShowAsFilter":false,"Abbreviation":"Abbreviation","ID":10},{"field":1,"IsRequired":true,"IsActiveControl":true,"IsFieldAllowInFile":false,"isShowAsFilter":true,"Flag":"New","editingIndex":-1,"Id":1,"Title":"City","ColumnType":"Dropdown","InternalListName":"DMS_City","IsActive":true,"IsStaticValue":false,"StaticDataObject":null,"DisplayValue":"City","InternalTitleName":"City","IsShowAsFilter":true,"Abbreviation":"Abbreviation","ID":1},{"field":15,"IsRequired":true,"IsActiveControl":true,"IsFieldAllowInFile":false,"isShowAsFilter":false,"Flag":"New","editingIndex":-1,"Id":15,"Title":"Confidentiality","ColumnType":"Single line of Text","InternalListName":null,"IsActive":true,"IsStaticValue":false,"StaticDataObject":null,"DisplayValue":null,"InternalTitleName":"Confidentiality","IsShowAsFilter":false,"Abbreviation":"Abbreviation","ID":15}]`;
-
-    //const controlDataStatic: string = `[{"field":10,"IsRequired":true,"IsActiveControl":true,"IsFieldAllowInFile":false,"isShowAsFilter":false,"Flag":"New","editingIndex":-1,"Id":10,"Title":"Arbitration","ColumnType":"Single line of Text","InternalListName":null,"IsActive":true,"IsStaticValue":false,"StaticDataObject":null,"DisplayValue":null,"InternalTitleName":"Arbitration","IsShowAsFilter":false,"Abbreviation":"Abbreviation","ID":10},{"field":1,"IsRequired":false,"IsActiveControl":true,"IsFieldAllowInFile":false,"isShowAsFilter":true,"Flag":"New","editingIndex":-1,"Id":1,"Title":"City","ColumnType":"Dropdown","InternalListName":"DMS_City","IsActive":true,"IsStaticValue":false,"StaticDataObject":null,"DisplayValue":"City","InternalTitleName":"City","IsShowAsFilter":true,"Abbreviation":"Abbreviation","ID":1},{"field":15,"IsRequired":false,"IsActiveControl":true,"IsFieldAllowInFile":false,"isShowAsFilter":false,"Flag":"New","editingIndex":-1,"Id":15,"Title":"Confidentiality","ColumnType":"Single line of Text","InternalListName":null,"IsActive":true,"IsStaticValue":false,"StaticDataObject":null,"DisplayValue":null,"InternalTitleName":"Confidentiality","IsShowAsFilter":false,"Abbreviation":"Abbreviation","ID":15},{"field":19,"IsRequired":false,"IsActiveControl":true,"IsFieldAllowInFile":false,"isShowAsFilter":true,"Flag":"New","editingIndex":-1,"Id":19,"Title":"Mall Name","ColumnType":"Dropdown","InternalListName":"DMS_MallMaster","IsActive":true,"IsStaticValue":false,"StaticDataObject":null,"DisplayValue":"MallName","InternalTitleName":"MallName","IsShowAsFilter":true,"Abbreviation":"Abbreviation","ID":19},{"field":27,"IsRequired":false,"IsActiveControl":true,"IsFieldAllowInFile":true,"isShowAsFilter":false,"Flag":"New","editingIndex":-1,"Id":27,"Title":"Operator","ColumnType":"Single line of Text","InternalListName":null,"IsActive":true,"IsStaticValue":false,"StaticDataObject":null,"DisplayValue":null,"InternalTitleName":"Operator","IsShowAsFilter":false,"Abbreviation":"Abbreviation","ID":27},{"field":25,"IsRequired":false,"IsActiveControl":true,"IsFieldAllowInFile":false,"isShowAsFilter":false,"Flag":"New","editingIndex":-1,"Id":25,"Title":"Net Sales","ColumnType":"Single line of Text","InternalListName":null,"IsActive":true,"IsStaticValue":false,"StaticDataObject":null,"DisplayValue":null,"InternalTitleName":"NetSales","IsShowAsFilter":false,"Abbreviation":"Abbreviation","ID":25}]`;
-
-    const controlDataStatic: string = `[{"field":20,"IsRequired":true,"IsActiveControl":true,"IsFieldAllowInFile":false,"isShowAsFilter":true,"Flag":"New","editingIndex":-1,"Id":20,"Title":"Brand Name","ColumnType":"Dropdown","InternalListName":"DMS_Mas_Brand","IsActive":true,"IsStaticValue":false,"StaticDataObject":null,"DisplayValue":"BrandName","InternalTitleName":"BrandName","IsShowAsFilter":true,"Abbreviation":"Abbreviation","ID":20},{"field":10,"IsRequired":true,"IsActiveControl":true,"IsFieldAllowInFile":false,"isShowAsFilter":false,"Flag":"New","editingIndex":-1,"Id":10,"Title":"Arbitration","ColumnType":"Single line of Text","InternalListName":null,"IsActive":true,"IsStaticValue":false,"StaticDataObject":null,"DisplayValue":null,"InternalTitleName":"Arbitration","IsShowAsFilter":false,"Abbreviation":"Abbreviation","ID":10}]`;
+    const libraryName: any = sessionStorage.getItem("LibName");
+    // const controlDataStatic: string = `[{"field":20,"IsRequired":true,"IsActiveControl":true,"IsFieldAllowInFile":false,"isShowAsFilter":true,"Flag":"New","editingIndex":-1,"Id":20,"Title":"Brand Name","ColumnType":"Dropdown","InternalListName":"DMS_Mas_Brand","IsActive":true,"IsStaticValue":false,"StaticDataObject":null,"DisplayValue":"BrandName","InternalTitleName":"BrandName","IsShowAsFilter":true,"Abbreviation":"Abbreviation","ID":20},{"field":10,"IsRequired":true,"IsActiveControl":true,"IsFieldAllowInFile":false,"isShowAsFilter":false,"Flag":"New","editingIndex":-1,"Id":10,"Title":"Arbitration","ColumnType":"Single line of Text","InternalListName":null,"IsActive":true,"IsStaticValue":false,"StaticDataObject":null,"DisplayValue":null,"InternalTitleName":"Arbitration","IsShowAsFilter":false,"Abbreviation":"Abbreviation","ID":10}]`;
 
 
 
-    const control = JSON.parse(controlDataStatic);
+    // const control = JSON.parse(controlDataStatic);
     const [ContentSearchinput, setContentSearchinput] = useState("");
     const [DisplayLabel, setDisplayLabel] = useState<ILabel>();
     const [dynamicControl, setDynamicControl] = useState<any[]>([]);
@@ -30,30 +27,19 @@ export default function SearchFilter({ props }: any): JSX.Element {
     const [searchData, setSearchData] = useState<any>([]);
     const [DynamicDataTable, setDynamicDataTable] = React.useState<boolean>(false);
     const [ContentSearch, setContentSearch] = useState("");
-    // const [dropdownOptions, setDropdownOptions] = useState<IDropdownOption[]>([]);
-    // const tileObject: string | null = sessionStorage.getItem("TileObject");
-    // const libDetails: any = JSON.parse(tileObject as string);
-    // console.log(libDetails);
-
-    // const controlData: string | null = sessionStorage.getItem('controlData');
-    // const controlDataMain: any = JSON.parse(controlData as string);
-    // console.log(controlDataMain);
-
-    // const filterObj: string | null = sessionStorage.getItem('filterObj');
-    // const filterObjMain: any = JSON.parse(filterObj as string);
-    // console.log(filterObjMain);
-
 
     useEffect(() => {
         let DisplayLabel: ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}');
         setDisplayLabel(DisplayLabel);
-        bindDropdown(control);
+        getLibDetails();
         fetchLibraryDetails();
-        setDynamicControl(control);
-
-
-
     }, []);
+
+    const getLibDetails = async () => {
+        const libraryData = await getDataByLibraryName(props.SiteURL, props.spHttpClient, libraryName);
+        bindDropdown(JSON.parse(libraryData.value[0].DynamicControl));
+        setDynamicControl(JSON.parse(libraryData.value[0].DynamicControl));
+    };
 
     const peoplePickerContext: IPeoplePickerContext = {
         absoluteUrl: props.context.pageContext.web.absoluteUrl,
@@ -77,7 +63,7 @@ export default function SearchFilter({ props }: any): JSX.Element {
     };
 
     const renderDynamicControls = useCallback(() => {
-        return control.map((item: any, index: number) => {
+        return dynamicControl.map((item: any, index: number) => {
             if (!item.IsShowAsFilter) return null;
 
             const filterObj = configDataval.find((ele) => ele.Id === item.Id);
@@ -88,7 +74,7 @@ export default function SearchFilter({ props }: any): JSX.Element {
                 case "Dropdown":
                 case "Multiple Select":
                     return (
-                        <div className={control.length > 5 ? styles.col6 : styles.col12} key={index}>
+                        <div className={dynamicControl.length > 5 ? styles.col6 : styles.col12} key={index}>
                             <Dropdown
                                 placeholder="Select an option"
                                 label={item.Title}
@@ -104,7 +90,7 @@ export default function SearchFilter({ props }: any): JSX.Element {
 
                 case "Person or Group":
                     return (
-                        <div className={control.length > 5 ? styles.col6 : styles.col12} key={index}>
+                        <div className={dynamicControl.length > 5 ? styles.col6 : styles.col12} key={index}>
                             <PeoplePicker
                                 titleText={item.Title}
                                 context={peoplePickerContext}
@@ -142,7 +128,7 @@ export default function SearchFilter({ props }: any): JSX.Element {
                         text: ele,
                     }));
                     return (
-                        <div className={control.length > 5 ? styles.col6 : styles.col12} key={index}>
+                        <div className={dynamicControl.length > 5 ? styles.col6 : styles.col12} key={index}>
                             <ChoiceGroup
                                 options={radioOptions}
                                 onChange={(ev, option) => handleInputChange(item.InternalTitleName, option?.key)}
@@ -155,7 +141,7 @@ export default function SearchFilter({ props }: any): JSX.Element {
 
                 default:
                     return (
-                        <div className={control.length > 5 ? styles.col6 : styles.col12} key={index}>
+                        <div className={dynamicControl.length > 5 ? styles.col6 : styles.col12} key={index}>
                             <TextField
                                 type={item.ColumnType === "Date and Time" ? "date" : "text"}
                                 label={item.Title}
@@ -208,8 +194,6 @@ export default function SearchFilter({ props }: any): JSX.Element {
             //const routePath = `${props.SiteURL}?q=${query}&Library=${GetLibraryName}`;
             console.log(routePath);
         }
-
-
     };
 
     const SearchData = async () => {
@@ -218,27 +202,17 @@ export default function SearchFilter({ props }: any): JSX.Element {
         let filter = "InternalStatus eq 'Published' and Active eq 1";
         const keys = Object.keys(dynamicValues).map((item: any) => (` and ${item} eq '${encodeURIComponent(dynamicValues[item])}'`));
         let NewFilter = filter + keys.join("");
-        console.log(NewFilter);
 
         await getDocument(props.SiteURL, props.spHttpClient, NewFilter, libraryName).then(function (response: any) {
             let DataArr = response.value;
-            console.log(DataArr);
             setSearchData(DataArr);
-
         });
-
     };
 
     const Reset = () => {
-
-
-        // setDynamicControl([]);
         setDynamicValues({});
-        // setConfigData([]);
-        // setOptions({});
         setSearchData([]);
         setDynamicDataTable(false);
-
     };
 
 
@@ -276,35 +250,12 @@ export default function SearchFilter({ props }: any): JSX.Element {
                     <Accordion.Body>
                         <Form>
                             <div className={styles.row}>{renderDynamicControls()}</div>
-
-                            {/* <div className={`ms-Grid ${styles.inlineFormContainer}`}>
-                                <div className="col-md-12">
-                                    <div className="form-group">
-                                        <div>
-                                            {control.map((control: any) => (
-                                                <div key={control.Id} style={{ marginBottom: "20px" }}>
-                                                    {renderControl(control)}
-                                                </div>
-                                            ))}
-                                        </div>
-                                       
-
-                                    </div>
-                                </div>
-                            </div> */}
                             <div className={styles.container} >
                                 <div className={styles.containerOne} >
-
-
-
                                     <DefaultButton onClick={SearchData} text={DisplayLabel?.SearchData} className={styles['sub-btn']} />
-
                                     <DefaultButton onClick={Reset} text={DisplayLabel?.Reset} className={styles['sub-btn']} />
-
                                 </div>
-
                             </div>
-
                         </Form>
                     </Accordion.Body>
                 </Accordion.Item>

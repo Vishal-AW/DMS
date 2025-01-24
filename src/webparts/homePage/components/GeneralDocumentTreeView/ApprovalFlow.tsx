@@ -1,20 +1,22 @@
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import React, { useCallback, useEffect, useState } from 'react';
 import ReactTableComponent from '../ResuableComponents/ReusableDataTable';
-import { getApprovalData, updateLibrary } from "../../../../Services/GeneralDocument";
+import { getApprovalData, getRecycleData, updateLibrary } from "../../../../Services/GeneralDocument";
 import { DefaultButton, FontIcon, Panel, PanelType, PrimaryButton, TextField } from "@fluentui/react";
 import styles from "./TreeView.module.scss";
 import { getStatusByInternalStatus } from "../../../../Services/StatusSerivce";
 import { createHistoryItem } from "../../../../Services/GeneralDocHistoryService";
 import { TileSendMail } from "../../../../Services/SendEmail";
-import PopupBox from "../ResuableComponents/PopupBox";
+import PopupBox, { ConfirmationDialog } from "../ResuableComponents/PopupBox";
+import { ILabel } from "../Interface/ILabel";
 
 interface IApproval {
     context: WebPartContext;
     libraryName: string;
     userEmail: string;
+    action: string;
 }
-const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName, userEmail }) => {
+const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName, userEmail, action }) => {
     const [files, setFiles] = useState([]);
     const buttonStyles = { root: { marginRight: 8 } };
     const [isPanelOpen, setIsPanelOpen] = useState(false);
@@ -22,19 +24,29 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
     const [commentErr, setcommentErr] = useState("");
     const [fileData, setFileData] = useState<any>([]);
     const [isPopupBoxVisible, setIsPopupBoxVisible] = useState<boolean>(false);
+    const [itemId, setItemId] = useState(0);
+    const [hideDialog, setHideDialog] = useState(false);
+    const DisplayLabel: ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}');
 
     useEffect(() => {
-        getFiles();
-    }, [isPopupBoxVisible]);
+        if (action === "Approver")
+            getFiles();
+        else
+            getRecycleFile();
+
+    }, [isPopupBoxVisible, action]);
 
     const getFiles = async () => {
-        const data: any = await getApprovalData(context, libraryName, userEmail);
-        console.log(data);
+        const data = await getApprovalData(context, libraryName, userEmail);
+        setFiles(data.value || []);
+    };
+    const getRecycleFile = async () => {
+        const data = await getRecycleData(context, libraryName);
         setFiles(data.value || []);
     };
     const columns: any = [
-        { Header: 'File', accessor: "Name", Cell: (row: any) => <a href={row.original.File.ServerRelativeUrl}>{row.original.ActualName}</a> },
-        { Header: 'Folder Path', accessor: 'FolderDocumentPath' },
+        { Header: DisplayLabel.FileName, accessor: "Name", Cell: (row: any) => <a href={row.original.File.ServerRelativeUrl}>{row.original.ActualName}</a> },
+        { Header: DisplayLabel.FolderPath, accessor: 'FolderDocumentPath' },
         {
             Header: 'Submitted By', accessor: 'Created', Cell: ({ row }: { row: any; }) => {
                 const rowData = row._original;
@@ -53,15 +65,35 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
         },
 
 
-        { Header: 'Status', accessor: 'Status.StatusName' },
+        { Header: DisplayLabel.Status, accessor: 'Status.StatusName' },
         {
-            Header: "Action",
+            Header: DisplayLabel.Action,
             accessor: 'Id',
             Cell: ({ row }: { row: any; }) => (
-                <FontIcon aria-label="Edit" onClick={() => openEditPanel(row._original.Id)} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer' }}></FontIcon>
+                action === "Approver" ? <FontIcon aria-label="Edit" onClick={() => openEditPanel(row._original.Id)} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer' }}></FontIcon> :
+                    <FontIcon aria-label="Restore" onClick={() => { setItemId(row._original.Id); setHideDialog(true); }} iconName="RemoveFromTrash" style={{ color: '#009ef7', cursor: 'pointer' }} />
             )
         }
     ];
+    const closeDialog = useCallback(() => setHideDialog(false), []);
+
+    const handleConfirm = useCallback(
+        async (value: boolean) => {
+            if (value) {
+                setHideDialog(false);
+                restoreFile();
+            }
+        },
+        [itemId]
+    );
+    const restoreFile = async () => {
+        const obj = {
+            Active: true,
+            DeleteFlag: null
+        };
+        await updateLibrary(context.pageContext.web.absoluteUrl, context.spHttpClient, obj, itemId, libraryName);
+        setIsPopupBoxVisible(true);
+    };
 
     const openEditPanel = async (rowData: any) => {
         setIsPanelOpen(true);
@@ -72,7 +104,7 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
     const ApproveFile = async () => {
         setcommentErr("");
         if (comment === null || comment.trim() === "" || comment === undefined)
-            setcommentErr("Please Enter Comment");
+            setcommentErr(DisplayLabel.ThisFieldisRequired);
         else {
             try {
                 let dataObj: any = {};
@@ -114,16 +146,14 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
                 };
 
                 if (InternalStatus == "PendingWithPublisher") {
-                    emailObj.Sub = "Document Pending for Approval - Reference No." + fileData.ReferenceNo;
-                    emailObj.Msg = "You are requested to kindly publish document.";
+                    emailObj.Sub = DisplayLabel.PublisherEmailSubject + fileData.ReferenceNo;
+                    emailObj.Msg = DisplayLabel.PublisherEmailMsg;
                 } else if (InternalStatus == "PendingWithPM") {
-                    emailObj.Sub = "Document Pending for Approval - Reference No." + fileData.ReferenceNo;
-                    emailObj.Msg = "You are requested to kindly approve document.";
-
+                    emailObj.Sub = DisplayLabel.PMEmailSubject + fileData.ReferenceNo;
+                    emailObj.Msg = DisplayLabel.PMEmailMsg;
                 } else {
-                    emailObj.Sub = "Document is Published";
-                    emailObj.Msg = "Your Document is Published";
-
+                    emailObj.Sub = DisplayLabel.PublishedEmailSubject;
+                    emailObj.Msg = DisplayLabel.PublishedEmailMsg;
                 }
                 await TileSendMail(context, emailObj);
                 setIsPopupBoxVisible(true);
@@ -145,7 +175,7 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
     const RejectFile = async () => {
         setcommentErr("");
         if (comment === null || comment.trim() === "" || comment === undefined)
-            setcommentErr("Please Enter Comment");
+            setcommentErr(DisplayLabel.ThisFieldisRequired);
         else {
             let InternalStatus = "";
             let dataobj: any = { CurrentApprover: "" };
@@ -180,14 +210,15 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
                 FolderPath: fileData.FolderDocumentPath,
                 DocName: fileData.ActualName,
                 AuthorTitle: fileData.Author.Title,
-                Sub: "Rejected",
-                Msg: "Your Document is Rejected"
+                Sub: DisplayLabel.RejectEmailSubject,
+                Msg: DisplayLabel.RejectEmailMsg
             };
 
             await TileSendMail(context, emailObj);
             setIsPopupBoxVisible(true);
         }
     };
+
     return (
         <>
             <ReactTableComponent
@@ -200,14 +231,14 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
             />
 
             <Panel
-                headerText="Approval"
+                headerText={DisplayLabel.Approval}
                 isOpen={isPanelOpen}
                 onDismiss={dismissPanel}
                 closeButtonAriaLabel="Close"
                 type={PanelType.medium}
                 onRenderFooterContent={() => (<>
-                    <PrimaryButton onClick={ApproveFile} styles={buttonStyles} className={styles["sub-btn"]}>Approve</PrimaryButton>
-                    <DefaultButton className={styles["can-btn"]} onClick={RejectFile}>Reject</DefaultButton>
+                    <PrimaryButton onClick={ApproveFile} styles={buttonStyles} className={styles["sub-btn"]}>{DisplayLabel.ApproveButton}</PrimaryButton>
+                    <DefaultButton className={styles["can-btn"]} onClick={RejectFile}>{DisplayLabel.RejectButton}</DefaultButton>
                 </>)}
                 isFooterAtBottom={true}
             >
@@ -215,7 +246,7 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
                     <div className={styles.row}>
                         <div className={styles.col12}>
                             <TextField
-                                label="Tile"
+                                label={DisplayLabel.TileName}
                                 value={libraryName}
                                 readOnly
                             />
@@ -225,7 +256,7 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
                     <div className={styles.row}>
                         <div className={styles.col12}>
                             <TextField
-                                label="Folder Name"
+                                label={DisplayLabel.FolderName}
                                 value={fileData?.FolderDocumentPath
                                     ? fileData.FolderDocumentPath.split("/").pop() || ""
                                     : ""}
@@ -238,7 +269,7 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
                     <div className={styles.row}>
                         <div className={styles.col12}>
                             <TextField
-                                label="Attach File"
+                                label={DisplayLabel.AttachFile}
                                 value={fileData.ActualName}
                                 readOnly
                             />
@@ -248,7 +279,7 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
                     <div className={styles.row}>
                         <div className={styles.col12}>
                             <TextField
-                                label="comment"
+                                label={DisplayLabel.Comments}
                                 value={comment}
                                 multiline rows={3}
                                 required
@@ -261,6 +292,7 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
 
             </Panel>
             <PopupBox isPopupBoxVisible={isPopupBoxVisible} hidePopup={hidePopup} />
+            <ConfirmationDialog hideDialog={hideDialog} closeDialog={closeDialog} handleConfirm={handleConfirm} msg={DisplayLabel.RestoreConfirmMsg} />
         </>
     );
 };

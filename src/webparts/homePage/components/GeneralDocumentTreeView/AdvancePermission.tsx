@@ -6,6 +6,7 @@ import { IPeoplePickerContext, PeoplePicker, PrincipalType } from "@pnp/spfx-con
 import { useCallback, useEffect, useState } from "react";
 import { commonPostMethod, getPermission } from "../../../../Services/GeneralDocument";
 import PopupBox, { ConfirmationDialog } from "../ResuableComponents/PopupBox";
+import { ILabel } from "../Interface/ILabel";
 
 export interface IAdvanceProps {
     isOpen: boolean;
@@ -26,6 +27,7 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
     const [selectedUser, setSelectedUser] = useState<number[]>([]);
     const [selectedUserError, setSelectedUserError] = useState("");
     const [selectedPermissionError, setSelectedPermissionError] = useState("");
+    const DisplayLabel: ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}');
 
     const peoplePickerContext: IPeoplePickerContext = {
         absoluteUrl: context.pageContext.web.absoluteUrl,
@@ -46,13 +48,13 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
     };
 
     const permissionDetails: Record<string, string> = {
-        "1073741829": "Has full control.",
-        "1073741828": "Can view, add, update, delete, approve, and customize.",
-        "1073741830": "Can add, edit and delete lists; can view, add, update and delete list items and documents.",
-        "1073741827": "Can view, add, update, and delete list items and documents.",
-        "1073741826": "Can view pages and list items and download documents.",
-        "1073741832": "Can view pages, list items, and documents. Documents can be viewed in the browser but not downloaded.",
-        "1073741924": "Can view pages, list items, and documents. Document types with server-side file handlers can be viewed in the browser but not downloaded."
+        "1073741829": DisplayLabel.FullControlAccessDec,
+        "1073741828": DisplayLabel.DesignAccessDec,
+        "1073741830": DisplayLabel.EditAccessDec,
+        "1073741827": DisplayLabel.ContributeAccessDec,
+        "1073741826": DisplayLabel.ReadAccessDec,
+        "1073741832": DisplayLabel.RestrictedViewAccessDec,
+        "1073741924": DisplayLabel.ViewOnlyAccessDec
     };
 
     useEffect(() => {
@@ -131,9 +133,9 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
         setSelectedPermissionError("");
         setSelectedUserError("");
         if (selectedUser.length === 0)
-            setSelectedUserError("Select User");
+            setSelectedUserError(DisplayLabel.ThisFieldisRequired);
         else if (option === "")
-            setSelectedPermissionError("Select Permission");
+            setSelectedPermissionError(DisplayLabel.ThisFieldisRequired);
         else {
             let count = 0;
             selectedUser.map((el: any) => {
@@ -162,7 +164,7 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
     return (
         <div>
             <Panel
-                headerText="Advance Permission"
+                headerText={DisplayLabel.AdvancePermission}
                 isOpen={isOpen}
                 onDismiss={() => {
                     dismissPanel();
@@ -176,17 +178,17 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
                     <div className={styles.row}>
                         <div className={styles.col6}>
                             <PrimaryButton
-                                text="Stop Inheriting Permission"
+                                text={DisplayLabel.StopInheritingPermission}
                                 disabled={hasUniquePermission}
                                 onClick={() => {
-                                    setMessage("You are about to create unique permissions for this folder.");
+                                    setMessage(DisplayLabel.StopInheritingConfirmMsg);
                                     setHideDialog(true);
                                 }}
                             />
                         </div>
                         <div className={styles.col6}>
                             <PrimaryButton
-                                text="Remove User Permission"
+                                text={DisplayLabel.RemoveUserPermission}
                                 disabled={isCheckedUser.length === 0}
                                 onClick={removeUserPermission}
                             />
@@ -197,7 +199,7 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
                     <div className={styles.row}>
                         <div className={styles.col6}>
                             <PeoplePicker
-                                titleText="Enter names"
+                                titleText={DisplayLabel.EnterName}
                                 context={peoplePickerContext}
                                 personSelectionLimit={10}
                                 showtooltip={true}
@@ -211,16 +213,15 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
                         <div className={styles.col6}>
                             <Dropdown
                                 required={true}
-                                placeholder="Select an option"
-                                label="Select Permission Level"
+                                label={DisplayLabel.SelectPermissionLevel}
                                 options={[
-                                    { key: "1073741829", text: "Full Control" },
-                                    { key: "1073741828", text: "Design" },
-                                    { key: "1073741830", text: "Edit" },
-                                    { key: "1073741827", text: "Contribute" },
-                                    { key: "1073741826", text: "Read" },
-                                    { key: "1073741832", text: "Restricted View" },
-                                    { key: "1073741924", text: "View Only" },
+                                    { key: "1073741829", text: DisplayLabel.FullControlAccess },
+                                    { key: "1073741828", text: DisplayLabel.DesignAccess },
+                                    { key: "1073741830", text: DisplayLabel.EditAccess },
+                                    { key: "1073741827", text: DisplayLabel.ContributeAccess },
+                                    { key: "1073741826", text: DisplayLabel.ReadAccess },
+                                    { key: "1073741832", text: DisplayLabel.RestrictedViewAccess },
+                                    { key: "1073741924", text: DisplayLabel.ViewOnlyAccess },
                                 ]}
                                 errorMessage={selectedPermissionError}
                                 styles={dropdownStyles}
@@ -236,7 +237,7 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
                         </div>
                     </div>
                     <div className={styles.row}>
-                        <div className={styles.col6}><PrimaryButton text="Grant Permissions" onClick={grantPermission} /></div>
+                        <div className={styles.col6}><PrimaryButton text={DisplayLabel.GrantPermissions} onClick={grantPermission} /></div>
                     </div>
                     {/* User Permissions Table */}
                     <div className={styles.row}>
@@ -247,9 +248,6 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
                                         <th>
                                             <Checkbox
                                                 checked={isCheckedUser.length === userData.length}
-                                                indeterminate={
-                                                    isCheckedUser.length > 0 && isCheckedUser.length < userData.length
-                                                }
                                                 onChange={handleSelectAllChange}
                                             />
                                         </th>

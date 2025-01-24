@@ -10,6 +10,7 @@ import { getDataByLibraryName } from "../../../../Services/MasTileService";
 import PopupBox from "../ResuableComponents/PopupBox";
 import { getStatusByInternalStatus } from "../../../../Services/StatusSerivce";
 import cls from '../HomePage.module.scss';
+import { ILabel } from "../Interface/ILabel";
 
 interface IUploadFileProps {
     isOpenUploadPanel: boolean;
@@ -23,7 +24,7 @@ interface IUploadFileProps {
     LibraryDetails: any;
 }
 function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPath, libName, folderName, files, folderObject, LibraryDetails }: IUploadFileProps) {
-
+    const DisplayLabel: ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}');
     const [configData, setConfigData] = useState<any[]>([]);
     const [dynamicControl, setDynamicControl] = useState<any[]>([]);
     // const [libraryDetails, setLibraryDetails] = useState<any>({});
@@ -300,29 +301,29 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
     return (
         <div>
             <Panel
-                headerText="Upload Document"
+                headerText={DisplayLabel.Upload}
                 isOpen={isOpenUploadPanel}
                 onDismiss={dismissUploadPanel}
                 closeButtonAriaLabel="Close"
                 type={PanelType.large}
                 onRenderFooterContent={() => (<>
-                    <PrimaryButton onClick={submit} styles={{ root: { marginRight: 8 } }} className={styles["sub-btn"]}>Submit</PrimaryButton>
-                    <DefaultButton onClick={dismissUploadPanel} className={styles["can-btn"]}>Cancel</DefaultButton>
+                    <PrimaryButton onClick={submit} styles={{ root: { marginRight: 8 } }} className={styles["sub-btn"]}>{DisplayLabel.Submit}</PrimaryButton>
+                    <DefaultButton onClick={dismissUploadPanel} className={styles["can-btn"]}>{DisplayLabel.Cancel}</DefaultButton>
                 </>)}
                 isFooterAtBottom={true}
             >
                 <div className={styles.grid}>
                     <div className={styles.row}>
                         <div className={styles.col12}>
-                            <label>Path: <b>{folderPath}</b></label>
+                            <label>{DisplayLabel.Path}: <b>{folderPath}</b></label>
                         </div>
                     </div>
                     <div className={styles.row}>
                         <div className={styles.col6}>
-                            <TextField label="Tile Name" value={libName} />
+                            <TextField label={DisplayLabel.TileName} value={libName} />
                         </div>
                         <div className={styles.col6}>
-                            <TextField label="Folder Name" value={folderName} />
+                            <TextField label={DisplayLabel.FolderName} value={folderName} />
                         </div>
                     </div>
                     <div className={styles.row}>
@@ -330,7 +331,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                     </div>
                     <div className={styles.row}>
                         <div className={styles.col10}>
-                            <TextField type="file" label="Choose File" required onChange={(event: React.ChangeEvent<HTMLInputElement>) => { if (event.target.files) setAttachment(event.target.files[0]); }}
+                            <TextField type="file" label={DisplayLabel.ChooseFile} required onChange={(event: React.ChangeEvent<HTMLInputElement>) => { if (event.target.files) setAttachment(event.target.files[0]); }}
                                 errorMessage={attachmentErr}
                             />
                         </div>
@@ -348,12 +349,12 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                             {attachmentsFiles.length ? <table className={styles.table}>
                                 <thead>
                                     <tr>
-                                        <th>Sr. No.</th>
-                                        <th>File Name</th>
-                                        <th>Is this an update to existing file</th>
-                                        {isUpdateExistingFile ? <th>File Name</th> : <></>}
-                                        <th>Version</th>
-                                        <th>Action</th>
+                                        <th>{DisplayLabel.SrNo}</th>
+                                        <th>{DisplayLabel.FileName}</th>
+                                        <th>{DisplayLabel.IsthisAnUpdateToExistingFile}</th>
+                                        {isUpdateExistingFile ? <th>{DisplayLabel.FileName}</th> : <></>}
+                                        <th>{DisplayLabel.FieldName}</th>
+                                        <th>{DisplayLabel.Action}</th>
                                     </tr>
                                 </thead>
                                 <tbody>

@@ -24,6 +24,7 @@ import { FolderStructure } from "../../../../Services/FolderStructure";
 import { getUserIdFromLoginName } from "../../../../DAL/Commonfile";
 import PopupBox from "../ResuableComponents/PopupBox";
 import cls from '../HomePage.module.scss';
+import { ILabel } from "../Interface/ILabel";
 
 export interface IProjectEntryProps {
     isOpen: boolean;
@@ -46,6 +47,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
     folderObject,
     folderPath
 }) => {
+    const DisplayLabel: ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}');
     const [folderName, setFolderName] = useState<string>("");
     const [isSuffixRequired, setIsSuffixRequired] = useState<boolean>(false);
     const [SuffixData, setSuffixData] = useState<any[]>([]);
@@ -77,6 +79,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
     const [isDisabled, setIsDisabled] = useState<boolean>(false);
     const [projectManagerEmail, setProjectManagerEmail] = useState("");
     const [publisherEmail, setPublisherEmail] = useState("");
+    const [panelTitle, setPanelTitle] = useState(DisplayLabel.EntryForm);
     const handleInputChange = (fieldName: string, value: any) => {
         setDynamicValues((prevValues) => ({
             ...prevValues,
@@ -113,6 +116,11 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
         clearFeilds();
         setIsDisabled(FormType === "ViewForm");
         FormType !== "EntryForm" ? bindFormData() : "";
+        if (FormType === "ViewForm")
+            setPanelTitle(DisplayLabel.ViewForm);
+        else if (FormType === "EditForm")
+            setPanelTitle(DisplayLabel.EditForm);
+
     }, [isOpen]);
 
 
@@ -156,7 +164,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
     };
 
     const bindDropdown = (dynamic: any) => {
-        let dropdownOptions = [{ key: "", text: "Select an option" }];
+        let dropdownOptions = [{ key: "", text: "" }];
         dynamic.map(async (item: any, index: number) => {
             if (item.ColumnType === "Dropdown" || item.ColumnType === "Multiple Select") {
                 if (item.IsStaticValue) {
@@ -191,7 +199,6 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                     return (
                         <div className={dynamicControl.length > 5 ? styles.col6 : styles.col12} key={index}>
                             <Dropdown
-                                placeholder="Select an option"
                                 label={item.Title}
                                 options={options[item.InternalTitleName] || []}
                                 required={item.IsRequired}
@@ -303,17 +310,17 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
         clearErr();
         let isValid = true;
         if (folderName.trim() === "") {
-            setFolderNameErr("Folder Name is required");
+            setFolderNameErr(DisplayLabel.ThisFieldisRequired);
             isValid = false;
             return;
         }
         if (isSuffixRequired && Suffix === "") {
-            setSuffixErr("Document Suffix is required");
+            setSuffixErr(DisplayLabel.ThisFieldisRequired);
             isValid = false;
             return;
         }
         if (Suffix === "Other" && OtherSuffix.trim() === "") {
-            setOtherSuffixErr("Other Suffix Name is required");
+            setOtherSuffixErr(DisplayLabel.ThisFieldisRequired);
             isValid = false;
             return;
         }
@@ -323,7 +330,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                 if (item.IsRequired && !dynamicValues[item.InternalTitleName]) {
                     setDynamicValuesErr((prev) => ({
                         ...prev,
-                        [item.InternalTitleName]: `${item.Title} is required`,
+                        [item.InternalTitleName]: DisplayLabel.ThisFieldisRequired,
                     }));
                     isValid = false;
                     return;
@@ -332,17 +339,17 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
         }
 
         if (FormType === "EntryForm" && folderAccess.length === 0) {
-            setFolderAccessErr("Folder Access is required");
+            setFolderAccessErr(DisplayLabel.ThisFieldisRequired);
             isValid = false;
             return;
         }
         if (isApprovalRequired && approver.length === 0) {
-            setApproverErr("Approver is required");
+            setApproverErr(DisplayLabel.ThisFieldisRequired);
             isValid = false;
             return;
         }
         if (isApprovalRequired && publisher.length === 0) {
-            setPublisherErr("Publisher is required");
+            setPublisherErr(DisplayLabel.ThisFieldisRequired);
             isValid = false;
             return;
         }
@@ -423,195 +430,197 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
 
     const removeSepcialCharacters = (newValue?: string) => newValue?.replace(/[^a-zA-Z0-9\s]/g, '') || '';
     return (
-        <Panel
-            headerText="Add New Project"
-            isOpen={isOpen}
-            onDismiss={() => dismissPanel(false)}
-            closeButtonAriaLabel="Close"
-            type={PanelType.medium}
-            onRenderFooterContent={() => (
-                <>
-                    {FormType !== "ViewForm" ? <PrimaryButton onClick={submit} styles={buttonStyles} className={styles["sub-btn"]}>{FormType === "EntryForm" ? "Submit" : "Update"}</PrimaryButton> : <></>}
-                    <DefaultButton onClick={() => dismissPanel(false)} className={styles["can-btn"]}>Cancel</DefaultButton>
-                </>
-            )}
-            isFooterAtBottom={true}
-        >
-            <div className={styles.grid}>
-                <div className={styles.row}>
-                    <div className={styles.col6}>
-                        <TextField
-                            label="Tile"
-                            value={LibraryDetails.TileName}
-                            disabled
-                        />
-                    </div>
-                    <div className={styles.col6}>
-                        <TextField
-                            label="Folder Name"
-                            value={folderName}
-                            required
-                            onChange={(el: React.ChangeEvent<HTMLInputElement>, newValue?: string) => {
-                                const validName = removeSepcialCharacters(newValue);
-                                setFolderName(validName);
-                            }}
-                            errorMessage={folderNameErr}
-                            disabled={isDisabled || FormType === "EditForm"}
-                        />
-                    </div>
-                </div>
-
-                <div className={styles.row}>
-                    <div className={styles.col12}>
-                        <Toggle
-                            label="Is Suffix required?"
-                            onChange={handleToggleChange}
-                            checked={isSuffixRequired}
-                            disabled={isDisabled}
-                        />
-                    </div>
-                </div>
-
-                {isSuffixRequired && (
+        <>
+            <Panel
+                headerText={panelTitle}
+                isOpen={isOpen}
+                onDismiss={() => dismissPanel(false)}
+                closeButtonAriaLabel="Close"
+                type={PanelType.medium}
+                onRenderFooterContent={() => (
                     <>
-                        <div className={styles.row}>
-                            <div className={styles.col12}>
-                                <Dropdown
-                                    placeholder="Select an option"
-                                    label="Document Suffix"
-                                    options={SuffixData}
-                                    required
-                                    onChange={(ev, option: any) => setSuffix(option.key as string)}
-                                    selectedKey={Suffix}
-                                    errorMessage={SuffixErr}
-                                    disabled={isDisabled}
-                                />
-                            </div>
+                        {FormType !== "ViewForm" ? <PrimaryButton onClick={submit} styles={buttonStyles} className={styles["sub-btn"]}>{FormType === "EntryForm" ? DisplayLabel.Submit : DisplayLabel.Update}</PrimaryButton> : <></>}
+                        <DefaultButton onClick={() => dismissPanel(false)} className={styles["can-btn"]}>{DisplayLabel.Cancel}</DefaultButton>
+                    </>
+                )}
+                isFooterAtBottom={true}
+            >
+                <div className={styles.grid}>
+                    <div className={styles.row}>
+                        <div className={styles.col6}>
+                            <TextField
+                                label={DisplayLabel.TileName}
+                                value={LibraryDetails.TileName}
+                                disabled
+                            />
                         </div>
+                        <div className={styles.col6}>
+                            <TextField
+                                label={DisplayLabel.FolderName}
+                                value={folderName}
+                                required
+                                onChange={(el: React.ChangeEvent<HTMLInputElement>, newValue?: string) => {
+                                    const validName = removeSepcialCharacters(newValue);
+                                    setFolderName(validName);
+                                }}
+                                errorMessage={folderNameErr}
+                                disabled={isDisabled || FormType === "EditForm"}
+                            />
+                        </div>
+                    </div>
 
-                        {Suffix === "Other" && (
+                    <div className={styles.row}>
+                        <div className={styles.col12}>
+                            <Toggle
+                                label={DisplayLabel.IsSuffixRequired}
+                                onChange={handleToggleChange}
+                                checked={isSuffixRequired}
+                                disabled={isDisabled}
+                            />
+                        </div>
+                    </div>
+
+                    {isSuffixRequired && (
+                        <>
                             <div className={styles.row}>
                                 <div className={styles.col12}>
-                                    <TextField
-                                        label="Other Suffix Name"
-                                        value={OtherSuffix}
-                                        onChange={(el: React.ChangeEvent<HTMLInputElement>, newValue?: string) =>
-                                            setOtherSuffix(removeSepcialCharacters(newValue))
-                                        }
-                                        errorMessage={OtherSuffixErr}
+                                    <Dropdown
+                                        label={DisplayLabel.DocumentSuffix}
+                                        options={SuffixData}
                                         required
+                                        onChange={(ev, option: any) => setSuffix(option.key as string)}
+                                        selectedKey={Suffix}
+                                        errorMessage={SuffixErr}
                                         disabled={isDisabled}
                                     />
                                 </div>
                             </div>
-                        )}
-                    </>
-                )}
-                <div className={cls["modal"]} style={showLoader}></div>
-                <div className={styles.row}>{renderDynamicControls()}</div>
-                {libraryDetails.AllowApprover ? <div className={styles.row}>
-                    <div className={styles.col12}>
-                        <Toggle
-                            label="Is Approval flow required?"
-                            onChange={() => { setIsApprovalRequired((pre) => !pre); }}
-                            disabled={isDisabled}
-                            checked={isApprovalRequired}
-                        />
-                    </div>
-                    {
-                        isApprovalRequired ? <><div className={styles.col6}>
 
-                            <PeoplePicker
-                                titleText="Approver"
-                                context={peoplePickerContext}
-                                personSelectionLimit={1}
-                                showtooltip={true}
-                                required
-                                showHiddenInUI={false}
-                                principalTypes={[PrincipalType.User]}
-                                onChange={async (items) => {
-                                    try {
-                                        setProjectManagerEmail(items[0].secondaryText as string);
-                                        const userIds = await Promise.all(
-                                            items.map(async (item: any) => {
-                                                const data = await getUserIdFromLoginName(context, item.id);
-                                                return data.Id;
-                                            })
-                                        );
-                                        setApprover(userIds);
-                                    } catch (error) {
-                                        console.error("Error fetching user IDs:", error);
-                                    }
-                                }}
-                                defaultSelectedUsers={[projectManagerEmail]}
-                                errorMessage={approverErr}
+                            {Suffix === "Other" && (
+                                <div className={styles.row}>
+                                    <div className={styles.col12}>
+                                        <TextField
+                                            label={DisplayLabel.OtherSuffixName}
+                                            value={OtherSuffix}
+                                            onChange={(el: React.ChangeEvent<HTMLInputElement>, newValue?: string) =>
+                                                setOtherSuffix(removeSepcialCharacters(newValue))
+                                            }
+                                            errorMessage={OtherSuffixErr}
+                                            required
+                                            disabled={isDisabled}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    )}
+
+                    <div className={styles.row}>{renderDynamicControls()}</div>
+                    {libraryDetails.AllowApprover ? <div className={styles.row}>
+                        <div className={styles.col12}>
+                            <Toggle
+                                label={DisplayLabel.IsApprovalFlowRequired}
+                                onChange={() => { setIsApprovalRequired((pre) => !pre); }}
                                 disabled={isDisabled}
+                                checked={isApprovalRequired}
                             />
                         </div>
-                            <div className={styles.col6}>
+                        {
+                            isApprovalRequired ? <><div className={styles.col6}>
+
                                 <PeoplePicker
-                                    titleText="Publisher"
+                                    titleText={DisplayLabel.Approver}
                                     context={peoplePickerContext}
                                     personSelectionLimit={1}
                                     showtooltip={true}
                                     required
                                     showHiddenInUI={false}
                                     principalTypes={[PrincipalType.User]}
-                                    defaultSelectedUsers={[publisherEmail]}
                                     onChange={async (items) => {
                                         try {
-                                            setPublisherEmail(items[0].secondaryText as string);
+                                            setProjectManagerEmail(items[0].secondaryText as string);
                                             const userIds = await Promise.all(
                                                 items.map(async (item: any) => {
                                                     const data = await getUserIdFromLoginName(context, item.id);
                                                     return data.Id;
                                                 })
                                             );
-                                            setPublisher(userIds);
+                                            setApprover(userIds);
                                         } catch (error) {
                                             console.error("Error fetching user IDs:", error);
                                         }
                                     }}
-                                    errorMessage={publisherErr}
+                                    defaultSelectedUsers={[projectManagerEmail]}
+                                    errorMessage={approverErr}
                                     disabled={isDisabled}
                                 />
-
                             </div>
-                        </> : <></>
-                    }
-                </div> : <></>}
-                <div className={styles.row}>
-                    <div className={styles.col12}>
-                        {FormType === "EntryForm" ? <PeoplePicker
-                            titleText={"Folder Access"}
-                            context={peoplePickerContext}
-                            personSelectionLimit={10}
-                            showtooltip={true}
-                            required
-                            showHiddenInUI={false}
-                            principalTypes={[PrincipalType.User]}
-                            onChange={async (items) => {
-                                try {
-                                    const userIds = await Promise.all(
-                                        items.map(async (item: any) => {
-                                            const data = await getUserIdFromLoginName(context, item.id);
-                                            return data.Id;
-                                        })
-                                    );
-                                    setFolderAccess(userIds);
-                                } catch (error) {
-                                    console.error("Error fetching user IDs:", error);
-                                }
-                            }}
-                            errorMessage={folderAccessErr}
-                        />
-                            : <></>
+                                <div className={styles.col6}>
+                                    <PeoplePicker
+                                        titleText={DisplayLabel.Publisher}
+                                        context={peoplePickerContext}
+                                        personSelectionLimit={1}
+                                        showtooltip={true}
+                                        required
+                                        showHiddenInUI={false}
+                                        principalTypes={[PrincipalType.User]}
+                                        defaultSelectedUsers={[publisherEmail]}
+                                        onChange={async (items) => {
+                                            try {
+                                                setPublisherEmail(items[0].secondaryText as string);
+                                                const userIds = await Promise.all(
+                                                    items.map(async (item: any) => {
+                                                        const data = await getUserIdFromLoginName(context, item.id);
+                                                        return data.Id;
+                                                    })
+                                                );
+                                                setPublisher(userIds);
+                                            } catch (error) {
+                                                console.error("Error fetching user IDs:", error);
+                                            }
+                                        }}
+                                        errorMessage={publisherErr}
+                                        disabled={isDisabled}
+                                    />
+
+                                </div>
+                            </> : <></>
                         }
+                    </div> : <></>}
+                    <div className={styles.row}>
+                        <div className={styles.col12}>
+                            {FormType === "EntryForm" ? <PeoplePicker
+                                titleText={DisplayLabel.FolderAccess}
+                                context={peoplePickerContext}
+                                personSelectionLimit={10}
+                                showtooltip={true}
+                                required
+                                showHiddenInUI={false}
+                                principalTypes={[PrincipalType.User]}
+                                onChange={async (items) => {
+                                    try {
+                                        const userIds = await Promise.all(
+                                            items.map(async (item: any) => {
+                                                const data = await getUserIdFromLoginName(context, item.id);
+                                                return data.Id;
+                                            })
+                                        );
+                                        setFolderAccess(userIds);
+                                    } catch (error) {
+                                        console.error("Error fetching user IDs:", error);
+                                    }
+                                }}
+                                errorMessage={folderAccessErr}
+                            />
+                                : <></>
+                            }
+                        </div>
                     </div>
                 </div>
-            </div>
-            <PopupBox isPopupBoxVisible={isPopupBoxVisible} hidePopup={hidePopup} />
-        </Panel>
+                <PopupBox isPopupBoxVisible={isPopupBoxVisible} hidePopup={hidePopup} />
+            </Panel>
+            <div className={cls["modal"]} style={showLoader}></div>
+        </>
     );
 };
 

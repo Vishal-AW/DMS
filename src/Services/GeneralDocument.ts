@@ -106,6 +106,10 @@ export function getApprovalData(context: WebPartContext, libeName: string, usere
     return getMethod(context.pageContext.web.absoluteUrl, context.spHttpClient, filter, libeName);
 }
 
+export function getRecycleData(context: WebPartContext, libeName: string) {
+    const filter = "Active eq 0";
+    return getMethod(context.pageContext.web.absoluteUrl, context.spHttpClient, filter, libeName);
+}
 
 async function getMethod(WebUrl: string, spHttpClient: any, filter: any, libeName: string) {
 
