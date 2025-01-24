@@ -45,10 +45,10 @@ export default function Master({ props }: any): JSX.Element {
   // const _spService: service = new service();
 
 
-  //const [showModal, setShowModal] = useState(false);
+  const [uploadfile, SetuploadFile] = useState([]);
   //const toggleModal = () => setShowModal(!showModal);
   //const [showDialog, setShowDialog] = useState(false);
-  //const [dialogMessage, setDialogMessage] = useState('');
+  //const [FileFlag, setFileFlag] = useState('');
   //const [isOpen, setIsOpen] = useState(false);
   const [isPopupVisible, setisPopupVisible] = useState(false);
   //const [isPopupVisible, { setTrue: showPopup, setFalse: hidePopup }] = useBoolean(false);
@@ -76,7 +76,8 @@ export default function Master({ props }: any): JSX.Element {
   const [assignName, setAssignName] = useState<string>("");
   const [assignID, setAssignID] = useState<string[]>([]);
   const [TileAdminName, setTileAdminName] = useState<string>("");
-  const [TileAdminID, setTileAdminID] = useState([]);
+  //const [TileAdminID, setTileAdminID] = useState([]);
+  const [TileAdminID, setTileAdminID] = useState<string[]>([]);
   const [order0Data, setorder0Data] = useState([]);
   const [uOrder0Data, setUorder0Data] = useState<any[]>([]);
   const [RedundancyDataID, setRedundancyDataID] = useState('');
@@ -93,7 +94,7 @@ export default function Master({ props }: any): JSX.Element {
 
   const [DynamicDataReference, setDynamicDataReference] = React.useState<boolean>(false);
 
-  const [RefrenceNOData, setRefrenceNOData] = useState<string>('');
+  const [RefrenceNOData, setRefrenceNOData] = useState<string>(`${moment().format('YYYY')}-00001`);
   const [ArchiveTest, setArchiveTest] = useState<string>('');
   const [ArchiveVersions, setArchiveVersions] = useState<string>("");
 
@@ -117,6 +118,8 @@ export default function Master({ props }: any): JSX.Element {
 
   const [CurrentEditID, setCurrentEditID] = useState<number>(0);
 
+  const [FileuniqueIdData, setFileuniqueIdData] = useState("");
+
 
   const [tableData, setTableData] = useState<any[]>([]);
 
@@ -134,8 +137,10 @@ export default function Master({ props }: any): JSX.Element {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
 
+  console.log(FileuniqueIdData);
   const openAddPanel = () => {
-    clearField();
+    //clearField();
+
     setIsEditMode(false);
     setIsPanelOpen(true);
   };
@@ -189,14 +194,19 @@ export default function Master({ props }: any): JSX.Element {
 
 
   const Tablecolumns = [
-    { Header: "TILES", accessor: "TileName" },
     {
-      Header: "ALLOW APPROVER",
+      Header: DisplayLabel?.SrNo,
+      accessor: "row._index",
+      Cell: ({ row }: { row: any; }) => row._index + 1,
+    },
+    { Header: DisplayLabel?.Tiles, accessor: "TileName" },
+    {
+      Header: DisplayLabel?.AllowApprover,
       accessor: "AllowApprover",
       Cell: ({ row }: { row: any; }) => (row.AllowApprover === true ? "Yes" : "No")
     },
     {
-      Header: "LAST MODIFIED",
+      Header: DisplayLabel?.LastModified,
       Cell: ({ row }: { row: any; }) => {
         const rowData = row._original;
         const formattedDate = new Date(rowData.Modified).toLocaleDateString("en-US", {
@@ -207,20 +217,18 @@ export default function Master({ props }: any): JSX.Element {
         const formattedTime = new Date(rowData.Modified).toLocaleTimeString("en-US", {
           hour: "2-digit",
           minute: "2-digit",
-
-          second: "2-digit",
           hour12: true
         });
         return `${rowData.Editor?.Title || "Unknown"} ${formattedDate} at ${formattedTime}`;
       }
     },
     {
-      Header: "ACTIVE",
+      Header: DisplayLabel?.Active,
       accessor: "Active",
       Cell: ({ row }: { row: any; }) => (row.Active === true ? "Yes" : "No")
     },
     {
-      Header: "ACTION",
+      Header: DisplayLabel?.Action,
       Cell: ({ row }: { row: any; }) => (
         <FontIcon aria-label="Edit" onClick={() => openEditPanel(row._original.Id)} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer' }}></FontIcon>
       )
@@ -231,6 +239,10 @@ export default function Master({ props }: any): JSX.Element {
 
     setIsEditMode(true);
     setIsPanelOpen(true);
+
+
+
+    // setFileFlag(FlagAttachment);
 
     let GetEditData = await getDataById(props.SiteURL, props.spHttpClient, rowData);
     const EditSettingData = GetEditData.value;
@@ -244,9 +256,6 @@ export default function Master({ props }: any): JSX.Element {
 
 
     await setTileName(EditSettingData[0].TileName);
-
-    // const AccessTileData: any = EditSettingData[0].Permission ? EditSettingData[0].Permission.map((person: any) => person.Id) : [];
-    // setAssignID(AccessTileData);
 
 
     if (!isEditMode) {
@@ -272,19 +281,9 @@ export default function Master({ props }: any): JSX.Element {
     await setIsAllowApprover(EditSettingData[0].AllowApprover);
     await setIsDropdownVisible(EditSettingData[0].AllowOrder);
     if (EditSettingData[0].AllowOrder === true) {
-      const EditOrder0Data = EditSettingData.filter(
-        (item: any) => item.Order0 === EditSettingData[0].Order0
-      );
 
-      const options = EditOrder0Data.map((item: any) => ({
-        key: item.Order0,
-        text: item.Order0.toString(),
-      }));
-
-      setorder0Data(options);
-
-
-      setorder0DataDataID(EditOrder0Data[0]?.Order0 ?? null);
+      const EditOrder0Data = MainTableSetdata.filter((item: any) => item.Order0 === EditSettingData[0].Order0);
+      await setorder0DataDataID(EditOrder0Data[0]?.Order0 ?? null);
     }
     else {
       setorder0DataDataID('');
@@ -524,7 +523,7 @@ export default function Master({ props }: any): JSX.Element {
 
       options.push({
 
-        key: Order0Data.ID,
+        key: Order0Data.Order0,
 
         text: Order0Data.Order0
 
@@ -729,19 +728,15 @@ export default function Master({ props }: any): JSX.Element {
 
   const ToggleChangeforrefernceno = (checked: boolean): void => {
     setDynamicDataReference(checked);
+    // setRefExample("");
+    setRefExample(RefrenceNOData);
 
-    if (checked) {
-      setRefExample(refExample);
-    }
-    else {
-      setRefExample(RefrenceNOData);
-    }
   };
   const ToggleChangeforArchiveAllowed = (checked: boolean): void => {
     setArchiveAllowed(checked);
 
     if (checked) {
-      let ArchiveTestData = "Archive";
+      let ArchiveTestData = DisplayLabel?.Archive;
       let NewArchiveName = ArchiveTestData + " " + TileName;
       setArchiveTest(NewArchiveName);
     }
@@ -756,7 +751,14 @@ export default function Master({ props }: any): JSX.Element {
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
+
+      const uploadfile: any = [];
+      uploadfile.push(event.target.files[0]);
+      SetuploadFile(uploadfile);
+
       setSelectedFile(event.target.files[0]);
+
+
     }
     // const filesData = event.target.files; // FileList object
     // if (filesData && filesData.length > 0) {
@@ -1051,45 +1053,45 @@ export default function Master({ props }: any): JSX.Element {
   const validation = () => {
     let isValidForm = true;
     if (TileName === "" || TileName === undefined || TileName === null) {
-      setTileErr('Tile name is required');
+      setTileErr(DisplayLabel?.ThisFieldisRequired as string);
       isValidForm = false;
     }
-    if (selectedFile === null) {
-      setAttachmentErr("Enter Tile ImageURL");
-      isValidForm = false;
-    }
-
-    if (assignID.length === 0) {
-      setAccessTileUserErr("Please Enter Access Details");
+    else if (selectedFile === null) {
+      setAttachmentErr(DisplayLabel?.ThisFieldisRequired as string);
       isValidForm = false;
     }
 
-    if (TileAdminID.length === 0) {
-      setTileAdminUserErr("Please add Tile Admin");
+    else if (assignID.length === 0) {
+      setAccessTileUserErr(DisplayLabel?.ThisFieldisRequired as string);
       isValidForm = false;
     }
 
-    if (isDropdownVisible === true) {
+    else if (TileAdminID.length === 0) {
+      setTileAdminUserErr(DisplayLabel?.ThisFieldisRequired as string);
+      isValidForm = false;
+    }
+
+    else if (isDropdownVisible === true) {
       if (order0DataDataID === "" || order0DataDataID === undefined || order0DataDataID === null) {
-        setTileSelectorderErr("Enter Order");
+        setTileSelectorderErr(DisplayLabel?.ThisFieldisRequired as string);
         isValidForm = false;
       }
     }
 
-    if (DynamicDataReference === true) {
+    else if (DynamicDataReference === true) {
       if (refExample === "" || refExample === undefined || refExample === null) {
-        setTileReferenceNoErr("Select Reference No");
+        setTileReferenceNoErr(DisplayLabel?.ThisFieldisRequired as string);
         isValidForm = false;
       }
     }
 
-    if (IsArchiveAllowed === true) {
+    else if (IsArchiveAllowed === true) {
       if (RedundancyDataID === "" || RedundancyDataID === undefined || RedundancyDataID === null) {
-        setTileRedundancyDaysErr("Select Redundancy Days");
+        setTileRedundancyDaysErr(DisplayLabel?.ThisFieldisRequired as string);
         isValidForm = false;
       }
       if (ArchiveVersions === "" || ArchiveVersions === undefined || ArchiveVersions === null) {
-        setTileArchiveVersionErr("Enter Archive Version");
+        setTileArchiveVersionErr(DisplayLabel?.ThisFieldisRequired as string);
         isValidForm = false;
       }
     }
@@ -1126,19 +1128,22 @@ export default function Master({ props }: any): JSX.Element {
 
 
 
-  const saveAttachment = async (MainTileID: any) => {
+
+
+  const saveAttachment = async (LID: any, fileID: any) => {
 
     if (!selectedFile) {
       console.error("No files selected for upload.");
       return;
     }
-    let Fileuniqueid = await uuidv4();
     let obj = {
       __metadata: { type: "SP.Data.DMS_x005f_TileDocumentItem" },
-      TileLID: MainTileID,
+      TileLID: LID,
       Documentpath: selectedFile.name
     };
-    let displayName = Fileuniqueid + '-' + selectedFile.name;
+    const backImageActualName = selectedFile.name.split(".")[0].replace(/[^a-zA-Z0-9]/g, "");
+    const backImageName = `${backImageActualName}.${selectedFile.name.split(".")[1]}`;
+    let displayName = fileID + '-' + backImageName;
     await UploadDocument(props.SiteURL, props.spHttpClient, selectedFile, displayName, obj);
 
 
@@ -1156,6 +1161,7 @@ export default function Master({ props }: any): JSX.Element {
 
       let Fileuniqueid = await uuidv4();
 
+      setFileuniqueIdData(Fileuniqueid);
 
 
       console.log(Fileuniqueid);
@@ -1234,7 +1240,7 @@ export default function Master({ props }: any): JSX.Element {
         IsDynamicReference: DynamicDataReference,
         ShowMoreActions: selectedcheckboxActions.join(";"),
         Order0: orderData,
-        AllowOrder: isDropdownVisible,
+        AllowOrder: true,
         Documentpath: siteurl,
         ReferenceFormula: refExample,
         Separator: separator,
@@ -1252,8 +1258,8 @@ export default function Master({ props }: any): JSX.Element {
       if (LID != null) {
         const MainTileID = LID.Id;
         const MainTileLID = LID.Id.toString();
-
-        saveAttachment(MainTileID);
+        setCurrentEditID(MainTileID);
+        saveAttachment(MainTileID, Fileuniqueid);
 
         for (let i = 0; i < NewOrderData.length; i++) {
           let obj = { Order0: NewOrderData[i].orderno };
@@ -1303,6 +1309,7 @@ export default function Master({ props }: any): JSX.Element {
     for (let i = 0; i < NewSequencedata.length; i++) {
       let obj = { Order0: NewSequencedata[i].Order0 };
       await UpdateTileSetting(props.SiteURL, props.spHttpClient, obj, NewSequencedata[i].Id);
+      setisPopupVisible(true);
     }
   };
 
@@ -1371,7 +1378,8 @@ export default function Master({ props }: any): JSX.Element {
       const Sequencedata = GetAllTheTileDatavalueData.filter((item: any) => item.Id === CurrentEditID);
       let flagData = "";
 
-      var TileSequence = order0DataDataText === "" ? "" : parseInt(order0DataDataText);
+
+      let TileSequence: any = order0DataDataID === "" ? "" : order0DataDataID;
       if (Sequencedata[0].Order0 != TileSequence) {
         if (Sequencedata[0].Order0 > TileSequence) {
           flagData = "forward";
@@ -1425,7 +1433,6 @@ export default function Master({ props }: any): JSX.Element {
         // Order0: orderData,
         AllowOrder: isDropdownVisible,
         SystemCreated: false,
-        Documentpath: siteurl,
         ReferenceFormula: refExample,
         Separator: separator,
         DynamicControl: JSON.stringify(tableData),
@@ -1439,8 +1446,14 @@ export default function Master({ props }: any): JSX.Element {
       let UpdateTileID = UpdateData.value;
       console.log(UpdateTileID);
       if (UpdateTileID != null) {
+        if (uploadfile.length > 0) {
+          var obj = {
+            Documentpath: siteurl
+          };
+          await UpdateTileSetting(props.SiteURL, props.spHttpClient, obj, CurrentEditID);
+          saveAttachment(UpdateTileID[0].ID, uniqueid);
+        }
 
-        saveAttachment(UpdateTileID[0].Id);
         if (Sequencedata[0].Order0 != TileSequence) {
           if (NewSequencedata.length > 0) {
             await UpdateTileSequence(NewSequencedata);
@@ -1480,11 +1493,13 @@ export default function Master({ props }: any): JSX.Element {
             createAndUpdateArchiveColumn(UpdateTileID[0], true);
           }
 
+
         }
 
       }
 
       setShowLoader({ display: "none" });
+      fetchData();
       setisPopupVisible(true);
 
     }
@@ -1535,7 +1550,7 @@ export default function Master({ props }: any): JSX.Element {
           type={PanelType.large}
           isFooterAtBottom={true}
 
-          headerText={isEditMode ? "Edit Tile Managment" : "Add Tile Managment"}
+          headerText={isEditMode ? DisplayLabel?.EditTileManagement : DisplayLabel?.AddTileManagement}
         >
 
           {/* {!isEditMode ? (
@@ -1666,6 +1681,9 @@ export default function Master({ props }: any): JSX.Element {
                           //defaultSelectedUsers={TileAdminID}
                           defaultSelectedUsers={isEditMode ? TileAdminID : undefined}
                         />
+
+
+
                         {/* <TextField
                           placeholder=" "
                           //errorMessage={"Please fill this field"}
@@ -1854,7 +1872,7 @@ export default function Master({ props }: any): JSX.Element {
                       </div>
 
                       {/* Dynamic Reference Example TextField */}
-                      {!DynamicDataReference && (
+                      {/* {!DynamicDataReference && (
                         <div className="col-md-6">
                           <label className={styles.Headerlabel}>{DisplayLabel?.DefaultReferenceExample}</label>
                           <TextField
@@ -1863,19 +1881,19 @@ export default function Master({ props }: any): JSX.Element {
                             disabled
                           />
                         </div>
-                      )}
+                      )} */}
 
-                      {DynamicDataReference && (
-                        <div className="col-md-6">
-                          <label className={styles.Headerlabel}>{DisplayLabel?.DynamicReferenceExample}</label>
-                          <TextField
-                            placeholder=" "
-                            value={refExample}
-                            errorMessage={TileReferenceNoErr}
-                            disabled
-                          />
-                        </div>
-                      )}
+
+                      <div className="col-md-6">
+                        <label className={styles.Headerlabel}>{DynamicDataReference ? DisplayLabel?.DynamicReferenceExample : DisplayLabel?.DefaultReferenceExample}</label>
+                        <TextField
+                          placeholder=" "
+                          value={refExample}
+                          errorMessage={TileReferenceNoErr}
+                          disabled
+                        />
+                      </div>
+
                     </div>
 
 
@@ -2416,6 +2434,7 @@ export default function Master({ props }: any): JSX.Element {
           columnCount++;
           if (columnCount === ColumnsObj.length && listCount === IListItem.length) {
 
+            fetchData();
             setisPopupVisible(true);
 
             // closePanel();

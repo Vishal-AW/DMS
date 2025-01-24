@@ -188,6 +188,7 @@ export default function Dashboard({ props }: any): JSX.Element {
                 <div className={styles["card-image"]}>
                   <img
                     src={el.Documentpath ? el.Documentpath : `${props.SiteURL}/DMS_TileDocument/Default.jpg`}
+                    //src={el.Documentpath}
                     alt={el.TileName}
                     loading="lazy"
                   />

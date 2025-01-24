@@ -83,21 +83,26 @@ export default function ConfigMaster({ props }: any): JSX.Element {
     };
 
     const Tablecolumns = [
-        { Header: "FIELD NAME", accessor: "Title" },
-        { Header: "COLUMN TYPE", accessor: "ColumnType", },
-        { Header: "LIST NAME", accessor: "InternalListName" },
         {
-            Header: "IS ACTIVE",
+            Header: DisplayLabel?.SrNo,
+            accessor: "row._index",
+            Cell: ({ row }: { row: any; }) => row._index + 1,
+        },
+        { Header: DisplayLabel?.FieldName, accessor: "Title" },
+        { Header: DisplayLabel?.ColumnType, accessor: "ColumnType", },
+        { Header: DisplayLabel?.ListName, accessor: "InternalListName" },
+        {
+            Header: DisplayLabel?.IsActive,
             accessor: "IsActive",
             Cell: ({ row }: { row: any; }) => (row.IsActive === true ? "Yes" : "No")
         },
         {
-            Header: "IS STATIC DATA",
+            Header: DisplayLabel?.IsStaticValue,
             accessor: "IsStaticValue",
             Cell: ({ row }: { row: any; }) => (row.IsStaticValue === true ? "Yes" : "No")
         },
         {
-            Header: "ACTION",
+            Header: DisplayLabel?.Action,
             Cell: ({ row }: { row: any; }) => (
                 <FontIcon aria-label="Edit" onClick={() => openEditPanel(row._original.Id)} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer' }}></FontIcon>
             )
@@ -465,27 +470,27 @@ export default function ConfigMaster({ props }: any): JSX.Element {
     const validation = () => {
         let isValidForm = true;
         if (FieldName === "" || FieldName === undefined || FieldName === null) {
-            setFieldNameErr('This value is required.');
+            setFieldNameErr(DisplayLabel?.ThisFieldisRequired as string);
             isValidForm = false;
         }
-        if (isColumnTypeDisabled === false) {
+        else if (isColumnTypeDisabled === false) {
             if (ColumnTypeID === "" || ColumnTypeID === undefined || ColumnTypeID === null) {
-                setColumnTypeIDErr('This value is required.');
+                setColumnTypeIDErr(DisplayLabel?.ThisFieldisRequired as string);
                 isValidForm = false;
             }
         }
-        if (IsStaticValue === true) {
+        else if (IsStaticValue === true) {
             if (options.length === 0) {
-                alert('at least two option record required');
+                alert(DisplayLabel?.Atleasttwooptionrecordrequired);
             }
         }
-        if (IsStaticValue === false && ColumnTypeID === "Dropdown") {
+        else if (IsStaticValue === false && ColumnTypeID === "Dropdown") {
             if (ListNameID === "" || ListNameID === undefined || ListNameID === null) {
-                setListNameIDErr('This value is required.');
+                setListNameIDErr(DisplayLabel?.ThisFieldisRequired as string);
                 isValidForm = false;
             }
             if (DisplayColumnID === "" || DisplayColumnID === undefined || DisplayColumnID === null) {
-                setDisplayColumnIDErr('This value is required.');
+                setDisplayColumnIDErr(DisplayLabel?.ThisFieldisRequired as string);
                 isValidForm = false;
             }
         }
@@ -540,6 +545,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
 
                 setShowLoader({ display: "none" });
                 setisPopupVisible(true);
+                fetchData();
             }
 
 
@@ -591,7 +597,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
 
             setShowLoader({ display: "none" });
             setisPopupVisible(true);
-
+            fetchData();
 
 
         } catch (error) {
@@ -628,7 +634,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                 type={PanelType.large}
                 isFooterAtBottom={true}
 
-                headerText={isEditMode ? "Edit New Records" : "Add New Records"}
+                headerText={isEditMode ? DisplayLabel?.EditNewRecords : DisplayLabel?.AddNewRecords}
             >
                 <div className={`ms-Grid ${styles.inlineFormContainer}`}>
                     <div className="col-md-5">
@@ -654,7 +660,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                         <div className="form-group">
                             <label className={styles.Headerlabel}>{DisplayLabel?.ColumnType}<span style={{ color: "red" }}>*</span></label>
                             <Dropdown
-                                placeholder="Select an Option"
+                                placeholder={DisplayLabel?.Selectanoption}
                                 options={dropdownOptions}
                                 onChange={handleColumnTypeonChange}
                                 selectedKey={ColumnTypeID}
@@ -696,7 +702,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                                 <label className={styles.Headerlabel}>{DisplayLabel?.ListName}<span style={{ color: "red" }}>*</span></label>
 
                                 <Dropdown
-                                    placeholder="Select an Option"
+                                    placeholder={DisplayLabel?.Selectanoption}
                                     options={ListData}
                                     onChange={handleListNameonChange}
                                     selectedKey={ListNameID}
@@ -709,7 +715,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                             <div className="form-group">
                                 <label className={styles.Headerlabel}>{DisplayLabel?.DisplayColumn}<span style={{ color: "red" }}>*</span></label>
                                 <Dropdown
-                                    placeholder="Select an Option"
+                                    placeholder={DisplayLabel?.Selectanoption}
                                     options={DisplaycolumnListData}
                                     onChange={handleDisplayColumnonChange}
                                     selectedKey={DisplayColumnID}

@@ -24,7 +24,7 @@ async function getMethod(WebUrl: string, spHttpClient: any, filter: any) {
     select: "Id,Title,ColumnType,InternalListName,IsActive,IsStaticValue,StaticDataObject,DisplayValue,InternalTitleName,IsShowAsFilter,Abbreviation",
     //expand : "",
     filter: filter,
-    orderby: 'Title',
+    orderby: "Id desc",
     top: 5000
   };
 
