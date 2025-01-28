@@ -39,17 +39,17 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
     const [isPopupBoxVisible, setIsPopupBoxVisible] = useState<boolean>(false);
     const [showLoader, setShowLoader] = useState({ display: "none" });
 
-    // const peoplePickerContext: IPeoplePickerContext = {
-    //     absoluteUrl: context.pageContext.web.absoluteUrl,
-    //     msGraphClientFactory: context.msGraphClientFactory,
-    //     spHttpClient: context.spHttpClient
-    // };
-
     const peoplePickerContext: IPeoplePickerContext = {
         absoluteUrl: context.pageContext.web.absoluteUrl,
-        msGraphClientFactory: context.msGraphClientFactory as any as import("@pnp/spfx-controls-react/node_modules/@microsoft/sp-http-msgraph/dist/index-internal").MSGraphClientFactory,
-        spHttpClient: context.spHttpClient as any as import("@pnp/spfx-controls-react/node_modules/@microsoft/sp-http-base/dist/index-internal").SPHttpClient
+        msGraphClientFactory: context.msGraphClientFactory,
+        spHttpClient: context.spHttpClient
     };
+
+    // const peoplePickerContext: IPeoplePickerContext = {
+    //     absoluteUrl: context.pageContext.web.absoluteUrl,
+    //     msGraphClientFactory: context.msGraphClientFactory as any as import("@pnp/spfx-controls-react/node_modules/@microsoft/sp-http-msgraph/dist/index-internal").MSGraphClientFactory,
+    //     spHttpClient: context.spHttpClient as any as import("@pnp/spfx-controls-react/node_modules/@microsoft/sp-http-base/dist/index-internal").SPHttpClient
+    // };
 
 
 
@@ -138,7 +138,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                             <PeoplePicker
                                 titleText={item.Title}
                                 context={peoplePickerContext}
-                                personSelectionLimit={10}
+                                personSelectionLimit={1}
                                 showtooltip={true}
                                 required={item.IsRequired}
                                 showHiddenInUI={false}
@@ -290,13 +290,15 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
             count++;
 
             if (count === attachmentsFiles.length) {
+                dismissUploadPanel();
+                setShowLoader({ display: "none" });
                 setIsPopupBoxVisible(true);
             }
 
         });
     };
 
-    const hidePopup = useCallback(() => { setIsPopupBoxVisible(false); dismissUploadPanel(); setShowLoader({ display: "none" }); }, [isPopupBoxVisible]);
+    const hidePopup = useCallback(() => { setIsPopupBoxVisible(false); }, [isPopupBoxVisible]);
 
     return (
         <div>

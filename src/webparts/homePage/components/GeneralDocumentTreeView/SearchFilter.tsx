@@ -94,7 +94,7 @@ export default function SearchFilter({ props }: any): JSX.Element {
                             <PeoplePicker
                                 titleText={item.Title}
                                 context={peoplePickerContext}
-                                personSelectionLimit={10}
+                                personSelectionLimit={1}
                                 showtooltip={true}
                                 required={item.IsRequired}
                                 showHiddenInUI={false}

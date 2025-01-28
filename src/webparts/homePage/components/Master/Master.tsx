@@ -1329,6 +1329,7 @@ export default function Master({ props }: any): JSX.Element {
         var colType = getColumnType(tableData[i].ColumnType);
         var NewColType = colType.toString();
         createColumn(Internal, tableData[i].InternalTitleName, NewColType).then(function (response) {
+          closePanel();
           setisPopupVisible(true);
 
         });
@@ -1348,6 +1349,7 @@ export default function Master({ props }: any): JSX.Element {
           var NewColType = colType.toString();
           //_spService.CreateList(props.context, props.SiteURL, Columns, TileLID, false)
           createColumn(TileValue.ArchiveLibraryName, tableData[i].InternalTitleName, NewColType).then(function (response) {
+            closePanel();
             setisPopupVisible(true);
 
           });
@@ -1442,9 +1444,7 @@ export default function Master({ props }: any): JSX.Element {
       };
       await UpdateTileSetting(props.SiteURL, props.spHttpClient, option, CurrentEditID);
       let UpdateData = await getDataById(props.SiteURL, props.spHttpClient, CurrentEditID);
-      console.log(UpdateData);
       let UpdateTileID = UpdateData.value;
-      console.log(UpdateTileID);
       if (UpdateTileID != null) {
         if (uploadfile.length > 0) {
           var obj = {
@@ -1500,6 +1500,7 @@ export default function Master({ props }: any): JSX.Element {
 
       setShowLoader({ display: "none" });
       fetchData();
+      closePanel();
       setisPopupVisible(true);
 
     }
@@ -2198,26 +2199,17 @@ export default function Master({ props }: any): JSX.Element {
               )} */}
 
               <div className={cls["modal"]} style={showLoader}></div>
-
               {!isEditMode ? (
-
                 <DefaultButton onClick={submitTileData} text={DisplayLabel?.Submit} className={styles['sub-btn']} />
               ) :
                 <DefaultButton onClick={UpdateTileData} text={DisplayLabel?.Update} className={styles['sub-btn']} />
               }
-
-
-              <PopupBox isPopupBoxVisible={isPopupVisible} hidePopup={hidePopup} />
-
-
               <DefaultButton text={DisplayLabel?.Cancel} onClick={closePanel} className={styles['can-btn']} allowDisabledFocus />
-
             </div>
-
           </div>
 
         </Panel>
-
+        <PopupBox isPopupBoxVisible={isPopupVisible} hidePopup={hidePopup} />
       </div>
     </div >
   );

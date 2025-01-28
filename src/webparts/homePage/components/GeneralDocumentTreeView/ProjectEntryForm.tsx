@@ -158,6 +158,12 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
         if (libraryData.value[0]?.DynamicControl) {
             let jsonData = JSON.parse(libraryData.value[0].DynamicControl);
             jsonData = jsonData.filter((ele: any) => ele.IsActiveControl);
+            jsonData = jsonData.map((el: any) => {
+                if (el.ColumnType === "Person or Group") {
+                    el.InternalTitleName = `${el.InternalTitleName}Id`;
+                }
+                return el;
+            });
             setDynamicControl(jsonData);
             bindDropdown(jsonData);
         }
@@ -217,7 +223,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                             <PeoplePicker
                                 titleText={item.Title}
                                 context={peoplePickerContext}
-                                personSelectionLimit={10}
+                                personSelectionLimit={1}
                                 showtooltip={true}
                                 required={item.IsRequired}
                                 showHiddenInUI={false}
@@ -233,13 +239,16 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                                         );
                                         setDynamicValues((prevValues) => ({
                                             ...prevValues,
-                                            [item.InternalTitleName]: userIds,
+                                            [item.InternalTitleName]: userIds[0],
                                         }));
                                         setUsersIds((prev) => [...prev, ...userIds]);
                                     } catch (error) {
                                         console.error("Error fetching user IDs:", error);
                                     }
                                 }}
+                                defaultSelectedUsers={allUsers
+                                    .filter((el: any) => el.Id === dynamicValues[item.InternalTitleName])
+                                    .map((user: any) => user.Email)}
                                 disabled={isDisabled}
                                 errorMessage={dynamicValuesErr[item.InternalTitleName]}
                             />
@@ -393,6 +402,8 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
         }
 
         updateLibrary(context.pageContext.web.absoluteUrl, context.spHttpClient, obj, id, LibraryDetails.LibraryName).then((response) => {
+            dismissPanel(false);
+            setShowLoader({ display: "none" });
             setIsPopupBoxVisible(true);
         });
     };
@@ -418,15 +429,18 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
             const filterObj = configData.find((ele) => ele.Id === item.Id);
             if (!filterObj) return null;
 
-            setDynamicValues((prevValues) => ({
-                ...prevValues,
-                [item.InternalTitleName]: folderObject.ListItemAllFields[item.InternalTitleName],
-            }));
+            setDynamicValues((prevValues) => {
+                let value = folderObject.ListItemAllFields[item.InternalTitleName];
+                return {
+                    ...prevValues,
+                    [item.InternalTitleName]: value,
+                };
+            });
         });
 
     };
 
-    const hidePopup = useCallback(() => { setIsPopupBoxVisible(false); dismissPanel(false); setShowLoader({ display: "none" }); }, [isPopupBoxVisible]);
+    const hidePopup = useCallback(() => { setIsPopupBoxVisible(false); }, [isPopupBoxVisible]);
 
     const removeSepcialCharacters = (newValue?: string) => newValue?.replace(/[^a-zA-Z0-9\s]/g, '') || '';
     return (
@@ -617,9 +631,10 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                         </div>
                     </div>
                 </div>
-                <PopupBox isPopupBoxVisible={isPopupBoxVisible} hidePopup={hidePopup} />
+
             </Panel>
             <div className={cls["modal"]} style={showLoader}></div>
+            <PopupBox isPopupBoxVisible={isPopupBoxVisible} hidePopup={hidePopup} />
         </>
     );
 };

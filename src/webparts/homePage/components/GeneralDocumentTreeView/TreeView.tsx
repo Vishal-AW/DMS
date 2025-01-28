@@ -249,6 +249,8 @@ export default function TreeView({ props }: any) {
                 ActualName: `${fileName}.${extention}`
             };
             updateLibrary(props.SiteURL, props.spHttpClient, obj, id, libName).then((response) => {
+                dismissFolderPanel();
+                setShowLoader({ display: "none" });
                 setIsPopupBoxVisible(true);
                 fetchFolders(folderPath, folderName);
             });
@@ -416,6 +418,7 @@ export default function TreeView({ props }: any) {
             };
 
             updateLibrary(props.SiteURL, props.spHttpClient, obj, response, libName).then((response) => {
+                dismissFolderPanel(); setShowLoader({ display: "none" });
                 setIsPopupBoxVisible(true);
                 toggleNode(folderName, `${folderPath}`, folderObject);
                 fetchFolders(folderPath, `${folderName}`);
@@ -427,7 +430,7 @@ export default function TreeView({ props }: any) {
         setTables("Recycle");
 
     };
-    const hidePopup = useCallback(() => { setIsPopupBoxVisible(false); dismissFolderPanel(); setShowLoader({ display: "none" }); }, [isPopupBoxVisible]);
+    const hidePopup = useCallback(() => { setIsPopupBoxVisible(false); }, [isPopupBoxVisible]);
 
     const bindTable = () => {
 
