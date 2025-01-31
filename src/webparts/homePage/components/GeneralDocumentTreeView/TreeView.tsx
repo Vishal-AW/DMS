@@ -106,9 +106,8 @@ export default function TreeView({ props }: any) {
                         ...prev,
                         [folderPath]: data.Folders,
                     }));
-                    if (data.Files.length > 0) {
-                        setFiles(data.Files.filter((el: any) => el.ListItemAllFields.Active));
-                    }
+                    setFiles(data.Files.filter((el: any) => el.ListItemAllFields.Active) || []);
+
                 }
                 data.Folders.length === 0 ? setExpandedNodes(expandedNodes.filter((name) => name !== nodeName)) : "";
             } else {
@@ -470,7 +469,7 @@ export default function TreeView({ props }: any) {
                 </div>
             </div>
             <Stack horizontal styles={stackStyles} tokens={stackTokens}>
-                <Stack.Item grow={2} styles={stackItemStyles}>
+                <Stack.Item styles={stackItemStyles}>
                     <div className={styles.grid}>
                         <div className={styles.row}>
                             <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "EmptyRecycleBin" }} text={DisplayLabel.RecycleBin} onClick={getRecycleData} /></div>

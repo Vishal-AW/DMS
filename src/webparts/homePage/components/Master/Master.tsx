@@ -3,8 +3,7 @@ import { useState, useEffect } from 'react';
 import * as moment from "moment";
 import styles from '../Master/Master.module.scss';
 import cls from '../HomePage.module.scss';
-//import { SPHttpClient, SPHttpClientResponse, ISPHttpClientOptions } from '@microsoft/sp-http';
-//import { HTTPServices, _getListItem } from "../../../HTTPServices";
+
 import {
   DefaultButton, Panel, PanelType, TextField, Toggle, Dropdown, IDropdownStyles, Checkbox, ChoiceGroup,
   IIconProps,
@@ -13,13 +12,10 @@ import {
   FontIcon,
 } from 'office-ui-fabric-react';
 import { PeoplePicker, PrincipalType, IPeoplePickerContext } from "@pnp/spfx-controls-react/lib/PeoplePicker";
-//import MessageDialog from '../ResuableComponents/PopupBox';
 import ReactTableComponent from '../ResuableComponents/ReusableDataTable';
 import { IStackItemStyles, IStackStyles, IStackTokens, Stack } from 'office-ui-fabric-react';
 import { getDataById, getTileAllData, SaveTileSetting, UpdateTileSetting } from "../../../../Services/MasTileService";
 import { GetAllLabel } from "../../../../Services/ControlLabel";
-//import { FilePicker, IFilePickerResult } from '@pnp/spfx-controls-react/lib/FilePicker';
-//import MaterialTable from "material-table";
 import { Accordion, Form } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -28,31 +24,14 @@ import { getUserIdFromLoginName, uuidv4 } from "../../../../DAL/Commonfile";
 import { GetAttachmentFile, UploadDocument } from "../../../../Services/DMSTileDocumentService";
 import { getConfigActive } from "../../../../Services/ConfigService";
 import { getActiveRedundancyDays } from "../../../../Services/ArchiveRedundancyDaysService";
-// import { service } from "../../../../Services/Service";
-// import { WebPartContext } from "@microsoft/sp-webpart-base";
 import { ISPHttpClientOptions, SPHttpClient, SPHttpClientResponse } from "@microsoft/sp-http-base";
 import PopupBox from "../ResuableComponents/PopupBox";
-
-//import { getConfigActive } from "../../../../Services/ConfigService";
-
-
-//import {WebPartContext} from '@microsoft/sp-webpart-base'
-//import type { IHomePageProps } from '../IHomePageProps';
 
 
 export default function Master({ props }: any): JSX.Element {
 
-  // const _spService: service = new service();
-
-
   const [uploadfile, SetuploadFile] = useState([]);
-  //const toggleModal = () => setShowModal(!showModal);
-  //const [showDialog, setShowDialog] = useState(false);
-  //const [FileFlag, setFileFlag] = useState('');
-  //const [isOpen, setIsOpen] = useState(false);
   const [isPopupVisible, setisPopupVisible] = useState(false);
-  //const [isPopupVisible, { setTrue: showPopup, setFalse: hidePopup }] = useBoolean(false);
-  //const [isPopupVisible, { setFalse: hidePopup }] = useBoolean(false);
   const [selectedUsers, setSelectedUsers] = useState<any[]>([]);
   const [TileAdminselectedUsers, setTileAdminSelectedUsers] = useState<any[]>([]);
   const [TileName, setTileName] = useState("");
@@ -65,18 +44,12 @@ export default function Master({ props }: any): JSX.Element {
   const [TileRedundancyDaysErr, setTileRedundancyDaysErr] = useState("");
   const [TileArchiveVersionErr, setTileArchiveVersionErr] = useState("");
   const [MainTableSetdata, setData] = useState<any[]>([]);
-
-  const [showLoader, setShowLoader] = useState({ display: "none" }); // Spinner state
-
-  // const [DuplicateTileError, setDuplicateTileError] = useState("");
-  // const [TileLowerUpperError, setTileLowerUpperError] = useState("");
+  const [showLoader, setShowLoader] = useState({ display: "none" });
   const [DisplayLabel, setDisplayLabel] = useState<ILabel>();
   const [selectedFile, setSelectedFile] = useState<File | { name: string; } | null>(null);
-  //const [attachments, setAttachments]: any = useState([]);
   const [assignName, setAssignName] = useState<string>("");
   const [assignID, setAssignID] = useState<string[]>([]);
   const [TileAdminName, setTileAdminName] = useState<string>("");
-  //const [TileAdminID, setTileAdminID] = useState([]);
   const [TileAdminID, setTileAdminID] = useState<string[]>([]);
   const [order0Data, setorder0Data] = useState([]);
   const [uOrder0Data, setUorder0Data] = useState<any[]>([]);
@@ -87,27 +60,20 @@ export default function Master({ props }: any): JSX.Element {
   const [order0DataDataID, setorder0DataDataID] = useState<string | undefined>();
   const [order0DataDataText, setorder0DataText] = useState('');
   const [isToggleDisabled, setIsToggleDisabled] = useState(false);
-
   const [isTileStatus, setIsTileStatus] = React.useState<boolean>(true);
   const [isAllowApprover, setIsAllowApprover] = React.useState<boolean>(false);
   const [isDropdownVisible, setIsDropdownVisible] = React.useState<boolean>(false);
-
   const [DynamicDataReference, setDynamicDataReference] = React.useState<boolean>(false);
-
   const [RefrenceNOData, setRefrenceNOData] = useState<string>(`${moment().format('YYYY')}-00001`);
   const [ArchiveTest, setArchiveTest] = useState<string>('');
   const [ArchiveVersions, setArchiveVersions] = useState<string>("");
-
   const [IsArchiveAllowed, setArchiveAllowed] = React.useState<boolean>(false);
-
   const [selectedcheckboxActions, setSelectedcheckboxActions] = useState<string[]>([]);
   const actions = ["Preview", "Download", "Rename", "Versions"];
   const addIcon: IIconProps = { iconName: 'Add' };
   const saveIcon: IIconProps = { iconName: 'Save' };
   const editIcon: IIconProps = { iconName: 'Edit' };
   const deleteIcon: IIconProps = { iconName: 'Delete' };
-  //const cancelIcon: IIconProps = { iconName: 'Cancel' };
-
 
   const [refFormatData, setRefFormatData] = useState<string[]>([]);
   const [prefix, setPrefix] = useState<string>("");
@@ -115,12 +81,8 @@ export default function Master({ props }: any): JSX.Element {
   const [increment, setIncrement] = useState<string>("Continue");
   const [refExample, setRefExample] = useState<string>("");
   const [customSeparators, setCustomSeparators] = useState<{ [key: number]: string; }>({});
-
   const [CurrentEditID, setCurrentEditID] = useState<number>(0);
-
   const [FileuniqueIdData, setFileuniqueIdData] = useState("");
-
-
   const [tableData, setTableData] = useState<any[]>([]);
 
 
@@ -139,8 +101,6 @@ export default function Master({ props }: any): JSX.Element {
 
   console.log(FileuniqueIdData);
   const openAddPanel = () => {
-    //clearField();
-
     setIsEditMode(false);
     setIsPanelOpen(true);
   };
@@ -175,21 +135,12 @@ export default function Master({ props }: any): JSX.Element {
     setRefrenceNOData(`${moment().format('YYYY')}-00001`);
     setRefExample(RefrenceNOData);
     setisPopupVisible(false);
-
-    //DashboardDataEdit();
-
   }, []);
-
-
 
   const fetchData = async () => {
     let FetchallTileData: any = await getTileAllData(props.SiteURL, props.spHttpClient);
-
     let TilesData = FetchallTileData.value;
-
     setData(TilesData);
-
-    console.log(TilesData);
   };
 
 
@@ -240,10 +191,6 @@ export default function Master({ props }: any): JSX.Element {
     setIsEditMode(true);
     setIsPanelOpen(true);
 
-
-
-    // setFileFlag(FlagAttachment);
-
     let GetEditData = await getDataById(props.SiteURL, props.spHttpClient, rowData);
     const EditSettingData = GetEditData.value;
 
@@ -252,11 +199,7 @@ export default function Master({ props }: any): JSX.Element {
     const CurrentItemId: number = EditSettingData[0].ID;
 
     setCurrentEditID(CurrentItemId);
-    console.log(EditSettingData);
-
-
     await setTileName(EditSettingData[0].TileName);
-
 
     if (!isEditMode) {
       const AccessTileData: string[] = EditSettingData[0].Permission
@@ -274,14 +217,10 @@ export default function Master({ props }: any): JSX.Element {
       setTileAdminID([]);
     }
 
-
-
-
     await setIsTileStatus(EditSettingData[0].Active);
     await setIsAllowApprover(EditSettingData[0].AllowApprover);
     await setIsDropdownVisible(EditSettingData[0].AllowOrder);
     if (EditSettingData[0].AllowOrder === true) {
-
       const EditOrder0Data = MainTableSetdata.filter((item: any) => item.Order0 === EditSettingData[0].Order0);
       await setorder0DataDataID(EditOrder0Data[0]?.Order0 ?? null);
     }
@@ -296,7 +235,6 @@ export default function Master({ props }: any): JSX.Element {
     await setTableData(EditSettingData[0].DynamicControl === null ? [] : JSON.parse(EditSettingData[0].DynamicControl));
 
     await setArchiveAllowed(EditSettingData[0].IsArchiveRequired);
-
 
     if (EditSettingData[0].IsArchiveRequired === true) {
       let ActiveRedundancyDaysData: any = await getActiveRedundancyDays(props.SiteURL, props.spHttpClient);
@@ -321,7 +259,6 @@ export default function Master({ props }: any): JSX.Element {
 
       const formula = EditSettingData[0].ReferenceFormula;
       await setRefExample(EditSettingData[0].ReferenceFormula);
-      //await setCustomSeparators(EditSettingData[0].Separator);
 
       const fields = [];
       if (formula.includes("{YYYY}")) fields.push("YYYY");
@@ -339,8 +276,6 @@ export default function Master({ props }: any): JSX.Element {
       }
 
       setRefFormatData(fields);
-
-
       setSeparator(EditSettingData[0].Separator || "-");
       setIncrement(EditSettingData[0].InitialIncrement || "Continue");
     }
@@ -412,63 +347,6 @@ export default function Master({ props }: any): JSX.Element {
     generateFormula(refFormatData, prefix, separator, increment, updatedSeparators);
   };
 
-  // Generate formula
-  // const generateFormula = (
-  //   refData: string[],
-  //   prefixValue: string,
-  //   separatorValue: string,
-  //   incrementValue: string,
-  //   customSeparatorData: { [key: number]: string } = customSeparators
-  // ) => {
-  //   let formula = prefixValue ? `${prefixValue}${separatorValue}` : "";
-
-  //   refData.forEach((item, index) => {
-  //     formula += `{${item}}`;
-  //     // Add separator or concatenate based on dropdown selection
-  //     if (customSeparatorData[index] === "Separator") {
-  //       formula += separatorValue;
-  //     } else if (customSeparatorData[index] === "Concat") {
-  //       formula += ""; // No separator, concatenate directly
-  //     }
-  //   });
-
-  //   // Remove trailing separator if present before adding increment
-  //   if (formula.endsWith(separatorValue)) {
-  //     formula = formula.slice(0, -separatorValue.length);
-  //   }
-
-  //   // Append increment
-  //   formula += `{${incrementValue}}`;
-
-  //   setRefExample(formula);
-  // };
-
-  // const generateFormula = (
-  //   refData: string[],
-  //   prefixValue: string,
-  //   separatorValue: string,
-  //   incrementValue: string,
-  //   customSeparatorData: { [key: number]: string } = customSeparators
-  // ) => {
-  //   let formula = prefixValue ? `${prefixValue}${separatorValue}` : "";
-
-  //   refData.forEach((item, index) => {
-  //     formula += `{${item}}`;
-  //     // Add separator or concatenate based on dropdown selection
-  //     if ((customSeparatorData[index] || "Separator") === "Separator") {
-  //       formula += separatorValue;
-  //     }
-  //   });
-
-  //   // Remove trailing separator if present before adding increment
-  //   if (formula.endsWith(separatorValue)) {
-  //     formula = formula.slice(0, -separatorValue.length);
-  //   }
-
-  //   // Append increment
-  //   formula += `{${incrementValue}}`;
-  //   setRefExample(formula);
-  // };
 
   const generateFormula = (
     refData: string[],
@@ -615,10 +493,6 @@ export default function Master({ props }: any): JSX.Element {
     );
   };
 
-
-
-
-
   // Handle input change
   const handleInputChange = (key: string, value: any) => {
     setFormData({ ...formData, [key]: value });
@@ -658,21 +532,11 @@ export default function Master({ props }: any): JSX.Element {
 
       if (formData.field != "") {
 
-        // setTableData([...tableData, { ...formData }]);
-
         const TileDataforDropdown = await getConfigActive(props.SiteURL, props.spHttpClient);
         const TileDataValueforDropdown = TileDataforDropdown.value;
         const selectedOption: any = TileDataValueforDropdown.find((element: any) => element.ID === formData.field);
-        console.log(selectedOption);
 
         const isDuplicate = tableData.find((element: any) => element.field === formData.field);
-
-        // setTableData((previewData: any) => ([...previewData, ...selectedOption, ...formData]))
-
-
-
-
-        console.log(isDuplicate);
 
         if (isDuplicate === undefined) {
 
@@ -750,73 +614,24 @@ export default function Master({ props }: any): JSX.Element {
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files.length > 0) {
+
+    const file = event.target.files?.[0];
+
+    if (file) {
+      const validTypes = ["image/png", "image/jpeg"];
+      if (!validTypes.includes(file.type)) {
+        alert("Only PNG and JPG files are allowed.");
+        event.target.value = ""; // Reset input
+        return;
+      }
 
       const uploadfile: any = [];
-      uploadfile.push(event.target.files[0]);
+      uploadfile.push(file);
       SetuploadFile(uploadfile);
-
-      setSelectedFile(event.target.files[0]);
-
-
+      setSelectedFile(file);
     }
-    // const filesData = event.target.files; // FileList object
-    // if (filesData && filesData.length > 0) {
-    //   setSelectedFile(Array.from(filesData)); // Convert FileList to File[]
-    // } else {
-    //   setSelectedFile(null); // No files selected
-    // }
   };
 
-  // const openDialog = () => {
-  //   setDialogMessage('Save Data Successfully.');
-  //   setShowDialog(true);
-  // };
-
-  // Function to handle dialog actions (e.g., Submit or Close)
-  // const handleDialogAction = (action: string) => {
-  //   console.log(`Dialog action: ${action}`);
-  //   setShowDialog(false); // Close the dialog
-  // };
-
-  //const [selectedFields, setSelectedFields] = useState<string[]>([]);
-
-
-  // const ChangeSettingdropdownOptions: IDropdownOption[] = [
-  //   { key: 'separator', text: 'Separator' },
-  //   { key: 'concat', text: 'concat' },
-  // ];
-
-
-  // const onChange = React.useCallback(
-  //   (ev?: React.FormEvent<HTMLElement | HTMLInputElement>, checked?: boolean): void => {
-  //     setPreview(!!checked);
-  //     setDownload(!!checked);
-  //     setRename(!!checked);
-  //     setVersions(!!checked);
-  //   },
-  //   [],
-  // );
-
-  // const onPeoplePickerChange = (items: any[]) => {
-  //   //console.log("Selected users:", items);
-  //   setSelectedUsers(items);
-  //   console.log("Users to process:", selectedUsers);
-  //   let Users = Array.prototype.map.call(items, (item: any) => {
-  //     return item.id;
-  //   });
-
-  //   if (items.length > 0) {
-  //     setAssignName(items[0].text);
-  //     setAssignID(Users);
-  //   } else {
-  //     setAssignName("");
-  //     setAssignID([]);
-
-  //     console.log(assignName);
-  //     console.log(assignID);
-  //   }
-  // };
 
   const onPeoplePickerChange = (items: any[]) => {
 
@@ -863,17 +678,9 @@ export default function Master({ props }: any): JSX.Element {
     spHttpClient: props.context.spHttpClient
   };
 
-
-
-
-
-
-
   const dropdownStyles: Partial<IDropdownStyles> = {
     dropdown: { width: 250 },
   };
-
-
 
   const stackStyles: IStackStyles = { root: { height: "100vh", marginTop: 15 } };
   const stackItemStyles: IStackItemStyles = {
@@ -886,8 +693,6 @@ export default function Master({ props }: any): JSX.Element {
     },
   };
   const stackTokens: IStackTokens = { childrenGap: 10 };
-
-
 
   const TileLibrary = async (Internal: any, TileLID: any, ArchiveInternal: any, isUpdate: boolean) => {
     const Columns: any = [{
@@ -972,41 +777,29 @@ export default function Master({ props }: any): JSX.Element {
     switch (val) {
       case 'Multiple lines of Text':
         return 3;
-        break;
 
       case 'Date and Time':
         return 4;
-        break;
 
       case 'Choice':
         return 6;
-        break;
 
       case 'Lookup':
         return 7;
-        break;
 
       case 'Yes/No':
         return 8;
-        break;
 
       case 'Number':
         return 9;
-        break;
 
       case 'Person or Group':
         return 20;
-        break;
 
       default:
         return 2;
     }
   };
-
-
-
-
-
 
   const clearField = () => {
 
@@ -1029,8 +822,8 @@ export default function Master({ props }: any): JSX.Element {
     clearError();
 
   };
-  const clearError = () => {
 
+  const clearError = () => {
     setTileErr("");
     setAttachmentErr("");
     setAccessTileUserErr("");
@@ -1095,33 +888,7 @@ export default function Master({ props }: any): JSX.Element {
         isValidForm = false;
       }
     }
-    //const maindata = await getTileAllData(props.SiteURL, props.spHttpClient);
 
-    //   if(Action=="Add"){
-    //     if(TileName != "" || TileName != undefined || TileName != null){
-
-
-
-    //         for(var i=0; i<maindata.value; i++)
-    //         { 
-    //             if(maindata[i].TileName.toLowerCase() == maindata.toLowerCase())
-    //             {
-    //               setDuplicateTileError("<label class='error'>Tile Name you entered is already exists</label>");
-
-    //             }
-    //             else if($scope.GetData[i].LibraryName.toLowerCase() == Internal.toLowerCase())
-    //             {
-    //                     $("#txtTile").parent().append("<label class='error'>Tile Name you entered is already exists</label>");
-    //                     $("#txtTile").focus();
-    //                     $("#txtTile").prop("disabled",false);
-    //                     rv = false;
-    //                     return false;
-
-    //             }
-    //         }
-    //     }
-
-    // }
     return isValidForm;
   };
 
@@ -1145,34 +912,23 @@ export default function Master({ props }: any): JSX.Element {
     const backImageName = `${backImageActualName}.${selectedFile.name.split(".")[1]}`;
     let displayName = fileID + '-' + backImageName;
     await UploadDocument(props.SiteURL, props.spHttpClient, selectedFile, displayName, obj);
-
-
   };
 
 
   const saveData = async () => {
 
     try {
-      setShowLoader({ display: "block" }); // Show spinner before starting the save operation
-
-
+      setShowLoader({ display: "block" });
       let ArchiveInternal = "";
-      //let uniqueid = await uuidv4();
-
       let Fileuniqueid = await uuidv4();
 
       setFileuniqueIdData(Fileuniqueid);
-
-
-      console.log(Fileuniqueid);
-
       let siteurl = "";
 
       if (selectedFile) {
         const backImageActualName = selectedFile.name.split(".")[0].replace(/[^a-zA-Z0-9]/g, "");
         const backImageName = `${backImageActualName}.${selectedFile.name.split(".")[1]}`;
         siteurl = `${props.SiteURL}/DMS_TileDocument/${Fileuniqueid}-${backImageName}`;
-        console.log(siteurl);
       } else {
         console.log("No file selected.");
       }
@@ -1204,7 +960,6 @@ export default function Master({ props }: any): JSX.Element {
       let orderData;
       if (isDropdownVisible === true) {
         orderData = parseInt(order0DataDataText);
-        console.log(orderData);
       } else {
         const maindata = await getTileAllData(props.SiteURL, props.spHttpClient);
         let Dataval = maindata.value.length;
@@ -1218,7 +973,6 @@ export default function Master({ props }: any): JSX.Element {
 
       const NewOrderData = [];
       var ord = parseInt(orderData) - 1;
-      console.log(ord);
       for (var i = ord; i < uOrder0Data.length; i++) {
         if (uOrder0Data[i].ID != undefined) {
           var id = uOrder0Data[i].ID;
@@ -1253,8 +1007,6 @@ export default function Master({ props }: any): JSX.Element {
       };
 
       let LID = await SaveTileSetting(props.SiteURL, props.spHttpClient, option);
-      console.log(LID);
-
       if (LID != null) {
         const MainTileID = LID.Id;
         const MainTileLID = LID.Id.toString();
@@ -1265,13 +1017,8 @@ export default function Master({ props }: any): JSX.Element {
           let obj = { Order0: NewOrderData[i].orderno };
           await UpdateTileSetting(props.SiteURL, props.spHttpClient, obj, NewOrderData[i].ID);
         }
-
-        const TileLibraryData = await TileLibrary(Internal, MainTileLID, ArchiveInternal, false);
-        console.log(TileLibraryData);
-
+        await TileLibrary(Internal, MainTileLID, ArchiveInternal, false);
       }
-
-
     } catch (error) {
       console.error("Error during save operation:", error);
       setShowLoader({ display: "none" });
@@ -1478,13 +1225,7 @@ export default function Master({ props }: any): JSX.Element {
           };
           await UpdateTileSetting(props.SiteURL, props.spHttpClient, items, CurrentEditID);
 
-          // let ArchUpdateData = await getDataById(props.SiteURL, props.spHttpClient, CurrentEditID);
-
-          // let ArchUpdateTileID = ArchUpdateData.value;
-
-          if (UpdateTileID[0].ArchiveLibraryName === null && UpdateTileID[0].ArchiveLibraryName === undefined) {
-
-
+          if (UpdateTileID[0].ArchiveLibraryName === null || UpdateTileID[0].ArchiveLibraryName === undefined) {
             const UpdateTileLibraryData = await TileLibrary(Internal, CurrentEditID, ArchiveInternal, true).then(function (response) {
               console.log(UpdateTileLibraryData);
             });
@@ -1492,8 +1233,6 @@ export default function Master({ props }: any): JSX.Element {
           else {
             createAndUpdateArchiveColumn(UpdateTileID[0], true);
           }
-
-
         }
 
       }
@@ -1536,7 +1275,6 @@ export default function Master({ props }: any): JSX.Element {
               PagedefaultSize={10}
               TableRows={1}
               TableshowPagination={MainTableSetdata.length > 10}
-            //TableshowFilter={true}
             />
           </Stack.Item>
         </Stack>
@@ -1546,21 +1284,12 @@ export default function Master({ props }: any): JSX.Element {
         <Panel
           isOpen={isPanelOpen}
           onDismiss={closePanel}
-          // You MUST provide this prop! Otherwise screen readers will just say "button" with no label.
           closeButtonAriaLabel="Close"
           type={PanelType.large}
           isFooterAtBottom={true}
 
           headerText={isEditMode ? DisplayLabel?.EditTileManagement : DisplayLabel?.AddTileManagement}
         >
-
-          {/* {!isEditMode ? (
-            <h6 className={styles.Headerlabel}>{DisplayLabel?.AddTileManagement}</h6>
-          ) :
-            <h6 className={styles.Headerlabel}>{DisplayLabel?.EditTileManagement}</h6>
-          } */}
-
-
           <Accordion alwaysOpen >
             <Accordion.Item eventKey="0">
               <Accordion.Header className={styles.Accodordianherder}>{DisplayLabel?.TileDetails} </Accordion.Header>
@@ -1570,18 +1299,11 @@ export default function Master({ props }: any): JSX.Element {
                     <div className="col-md-3">
                       <div className="form-group">
                         <label className={styles.Headerlabel}>{DisplayLabel?.TileName}<span style={{ color: "red" }}>*</span></label>
-
-                        {/* <TextField label="Title" errorMessage={TileError} value={TileName} onChange={(e: any) => { setTileName(e.target.value); }} /> */}
                         <TextField
                           placeholder="Enter Tile Name"
-                          // onChange={(e: any) => { setTileName(e.target.value); }}
-                          //onChange={(e: any) => { setTileName(e.target.value); }}
                           errorMessage={TileError}
                           value={TileName}
                           onChange={(el: React.ChangeEvent<HTMLInputElement>) => setTileName(el.target.value)}
-
-
-
                         />
                       </div>
                     </div>
@@ -1590,26 +1312,13 @@ export default function Master({ props }: any): JSX.Element {
                         <label className={styles.Headerlabel}>{DisplayLabel?.DisplayPicture}<span style={{ color: "red" }}>*</span></label>
                         <TextField
                           placeholder=" "
-                          // errorMessage={"Please fill this field"}
-                          //value={selectedFile}
                           onChange={handleFileChange}
-                          //onChange={(el: React.ChangeEvent<HTMLInputElement>) => setSelectedFile()}
                           type="file"
                           errorMessage={attachmentErr}
-
+                          accept=".png, .jpg, .jpeg"
                         />
                         {/* {attachments} */}
                         {selectedFile && <p>Selected File:{selectedFile.name}</p>}
-                        {/* <FilePicker
-                        bingAPIKey="<BING API KEY>"
-                        accepts={[".doc", ".docx", ".xls", ".xlsm"]}
-                        buttonIcon="FileImage"
-                        onSave={(filePickerResult: IFilePickerResult[]) => {
-                          // this.setState({ filePickerResult })
-                          this.attachment1(filePickerResult);
-                        }}
-                        context={props.context}
-                      /> */}
                       </div>
                     </div>
                     <div className="col-md-3">
@@ -1621,28 +1330,12 @@ export default function Master({ props }: any): JSX.Element {
                           showtooltip={true}
                           required={true}
                           errorMessage={AccessTileUserErr}
-                          // searchTextLimit={2}
                           onChange={onPeoplePickerChange}
                           showHiddenInUI={false}
                           principalTypes={[PrincipalType.User]}
                           defaultSelectedUsers={isEditMode ? assignID : undefined}
-                        //defaultSelectedUsers={assignID}
-
-                        // resolveDelay={1000} 
                         />
-                        {/* <PeoplePicker
-                          context={peoplePickerContext}
-                          personSelectionLimit={5}
-                          //showtooltip={true}
-                          // required={true}
-                          // errorMessage={AccessTileUserErr}
-                          // searchTextLimit={2}
-                          // onChange={onPeoplePickerChange}
-                          showHiddenInUI={false}
-                          principalTypes={[PrincipalType.User]}
-                        // defaultSelectedUsers={assignID}
-                        // resolveDelay={1000} 
-                        /> */}
+
                       </div>
                     </div>
 
@@ -1679,17 +1372,8 @@ export default function Master({ props }: any): JSX.Element {
                           onChange={onTilePeoplePickerChange}
                           showHiddenInUI={false}
                           principalTypes={[PrincipalType.User]}
-                          //defaultSelectedUsers={TileAdminID}
                           defaultSelectedUsers={isEditMode ? TileAdminID : undefined}
                         />
-
-
-
-                        {/* <TextField
-                          placeholder=" "
-                          //errorMessage={"Please fill this field"}
-                          value={""}
-                        /> */}
                       </div>
                     </div>
 
@@ -1784,7 +1468,6 @@ export default function Master({ props }: any): JSX.Element {
                           <Toggle checked={formData.isShowAsFilter} onChange={(e, checked) => handleInputChange('isShowAsFilter', checked)} disabled={isToggleDisabled} />
                         </th>
                         <th style={{ padding: '10px' }}>
-                          {/* <Icon iconName="Add" onClick={handleSave} IIconProps={formData.editingIndex >= 0 ? saveIcon : addIcon} style={{ color: '#009EF7', font: 'bold', cursor: 'pointer' }} /> */}
                           <IconButton
                             iconProps={formData.editingIndex >= 0 ? saveIcon : addIcon}
                             title={formData.editingIndex >= 0 ? 'Update' : 'Add'}
@@ -1792,23 +1475,6 @@ export default function Master({ props }: any): JSX.Element {
                             onClick={handleSave}
                             style={{ color: '#009EF7', font: 'bold', cursor: 'pointer' }}
                           />
-                          {/* {formData.editingIndex >= 0 && (
-                            <IconButton
-                              iconProps={cancelIcon}
-                              title="Cancel"
-                              ariaLabel="Cancel"
-                              onClick={() =>
-                                setFormData({
-                                  field: '',
-                                  IsRequired: false,
-                                  IsActiveControl: false,
-                                  IsFieldAllowInFile: false,
-                                  isShowAsFilter: false,
-                                  editingIndex: -1,
-                                })
-                              }
-                            />
-                          )} */}
                         </th>
                       </tr>
                       <tbody>
@@ -1871,20 +1537,6 @@ export default function Master({ props }: any): JSX.Element {
                           onChange={(_, checked) => ToggleChangeforrefernceno(checked!)}
                         />
                       </div>
-
-                      {/* Dynamic Reference Example TextField */}
-                      {/* {!DynamicDataReference && (
-                        <div className="col-md-6">
-                          <label className={styles.Headerlabel}>{DisplayLabel?.DefaultReferenceExample}</label>
-                          <TextField
-                            placeholder=" "
-                            value={RefrenceNOData}
-                            disabled
-                          />
-                        </div>
-                      )} */}
-
-
                       <div className="col-md-6">
                         <label className={styles.Headerlabel}>{DynamicDataReference ? DisplayLabel?.DynamicReferenceExample : DisplayLabel?.DefaultReferenceExample}</label>
                         <TextField
@@ -1951,22 +1603,6 @@ export default function Master({ props }: any): JSX.Element {
                             }}
                           >
                             <label className={styles.Headerlabel} style={{ display: 'block' }}>{DisplayLabel?.Separator}</label>
-                            {/* <ChoiceGroup
-                              options={choiceoptions}
-                              onChange={(e, option) => handleRadioChange("separator", option?.key!)}
-                              required={true}
-                              selectedKey={separator}
-                              //defaultSelectedKey="Hyphens ( - )"
-                              styles={{
-                                flexContainer: {
-                                  display: 'flex',
-                                  flexDirection: 'row', // Arrange radio buttons horizontally
-                                  gap: '10px',
-                                  backgroundColor: '#f5f8fa',
-                                },
-                              }}
-                            /> */}
-
                             <ChoiceGroup
                               options={[
                                 { key: "-", text: "Hyphens ( - )" },
@@ -2001,21 +1637,6 @@ export default function Master({ props }: any): JSX.Element {
                             }}
                           >
                             <label className={styles.Headerlabel} style={{ display: 'block' }}>{DisplayLabel?.InitialIncrement}</label>
-                            {/* <ChoiceGroup
-                              options={InitialIncrementoptions}
-                              selectedKey={increment}
-                              onChange={(e, option) => handleRadioChange("increment", option?.key!)}
-                              required={true}
-                              //defaultSelectedKey="Continue"
-                              styles={{
-                                flexContainer: {
-                                  display: 'flex',
-                                  flexDirection: 'row', // Arrange radio buttons horizontally
-                                  gap: '10px',
-                                  backgroundColor: '#f5f8fa',
-                                },
-                              }}
-                            /> */}
 
                             <ChoiceGroup
                               options={[
@@ -2189,15 +1810,6 @@ export default function Master({ props }: any): JSX.Element {
           <div className={styles.container} >
             <div className={styles.containerOne} >
 
-              {/* <DefaultButton text="Save" className={styles['sub-btn']} allowDisabledFocus onClick={showPopup} />
-              {isDatapopvisible && (<MessageDialog />)} */}
-
-              {/* <DefaultButton onClick={submitTileData} text={DisplayLabel?.Draft} className={styles['sub-btn']} /> */}
-
-              {/* {isLoading && (
-                <Spinner size={SpinnerSize.large} label="Data is Saving please wait..." />
-              )} */}
-
               <div className={cls["modal"]} style={showLoader}></div>
               {!isEditMode ? (
                 <DefaultButton onClick={submitTileData} text={DisplayLabel?.Submit} className={styles['sub-btn']} />
@@ -2214,16 +1826,6 @@ export default function Master({ props }: any): JSX.Element {
     </div >
   );
 
-  // let count:any;
-  // const  [ListGuid,setListGuid]=useState([]);
-
-  // function CreateList(IListItem: any, TileLID: number, isArchive: boolean) {
-  //   count=0;
-  //   ListGuid = [];
-  //   for (let i = 0; i < IListItem.length; i++) {
-  //     httpServiceForCreateList(,, IListItem, TileLID, isArchive);
-  //   }
-  // }
   function CreateList(IListItem: any, TileLID: number, isArchive: boolean) {
     let count = 0;
     ListGuid = [];
@@ -2389,7 +1991,7 @@ export default function Master({ props }: any): JSX.Element {
     console.log(IListItem);
     defaulttViewID = [];
     for (let list = 0; list < IListItem.length; list++) {
-      // const url = webURL + "/_api/Web/Lists/getByTitle('" + IListItem[list]["ListName"] + "')/views/getByTitle('All Items')";
+
       const url = `${props.SiteURL}/_api/Web/Lists/getByTitle('${encodeURIComponent(IListItem[list]["ListName"])}')/views/getByTitle('${encodeURIComponent("All Documents")}')`;
 
       await props.context.spHttpClient.get(url, SPHttpClient.configurations.v1,
@@ -2428,9 +2030,6 @@ export default function Master({ props }: any): JSX.Element {
 
             fetchData();
             setisPopupVisible(true);
-
-            // closePanel();
-
           }
         });
       }

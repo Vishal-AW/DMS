@@ -76,7 +76,7 @@ export function updateLibrary(WebUrl: string, spHttpClient: SPHttpClient, metaDa
     return UpdateItem(WebUrl, spHttpClient, listName, metaData, Id);
 }
 
-export async function UploadFile(WebUrl: string, spHttpClient: any, file: string, DisplayName: string | File, DocumentLib: string, jsonBody: { __metadata: { type: string; }; Name: string; TileLID: any; DocumentType: string; Documentpath: string; } | null, FolderPath: string): Promise<any> {
+export async function UploadFile(WebUrl: string, spHttpClient: any, file: string, DisplayName: string | File, DocumentLib: string, jsonBody: any, FolderPath: string): Promise<any> {
 
     // let fileupload = FolderPath +"/"+FolderName;
     return new Promise((resolve) => {
@@ -84,17 +84,20 @@ export async function UploadFile(WebUrl: string, spHttpClient: any, file: string
             body: file
         };
         var redirectionURL = WebUrl + "/_api/Web/GetFolderByServerRelativeUrl('" + FolderPath + "')/Files/Add(url='" + DisplayName + "', overwrite=true)?$expand=ListItemAllFields";
-        const responsedata = spHttpClient.post(redirectionURL, SPHttpClient.configurations.v1, spOpts).then((response: SPHttpClientResponse) => {
+        spHttpClient.post(redirectionURL, SPHttpClient.configurations.v1, spOpts).then((response: SPHttpClientResponse) => {
             response.json().then(async (responseJSON: any) => {
                 // console.log(responseJSON.ListItemAllFields.ID);
-                var serverRelURL = await responseJSON.ServerRelativeUrl;
+                // var serverRelURL = await responseJSON.ServerRelativeUrl;
                 if (jsonBody != null) {
+                    let IsExistingRefID = responseJSON.ListItemAllFields.ID.toString();
+                    if (jsonBody.IsExistingRefID !== null && jsonBody.IsExistingRefID !== undefined && jsonBody.IsExistingRefID !== "") {
+                        IsExistingRefID = jsonBody.IsExistingRefID;
+                    }
+                    jsonBody.IsExistingRefID = IsExistingRefID;
                     await UpdateItem(WebUrl, spHttpClient, DocumentLib, jsonBody, responseJSON.ListItemAllFields.ID);
 
                 }
                 resolve(responseJSON);
-                console.log(responsedata);
-                console.log(serverRelURL);
             });
         });
     });
