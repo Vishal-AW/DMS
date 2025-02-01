@@ -207,6 +207,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
             setToggleVisible(false);
             setToggleVisible1(false);
             setDropdownVisible(false);
+
             setSecondaryDropdownVisible(false);
             setTableVisible(false);
             setIsToggleDisabled(false);
@@ -222,10 +223,6 @@ export default function ConfigMaster({ props }: any): JSX.Element {
             setSecondaryDropdownVisible(false);
             setTableVisible(true);
         }
-
-
-
-
 
     };
 
@@ -327,6 +324,8 @@ export default function ConfigMaster({ props }: any): JSX.Element {
             if (option.key === "Single line of Text") {
                 setToggleVisible(false);
                 setToggleVisible1(false);
+
+
                 setDropdownVisible(false);
                 setSecondaryDropdownVisible(false);
                 setTableVisible(false);
@@ -810,3 +809,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
 
     );
 }
+
+
+
+

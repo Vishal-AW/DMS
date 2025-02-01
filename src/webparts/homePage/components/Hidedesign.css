@@ -82,8 +82,8 @@ body {
 }
 
 .a_c_50a7110f:not(.e_c_50a7110f) {
-    padding-left: 0px;
-    padding-right: 0px;
+    padding-left: 0px !important;
+    padding-right: 0px !important;
 }
 
 .a_b_50a7110f:not(.e_b_50a7110f):not(.o_b_50a7110f) {
@@ -496,5 +496,21 @@ div:focus-visible,
 
 .addoption .ms-Button--icon {
     border-radius: 50% !important;
+    padding: 0px !important;
+}
+
+.a_e_50a7110f.a_e_50a7110f:not(.e_e_50a7110f) {
+    padding-left: 0px !important;
+    padding-right: 0px !important;
+}
+
+
+@media screen and (min-width: 1024px) {
+    .a_b_50a7110f:not(.b_b_50a7110f) .m_b_50a7110f {
+        max-width: 1236px !important;
+    }
+}
+
+.a_c_50a7110f:not(.b_c_50a7110f):not(.l_c_50a7110f) {
     padding: 0px !important;
 }

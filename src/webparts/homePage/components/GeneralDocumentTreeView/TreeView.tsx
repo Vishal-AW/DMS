@@ -63,6 +63,8 @@ export default function TreeView({ props }: any) {
                 setRightFolders(updatedFolders);
                 if (folderPath === libName) {
                     setFolders(data.Folders);
+
+
                 } else {
                     setChildFolders((prev) => ({
                         ...prev,
@@ -286,3 +288,4 @@ export default function TreeView({ props }: any) {
         </div>
     );
 }
+
