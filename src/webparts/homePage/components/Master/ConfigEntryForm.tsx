@@ -8,6 +8,7 @@ import cls from '../HomePage.module.scss';
 import PopupBox from "../ResuableComponents/PopupBox";
 import { getConfidDataByID, getConfig, SaveconfigMaster, UpdateconfigMaster } from "../../../../Services/ConfigService";
 import ReactTableComponent from '../ResuableComponents/ReusableDataTable';
+import Select from "react-select";
 
 
 
@@ -44,6 +45,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
     const [DisplayColumnIDErr, setDisplayColumnIDErr] = useState("");
     // const [SiteListData, setSiteListData] = useState([]);
     //const [ColumnTypeText, setColumnTypeText] = useState('');
+    const [selectedListOption, setSelectedListOption] = React.useState<any>(null);
 
 
 
@@ -137,6 +139,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
 
         setColumnTypeID(EditConfigData[0].ColumnType);
         setListNameID(EditConfigData[0].InternalListName);
+        setSelectedListOption({ value: EditConfigData[0].InternalListName, label: EditConfigData[0].InternalListName });
 
 
         setDisplayColumnID(EditConfigData[0].DisplayValue);
@@ -250,19 +253,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
         const data = await GetListData(url);
         var ListNamedata = data.d.results;
 
-        let options: any = [];
-
-        ListNamedata.forEach((InternalTitleNameData: { Title: any; InternalTitleName: any; }) => {
-
-            options.push({
-
-                key: InternalTitleNameData.Title,
-
-                text: InternalTitleNameData.Title
-
-            });
-
-        });
+        let options = ListNamedata.map((item: any) => ({ value: item.Title, label: item.Title }));
 
         setListData(options);
 
@@ -405,14 +396,10 @@ export default function ConfigMaster({ props }: any): JSX.Element {
         }
     };
 
-    const handleListNameonChange = async (event: React.FormEvent<HTMLDivElement>, option?: IDropdownOption) => {
-        if (option) {
-            console.log("Selected Option:", option.key, option.text);
-            bindDisplayColumn(option.text);
-
-            setListNameID(option?.key as string);
-
-        }
+    const handleListNameonChange = async (option?: any) => {
+        bindDisplayColumn(option.label);
+        setListNameID(option.value);
+        setSelectedListOption(option);
     };
     const bindDisplayColumn = async (listName: string) => {
         let query = props.SiteURL + "/_api/web/lists/getbytitle('" + listName + "')/Fields?$filter=(CanBeDeleted eq true) and (TypeAsString eq 'Text' or TypeAsString eq 'Number')";
@@ -451,12 +438,21 @@ export default function ConfigMaster({ props }: any): JSX.Element {
         setFieldName("");
         setColumnTypeID('');
         setListNameID('');
+        setSelectedListOption(null);
         setDisplayColumnID('');
         setIsShowasFilter(false);
         setIsStaticValues(false);
         setOptions([]);
         setisColumnTypeDisabled(false);
         clearError();
+
+        setToggleVisible(false);
+        setToggleVisible1(false);
+        setDropdownVisible(false);
+        setSecondaryDropdownVisible(false);
+        setTableVisible(false);
+        setIsToggleDisabled(false);
+        setisColumnTypeDisabled(false);
 
     };
     const clearError = () => {
@@ -495,9 +491,9 @@ export default function ConfigMaster({ props }: any): JSX.Element {
             }
         }
 
-
         return isValidForm;
     };
+
     const SaveItemData = () => {
         clearError();
         let valid = validation();
@@ -657,11 +653,19 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                             <div className="form-group">
                                 <label className={styles.Headerlabel}>{DisplayLabel?.ListName}<span style={{ color: "red" }}>*</span></label>
 
-                                <Dropdown
+                                {/* <Dropdown
                                     placeholder={DisplayLabel?.Selectanoption}
                                     options={ListData}
                                     onChange={handleListNameonChange}
                                     selectedKey={ListNameID}
+                                    errorMessage={ListNameIDErr}
+                                /> */}
+                                <Select
+                                    options={ListData}
+                                    value={selectedListOption}
+                                    onChange={handleListNameonChange}
+                                    isSearchable
+                                    placeholder={DisplayLabel?.Selectanoption}
                                     errorMessage={ListNameIDErr}
                                 />
                             </div>

@@ -87,6 +87,10 @@ export default function TreeView({ props }: any) {
         getAdmin();
     }, [isCreateProjectPopupOpen]);
 
+    useEffect(() => {
+        fetchFolders(folderPath, folderName);
+    }, [isOpenUploadPanel]);
+
     const fetchFolders = async (folderPath: string, nodeName: string) => {
         try {
             setFolderPath(folderPath);
@@ -470,8 +474,8 @@ export default function TreeView({ props }: any) {
                     </div>
                 </div>
             </div>
-            <Stack horizontal styles={stackStyles} tokens={stackTokens}>
-                <Stack.Item styles={stackItemStyles}>
+            <Stack enableScopedSelectors horizontal styles={stackStyles} tokens={stackTokens} className="ms-Grid">
+                <Stack.Item grow styles={stackItemStyles} className={styles.col3}>
                     <div className={styles.grid}>
                         <div className={styles.row}>
                             <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "EmptyRecycleBin" }} text={DisplayLabel.RecycleBin} onClick={getRecycleData} /></div>
@@ -504,7 +508,7 @@ export default function TreeView({ props }: any) {
                         </li>
                     </ul>
                 </Stack.Item>
-                <Stack.Item grow={3} styles={stackItemStyles}>
+                <Stack.Item grow={6} styles={stackItemStyles} className={styles.col9}>
                     <div className={styles.grid}>
                         <div className={styles.row}>
                             <div className={styles.col12}>Dashboard/{folderPath}</div>
@@ -520,9 +524,7 @@ export default function TreeView({ props }: any) {
                             </div>
                         </div>
                     </div>
-
                     {bindTable()}
-
                 </Stack.Item>
             </Stack>
 
