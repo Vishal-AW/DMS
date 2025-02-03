@@ -5,7 +5,7 @@ import { WebPartContext } from "@microsoft/sp-webpart-base";
 import { IPeoplePickerContext, PeoplePicker, PrincipalType } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 import { getUserIdFromLoginName, uuidv4 } from "../../../../DAL/Commonfile";
 import { getConfigActive } from "../../../../Services/ConfigService";
-import { generateAutoRefNumber, getListData, UploadFile } from "../../../../Services/GeneralDocument";
+import { generateAutoRefNumber, getListData, updateLibrary, UploadFile } from "../../../../Services/GeneralDocument";
 import { getDataByLibraryName } from "../../../../Services/MasTileService";
 import PopupBox from "../ResuableComponents/PopupBox";
 import { getStatusByInternalStatus } from "../../../../Services/StatusSerivce";
@@ -34,7 +34,9 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
     const [attachmentsFiles, setAttachmentsFiles] = useState<any[]>([]);
     const [attachment, setAttachment] = useState<{ [key: string]: any; }>({});
     const [attachmentErr, setAttachmentErr] = useState<string>('');
-    const filesData = files.map((item: any) => ({ key: item.name, text: item.ListItemAllFields.ActualName }));
+    const [filesData, setFilesData] = useState<any[]>([]);
+    const [filterFilesData, setFilterFilesData] = useState<any[]>([]);
+    const [existingFile, setExistingFile] = useState<any[]>([]);
     const [isUpdateExistingFile, setIsUpdateExistingFile] = useState<boolean>(false);
     const [isPopupBoxVisible, setIsPopupBoxVisible] = useState<boolean>(false);
     const [showLoader, setShowLoader] = useState({ display: "none" });
@@ -62,6 +64,9 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
         setDynamicValuesErr({});
         setDynamicValues({});
         setAttachmentsFiles([]);
+        setExistingFile([]);
+        setFilesData([]);
+        setFilterFilesData([]);
     }, [isOpenUploadPanel]);
 
     const handleInputChange = (key: string, value: any) => {
@@ -83,7 +88,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
     };
 
     const bindDropdown = (dynamic: any) => {
-        let dropdownOptions = [{ key: "", text: "Select an option" }];
+        let dropdownOptions = [{ key: "", text: "" }];
         dynamic.map(async (item: any, index: number) => {
             if (item.ColumnType === "Dropdown" || item.ColumnType === "Multiple Select") {
                 if (item.IsStaticValue) {
@@ -120,7 +125,6 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                     return (
                         <div className={styles.col6} key={index}>
                             <Dropdown
-                                placeholder="Select an option"
                                 label={item.Title}
                                 options={options[item.InternalTitleName] || []}
                                 required={item.IsRequired}
@@ -202,7 +206,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
 
     const addAttachment = () => {
         if (!attachment.name) {
-            setAttachmentErr('Please select a file');
+            setAttachmentErr(DisplayLabel.ThisFieldisRequired);
             return false;
         }
         setAttachmentErr('');
@@ -212,13 +216,24 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
             OldFileName: "",
             version: "1.0",
             isDisabled: true,
+            Flag: "New"
         };
         setAttachmentsFiles((prev) => [...prev, newAttachment]);
         setAttachment({});
     };
 
     const onClickDetails = (index: number) => {
-        setAttachmentsFiles((prev) => prev.map((ele, i) => i === index ? { ...ele, isDisabled: !ele.isDisabled } : ele));
+        let IsExistingReferenceNo = "";
+        if (attachmentsFiles[index].isUpdateExistingFile === "Yes") {
+            let eFile = filterFilesData.filter((ele: any) => ele.Name == attachmentsFiles[index].OldFileName);
+            IsExistingReferenceNo = eFile.length > 0 ? eFile[0].ListItemAllFields.IsExistingRefID : "";
+            setExistingFile((per) => [...per, { ...eFile[0] }]);
+            if (attachmentsFiles[index].OldFileName === "" || attachmentsFiles[index].OldFileName === null) {
+                setAttachmentErr(DisplayLabel.ThisFieldisRequired);
+                return false;
+            }
+        }
+        setAttachmentsFiles((prev) => prev.map((ele, i) => i === index ? { ...ele, isDisabled: !ele.isDisabled, IsExistingRefID: IsExistingReferenceNo } : ele));
     };
     const submit = async () => {
         let isValid = true;
@@ -227,7 +242,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                 if (item.IsRequired && !dynamicValues[item.InternalTitleName]) {
                     setDynamicValuesErr((prev) => ({
                         ...prev,
-                        [item.InternalTitleName]: `${item.Title} is required`,
+                        [item.InternalTitleName]: DisplayLabel.ThisFieldisRequired,
                     }));
                     isValid = false;
                     return;
@@ -235,7 +250,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
             });
         }
         if (attachmentsFiles.length === 0) {
-            setAttachmentErr('Please select a file');
+            setAttachmentErr(DisplayLabel.ThisFieldisRequired);
             isValid = false;
         }
         if (!isValid) return;
@@ -248,6 +263,12 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
         }
 
         attachmentsFiles.forEach(async (item) => {
+            if (item.isUpdateExistingFile === "Yes") {
+                existingFile.map(async (el) => {
+                    await updateLibrary(context.pageContext.web.absoluteUrl, context.spHttpClient, { IsExistingFlag: "Old" }, el.ListItemAllFields.ID, libName);
+                });
+            }
+
             const Fileuniqueid = await uuidv4();
             let obj: any = {
                 ...folderObject,
@@ -256,7 +277,9 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                 FolderDocumentPath: `/${folderPath}`,
                 OCRStatus: "Pending",
                 UploadFlag: "Frontend",
-                Level: item.version
+                Level: item.version,
+                IsExistingFlag: item.Flag,
+                IsExistingRefID: item.IsExistingRefID,
             };
             let InternalStatus = "Published";
             if (folderObject.DefineRole) {
@@ -285,7 +308,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
             const ReferenceNo = generateAutoRefNumber(refCount, folderObject, LastDocRes.value[0].Created, LibraryDetails);
 
             obj.ReferenceNo = ReferenceNo.refNo.replace(/null/, "");
-
+            obj.RefSequence = ReferenceNo.count;
             await UploadFile(context.pageContext.web.absoluteUrl, context.spHttpClient, item.attachment, `${Fileuniqueid}-${item.attachment.name}`, libName, obj, folderPath);
             count++;
 
@@ -373,6 +396,20 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                                                     selectedKey={item.isUpdateExistingFile}
                                                     onChange={async (ev, option) => {
                                                         const attach = await Promise.all(attachmentsFiles.map((ele, i) => i === index ? { ...ele, isUpdateExistingFile: option?.key } : ele));
+                                                        let filterFiles = files.filter((el: any) => el.ListItemAllFields.IsExistingFlag === "New");
+                                                        if (filterFiles.length > 0 && attachmentsFiles.length > 0) {
+                                                            attachmentsFiles.map((el: any) => {
+                                                                filterFiles = filterFiles.filter((ele: any) => {
+                                                                    if (el.name !== "" && item.name != el.name) {
+                                                                        return ele.ListItemAllFields.Active === true && ele.ListItemAllFields.IsExistingFlag === "New" && el.name != ele.Name;
+                                                                    } else {
+                                                                        return ele.ListItemAllFields.Active === true && ele.ListItemAllFields.IsExistingFlag === "New";
+                                                                    }
+                                                                });
+                                                            });
+                                                        }
+                                                        setFilterFilesData(filterFiles);
+                                                        setFilesData(filterFiles.map((el: any) => ({ key: el.Name, text: el.ListItemAllFields.ActualName })));
                                                         setAttachmentsFiles(attach);
                                                         // await setAttachmentsFiles((prev) => prev.map((ele, i) => i === index ? { ...ele, isUpdateExistingFile: option?.key } : ele));
                                                         const filterD = attach.filter((el, i) => el.isUpdateExistingFile === "Yes");
@@ -385,7 +422,14 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                                                 <Dropdown
                                                     options={filesData}
                                                     selectedKey={item.OldFileName}
-                                                    onChange={(ev, option) => setAttachmentsFiles((prev) => prev.map((ele, i) => i === index ? { ...ele, OldFileName: option?.key } : ele))}
+                                                    onChange={(ev, option) => {
+                                                        const fData = filterFilesData.filter((ele: any) => ele.Name == option?.key);
+                                                        let level = 1.0;
+                                                        if (fData.length > 0)
+                                                            level = parseFloat(fData[0].ListItemAllFields.Level) + 1.0;
+
+                                                        setAttachmentsFiles((prev) => prev.map((ele, i) => i === index ? { ...ele, OldFileName: option?.key, version: level.toFixed(1) } : ele));
+                                                    }}
                                                     disabled={item.isDisabled}
                                                 />
                                             </td> : <></>}

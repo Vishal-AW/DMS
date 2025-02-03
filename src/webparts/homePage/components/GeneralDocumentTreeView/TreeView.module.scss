@@ -77,6 +77,17 @@
     margin-bottom: 10px;
 }
 
+.col3 {
+    @include ms-Grid-col;
+    @include ms-md3;
+}
+
+.col9 {
+    @include ms-Grid-col;
+    @include ms-md9;
+}
+
+
 .col6 {
     @include ms-Grid-col;
     @include ms-md6;
