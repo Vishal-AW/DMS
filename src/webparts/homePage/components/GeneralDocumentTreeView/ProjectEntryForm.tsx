@@ -610,7 +610,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                                 showtooltip={true}
                                 required
                                 showHiddenInUI={false}
-                                principalTypes={[PrincipalType.User]}
+                                // principalTypes={[PrincipalType.User]}
                                 onChange={async (items) => {
                                     try {
                                         const userIds = await Promise.all(
