@@ -83,21 +83,26 @@ export default function ConfigMaster({ props }: any): JSX.Element {
     };
 
     const Tablecolumns = [
-        { Header: "FIELD NAME", accessor: "Title" },
-        { Header: "COLUMN TYPE", accessor: "ColumnType", },
-        { Header: "LIST NAME", accessor: "InternalListName" },
         {
-            Header: "IS ACTIVE",
+            Header: DisplayLabel?.SrNo,
+            accessor: "row._index",
+            Cell: ({ row }: { row: any; }) => row._index + 1,
+        },
+        { Header: DisplayLabel?.FieldName, accessor: "Title" },
+        { Header: DisplayLabel?.ColumnType, accessor: "ColumnType", },
+        { Header: DisplayLabel?.ListName, accessor: "InternalListName" },
+        {
+            Header: DisplayLabel?.IsActive,
             accessor: "IsActive",
             Cell: ({ row }: { row: any; }) => (row.IsActive === true ? "Yes" : "No")
         },
         {
-            Header: "IS STATIC DATA",
+            Header: DisplayLabel?.IsStaticValue,
             accessor: "IsStaticValue",
             Cell: ({ row }: { row: any; }) => (row.IsStaticValue === true ? "Yes" : "No")
         },
         {
-            Header: "ACTION",
+            Header: DisplayLabel?.Action,
             Cell: ({ row }: { row: any; }) => (
                 <FontIcon aria-label="Edit" onClick={() => openEditPanel(row._original.Id)} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer' }}></FontIcon>
             )
@@ -112,22 +117,23 @@ export default function ConfigMaster({ props }: any): JSX.Element {
         const EditConfigData = GetEditData.value;
         const CurrentItemId: number = EditConfigData[0].ID;
         setCurrentEditID(CurrentItemId);
-        console.log(CurrentItemId);
-        bindDisplayColumn(EditConfigData[0].InternalListName);
-        await setFieldName(EditConfigData[0].Title);
-        const columntypeData = dropdownOptions.filter((item: any) => item.key === EditConfigData[0].ColumnType);
-        const options = columntypeData.map((item: any) => ({
-            key: item.key,
-            text: item.text,
-        }));
-        console.log(options);
+        if (EditConfigData[0].ColumnType === "Dropdown" || EditConfigData[0].ColumnType === "Multiple Select")
+            bindDisplayColumn(EditConfigData[0].InternalListName);
 
-        const GetListData = ListData.filter((item: any) => item.key === EditConfigData[0].InternalListName);
-        const Listoptions = GetListData.map((item: any) => ({
-            key: item.key,
-            text: item.text,
-        }));
-        console.log(Listoptions);
+        await setFieldName(EditConfigData[0].Title);
+        // const columntypeData = dropdownOptions.filter((item: any) => item.key === EditConfigData[0].ColumnType);
+        // const options = columntypeData.map((item: any) => ({
+        //     key: item.key,
+        //     text: item.text,
+        // }));
+        // console.log(options);
+
+        // const GetListData = ListData.filter((item: any) => item.key === EditConfigData[0].InternalListName);
+        // const Listoptions = GetListData.map((item: any) => ({
+        //     key: item.key,
+        //     text: item.text,
+        // }));
+        // console.log(Listoptions);
 
         setColumnTypeID(EditConfigData[0].ColumnType);
         setListNameID(EditConfigData[0].InternalListName);
@@ -441,7 +447,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
     }, [isPopupVisible]);
 
     const clearField = () => {
-
+        setCurrentEditID(0);
         setFieldName("");
         setColumnTypeID('');
         setListNameID('');
@@ -449,7 +455,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
         setIsShowasFilter(false);
         setIsStaticValues(false);
         setOptions([]);
-
+        setisColumnTypeDisabled(false);
         clearError();
 
     };
@@ -464,27 +470,27 @@ export default function ConfigMaster({ props }: any): JSX.Element {
     const validation = () => {
         let isValidForm = true;
         if (FieldName === "" || FieldName === undefined || FieldName === null) {
-            setFieldNameErr('This value is required.');
+            setFieldNameErr(DisplayLabel?.ThisFieldisRequired as string);
             isValidForm = false;
         }
-        if (isColumnTypeDisabled === false) {
+        else if (isColumnTypeDisabled === false) {
             if (ColumnTypeID === "" || ColumnTypeID === undefined || ColumnTypeID === null) {
-                setColumnTypeIDErr('This value is required.');
+                setColumnTypeIDErr(DisplayLabel?.ThisFieldisRequired as string);
                 isValidForm = false;
             }
         }
-        if (IsStaticValue === true) {
+        else if (IsStaticValue === true) {
             if (options.length === 0) {
-                alert('at least two option record required');
+                alert(DisplayLabel?.Atleasttwooptionrecordrequired);
             }
         }
-        if (IsStaticValue === false && ColumnTypeID === "Dropdown") {
+        else if (IsStaticValue === false && ColumnTypeID === "Dropdown") {
             if (ListNameID === "" || ListNameID === undefined || ListNameID === null) {
-                setListNameIDErr('This value is required.');
+                setListNameIDErr(DisplayLabel?.ThisFieldisRequired as string);
                 isValidForm = false;
             }
             if (DisplayColumnID === "" || DisplayColumnID === undefined || DisplayColumnID === null) {
-                setDisplayColumnIDErr('This value is required.');
+                setDisplayColumnIDErr(DisplayLabel?.ThisFieldisRequired as string);
                 isValidForm = false;
             }
         }
@@ -531,67 +537,17 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                 IsShowAsFilter: IsShowasFilter,
                 Abbreviation: "Abbreviation"
             };
+            if (!isEditMode)
+                await SaveconfigMaster(props.SiteURL, props.spHttpClient, option);
 
-            let LID = await SaveconfigMaster(props.SiteURL, props.spHttpClient, option);
-            console.log(LID);
+            else
+                await UpdateconfigMaster(props.SiteURL, props.spHttpClient, option, CurrentEditID);
 
-            if (LID != null) {
-
-                setShowLoader({ display: "none" });
-                setisPopupVisible(true);
-            }
-
-
-        } catch (error) {
-            console.error("Error during save operation:", error);
-            setShowLoader({ display: "none" });
-        }
-    };
-
-    const UpdateItemData = () => {
-        clearError();
-        let valid = validation();
-        valid ? UpdateData() : "";
-    };
-
-    const UpdateData = async () => {
-        try {
-            setShowLoader({ display: "block" });
-
-            let ddlListName = null;
-            let ddlColumn = null;
-
-            if (IsStaticValue === true) {
-                ddlListName = null;
-                ddlColumn = null;
-            } else {
-                ddlListName = ListNameID;
-                ddlColumn = DisplayColumnID;
-            }
-            let FieldNameNew = FieldName.split(" ").join("");
-            let Name = FieldName;
-
-
-            let option = {
-                __metadata: { type: "SP.Data.ConfigEntryMasterListItem" },
-                Title: Name.trim(),
-                InternalTitleName: FieldNameNew,
-                IsActive: true,
-                ColumnType: ColumnTypeID,
-                IsStaticValue: IsStaticValue,
-                StaticDataObject: options.join(';'),
-                InternalListName: ddlListName,
-                DisplayValue: ddlColumn,
-                IsShowAsFilter: IsShowasFilter,
-                Abbreviation: "Abbreviation"
-            };
-
-            await UpdateconfigMaster(props.SiteURL, props.spHttpClient, option, CurrentEditID);
 
             setShowLoader({ display: "none" });
+            setIsPanelOpen(false);
             setisPopupVisible(true);
-
-
+            fetchData();
 
         } catch (error) {
             console.error("Error during save operation:", error);
@@ -626,8 +582,15 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                 closeButtonAriaLabel="Close"
                 type={PanelType.large}
                 isFooterAtBottom={true}
+                role="tabpanel"
+                onRenderFooterContent={() => (
+                    <>
+                        <DefaultButton onClick={SaveItemData} text={isEditMode ? (DisplayLabel?.Update) : DisplayLabel?.Submit} className={styles['sub-btn']} />
+                        <DefaultButton text={DisplayLabel?.Cancel} onClick={closePanel} className={styles['can-btn']} allowDisabledFocus />
+                    </>
+                )}
 
-                headerText={isEditMode ? "Edit New Records" : "Add New Records"}
+                headerText={isEditMode ? DisplayLabel?.EditNewRecords : DisplayLabel?.AddNewRecords}
             >
                 <div className={`ms-Grid ${styles.inlineFormContainer}`}>
                     <div className="col-md-5">
@@ -653,7 +616,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                         <div className="form-group">
                             <label className={styles.Headerlabel}>{DisplayLabel?.ColumnType}<span style={{ color: "red" }}>*</span></label>
                             <Dropdown
-                                placeholder="Select an Option"
+                                placeholder={DisplayLabel?.Selectanoption}
                                 options={dropdownOptions}
                                 onChange={handleColumnTypeonChange}
                                 selectedKey={ColumnTypeID}
@@ -695,7 +658,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                                 <label className={styles.Headerlabel}>{DisplayLabel?.ListName}<span style={{ color: "red" }}>*</span></label>
 
                                 <Dropdown
-                                    placeholder="Select an Option"
+                                    placeholder={DisplayLabel?.Selectanoption}
                                     options={ListData}
                                     onChange={handleListNameonChange}
                                     selectedKey={ListNameID}
@@ -708,7 +671,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                             <div className="form-group">
                                 <label className={styles.Headerlabel}>{DisplayLabel?.DisplayColumn}<span style={{ color: "red" }}>*</span></label>
                                 <Dropdown
-                                    placeholder="Select an Option"
+                                    placeholder={DisplayLabel?.Selectanoption}
                                     options={DisplaycolumnListData}
                                     onChange={handleDisplayColumnonChange}
                                     selectedKey={DisplayColumnID}
@@ -779,31 +742,11 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                         </table>
                     )}
                 </div>
-
-                <div className={styles.container} >
-                    <div className={styles.containerOne} >
-                        <div className={cls["modal"]} style={showLoader}></div>
-
-                        {!isEditMode ? (
-
-                            <DefaultButton onClick={SaveItemData} text={DisplayLabel?.Submit} className={styles['sub-btn']} />
-                        ) :
-                            <DefaultButton onClick={UpdateItemData} text={DisplayLabel?.Update} className={styles['sub-btn']} />
-                        }
-
-
-                        <PopupBox isPopupBoxVisible={isPopupVisible} hidePopup={hidePopup} />
-
-
-                        <DefaultButton text={DisplayLabel?.Cancel} onClick={closePanel} className={styles['can-btn']} allowDisabledFocus />
-
-                    </div>
-
-                </div>
+                <div className={cls["modal"]} style={showLoader}></div>
 
 
             </Panel>
-
+            <PopupBox isPopupBoxVisible={isPopupVisible} hidePopup={hidePopup} />
 
         </div>
 

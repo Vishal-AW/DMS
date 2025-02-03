@@ -4,6 +4,14 @@ body {
     font-family: 'Poppins', sans-serif;
 }*/
 
+.r_c_50a7110f {
+    max-width: 100% !important
+}
+
+.ControlZone {
+    padding: 0px !important;
+}
+
 ::-webkit-scrollbar {
     width: 9px !important;
     background-color: transparent !important;
@@ -499,18 +507,16 @@ div:focus-visible,
     padding: 0px !important;
 }
 
-.a_e_50a7110f.a_e_50a7110f:not(.e_e_50a7110f) {
-    padding-left: 0px !important;
-    padding-right: 0px !important;
-}
-
-
 @media screen and (min-width: 1024px) {
     .a_b_50a7110f:not(.b_b_50a7110f) .m_b_50a7110f {
-        max-width: 1236px !important;
+        max-width: 100% !important;
     }
 }
 
-.a_c_50a7110f:not(.b_c_50a7110f):not(.l_c_50a7110f) {
+.r_c_50a7110f {
+    max-width: 100% !important
+}
+
+.ControlZone {
     padding: 0px !important;
 }

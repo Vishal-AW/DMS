@@ -82,6 +82,11 @@
     @include ms-md6;
 }
 
+.col10 {
+    @include ms-Grid-col;
+    @include ms-md10;
+}
+
 .col12 {
     @include ms-Grid-col;
     @include ms-md12;
@@ -131,4 +136,41 @@
 .table td {
     padding: 10px;
     border: 1px solid #ddd;
+}
+
+
+.sub-btn {
+    padding: 12px 22px;
+    text-align: center;
+    color: #fff;
+    background: #009EF7;
+    text-decoration: none;
+    margin: 3px 15px 0px 3px;
+    //font-size: 15px;
+    border: 0px;
+    display: inline-block;
+    font-weight: 500;
+    outline: 0 !important;
+}
+
+.sub-btn:hover {
+    color: #fff;
+    background: #009EF7;
+}
+
+.can-btn {
+    padding: 12px 22px;
+    text-align: center;
+    color: #7e8299;
+    background: #dddad8;
+    text-decoration: none;
+    margin: 20px 0;
+    font-size: 15px;
+    border: 0px;
+    outline: 0 !important;
+}
+
+.can-btn:hover {
+    color: #fff;
+    background: #dddad8;
 }
