@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import { commonPostMethod, getPermission } from "../../../../Services/GeneralDocument";
 import PopupBox, { ConfirmationDialog } from "../ResuableComponents/PopupBox";
 import { ILabel } from "../Interface/ILabel";
+import { DefaultButton } from "office-ui-fabric-react";
 
 export interface IAdvanceProps {
     isOpen: boolean;
@@ -29,17 +30,17 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
     const [selectedPermissionError, setSelectedPermissionError] = useState("");
     const DisplayLabel: ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}');
 
-    // const peoplePickerContext: IPeoplePickerContext = {
-    //     absoluteUrl: context.pageContext.web.absoluteUrl,
-    //     msGraphClientFactory: context.msGraphClientFactory,
-    //     spHttpClient: context.spHttpClient
-    // };
-
     const peoplePickerContext: IPeoplePickerContext = {
         absoluteUrl: context.pageContext.web.absoluteUrl,
-        msGraphClientFactory: context.msGraphClientFactory as any as import("@pnp/spfx-controls-react/node_modules/@microsoft/sp-http-msgraph/dist/index-internal").MSGraphClientFactory,
-        spHttpClient: context.spHttpClient as any as import("@pnp/spfx-controls-react/node_modules/@microsoft/sp-http-base/dist/index-internal").SPHttpClient
+        msGraphClientFactory: context.msGraphClientFactory,
+        spHttpClient: context.spHttpClient
     };
+
+    // const peoplePickerContext: IPeoplePickerContext = {
+    //     absoluteUrl: context.pageContext.web.absoluteUrl,
+    //     msGraphClientFactory: context.msGraphClientFactory as any as import("@pnp/spfx-controls-react/node_modules/@microsoft/sp-http-msgraph/dist/index-internal").MSGraphClientFactory,
+    //     spHttpClient: context.spHttpClient as any as import("@pnp/spfx-controls-react/node_modules/@microsoft/sp-http-base/dist/index-internal").SPHttpClient
+    // };
 
 
 
@@ -237,7 +238,7 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
                         </div>
                     </div>
                     <div className={styles.row}>
-                        <div className={styles.col6}><PrimaryButton text={DisplayLabel.GrantPermissions} onClick={grantPermission} /></div>
+                        <div className={styles.col6}><DefaultButton text={DisplayLabel.GrantPermissions} onClick={grantPermission} className={styles["primary-btn"]} /></div>
                     </div>
                     {/* User Permissions Table */}
                     <div className={styles.row}>

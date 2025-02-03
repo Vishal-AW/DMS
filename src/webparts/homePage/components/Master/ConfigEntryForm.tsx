@@ -555,7 +555,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
     return (
         <div>
             <div className={styles.alignbutton} style={{ paddingRight: '0px' }}>
-                <DefaultButton id="requestButton" className={styles.submit} text={DisplayLabel?.Add} onClick={openAddPanel}  ></DefaultButton>
+                <DefaultButton id="requestButton" className={styles['primary-btn']} text={DisplayLabel?.Add} onClick={openAddPanel}  ></DefaultButton>
             </div>
 
             <Stack horizontal styles={stackStyles} tokens={stackTokens}>
@@ -581,8 +581,8 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                 role="tabpanel"
                 onRenderFooterContent={() => (
                     <>
-                        <DefaultButton onClick={SaveItemData} text={isEditMode ? (DisplayLabel?.Update) : DisplayLabel?.Submit} className={styles['sub-btn']} />
-                        <DefaultButton text={DisplayLabel?.Cancel} onClick={closePanel} className={styles['can-btn']} allowDisabledFocus />
+                        <DefaultButton onClick={SaveItemData} text={isEditMode ? (DisplayLabel?.Update) : DisplayLabel?.Submit} className={styles['primary-btn']} />
+                        <DefaultButton text={DisplayLabel?.Cancel} onClick={closePanel} className={styles['light-btn']} allowDisabledFocus />
                     </>
                 )}
 

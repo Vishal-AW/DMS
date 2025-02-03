@@ -36,6 +36,10 @@ body {
     display: none !important;
 }
 
+.CanvasSection {
+    padding: 0 !important;
+}
+
 .j_a_beed2cf1 {
     display: none !important;
 }
@@ -458,6 +462,11 @@ div:focus-visible,
 .ms-Button {
     border-radius: .475rem !important;
     padding: 20px 20px !important;
+    height: 32px !important;
+}
+
+.ms-Button:hover {
+    border: none !important;
 }
 
 .submit:hover {
@@ -519,4 +528,23 @@ div:focus-visible,
 
 .ControlZone {
     padding: 0px !important;
+}
+
+/* Popup*/
+
+.ms-Panel-commands {
+    padding-top: 0 !important;
+}
+
+.ms-Panel-contentInner {
+    padding-top: 0px !important;
+}
+
+.ms-Panel-footerInner {
+    padding: 0px 24px;
+    text-align: center !important;
+}
+
+.ms-Panel-content {
+    padding-top: 20px !important;
 }

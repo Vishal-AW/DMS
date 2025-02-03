@@ -144,42 +144,6 @@
   text-align-last: center;
 }
 
-.sub-btn {
-  padding: 12px 22px;
-  text-align: center;
-  color: #fff;
-  background: #009EF7;
-  text-decoration: none;
-  margin: 3px 15px 0px 3px;
-  //font-size: 15px;
-  border: 0px;
-  display: inline-block;
-  font-weight: 500;
-  outline: 0 !important;
-}
-
-.sub-btn:hover {
-  color: #fff;
-  background: #009EF7;
-}
-
-.can-btn {
-  padding: 12px 22px;
-  text-align: center;
-  color: #7e8299;
-  background: #dddad8;
-  text-decoration: none;
-  margin: 20px 0;
-  font-size: 15px;
-  border: 0px;
-  outline: 0 !important;
-}
-
-.can-btn:hover {
-  color: #fff;
-  background: #dddad8;
-}
-
 .Accodordianherder {
   font-size: large;
   font-weight: bold;
@@ -198,53 +162,53 @@
   max-width: 420px;
 }
 
-.submit {
-  background-color: #009EF7;
-  color: #fff;
-  padding: 8px 20px;
-  //padding-right: .35rem;
-  border-radius: 5px;
-  border: none !important;
-}
+// .submit {
+//   background-color: #009EF7;
+//   color: #fff;
+//   padding: 8px 20px;
+//   //padding-right: .35rem;
+//   border-radius: 5px;
+//   border: none !important;
+// }
 
-.submit:hover {
-  background-color: #009EF7 !important;
-  color: #fff !important;
-}
+// .submit:hover {
+//   background-color: #009EF7 !important;
+//   color: #fff !important;
+// }
 
-.can-btn:hover {
-  color: #7e8299 !important;
-}
+// .can-btn:hover {
+//   color: #7e8299 !important;
+// }
 
 .alignbutton {
   text-align-last: right;
   padding-right: 20px;
 }
 
-.subbtn {
-  padding: 12px 22px;
-  text-align: center;
-  color: #fff;
-  background: #3e77ab;
-  text-decoration: none;
-  margin: 3px 15px 0px 3px;
-  font-size: 15px;
-}
+// .subbtn {
+//   // padding: 12px 22px;
+//   text-align: center;
+//   color: #fff;
+//   background: #3e77ab;
+//   text-decoration: none;
+//   margin: 3px 15px 0px 3px;
+//   font-size: 15px;
+// }
 
-.subbtn:hover {
-  color: #fff;
-  background: #f35922;
-}
+// .subbtn:hover {
+//   color: #fff;
+//   background: #f35922;
+// }
 
-.canbtn {
-  padding: 12px 22px;
-  text-align: center;
-  color: #fff;
-  background: #f35922;
-  text-decoration: none;
-  margin: 3px 15px 0px 3px;
-  font-size: 15px;
-}
+// .canbtn {
+//   // padding: 12px 22px;
+//   text-align: center;
+//   color: #fff;
+//   background: #f35922;
+//   text-decoration: none;
+//   margin: 3px 15px 0px 3px;
+//   font-size: 15px;
+// }
 
 .links {
   a {
@@ -308,4 +272,82 @@
 
 .ControlZone {
   padding: 0px !important;
+}
+
+/*button*/
+
+.primary-btn {
+  // padding: 12px 22px;
+  text-align: center;
+  color: #fff;
+  background: #009EF7;
+  text-decoration: none;
+  // margin: 3px 15px 0px 3px;
+  //font-size: 15px;
+  border: 0px;
+  display: inline-block;
+  font-weight: 500;
+  outline: 0 !important;
+}
+
+.primary-btn:hover {
+  color: #fff;
+  background: #009EF7;
+}
+
+.light-btn {
+  // padding: 12px 22px;
+  text-align: center;
+  color: #343a40;
+  background: #dddad8;
+  text-decoration: none;
+  margin: 20px 0;
+  // font-size: 15px;
+  border: 0px;
+  outline: 0 !important;
+}
+
+.light-btn:hover {
+  color: #343a40;
+  background: #dddad8;
+}
+
+.secondary-btn {
+
+  // padding: 12px 22px;
+  text-align: center;
+  color: #fff;
+  background: #6c757d;
+  text-decoration: none;
+  // margin: 3px 15px 0px 3px;
+  //font-size: 15px;
+  border: 0px;
+  display: inline-block;
+  font-weight: 500;
+  outline: 0 !important;
+}
+
+.secondary-btn:hover {
+  color: #fff;
+  background: #6c757d;
+}
+
+.info-btn {
+
+  // padding: 12px 22px;
+  text-align: center;
+  color: #fff;
+  background: #7239ea;
+  text-decoration: none;
+  // margin: 3px 15px 0px 3px;
+  //font-size: 15px;
+  border: 0px;
+  display: inline-block;
+  font-weight: 500;
+  outline: 0 !important;
+}
+
+.info-btn:hover {
+  color: #fff;
+  background: #7239ea;
 }

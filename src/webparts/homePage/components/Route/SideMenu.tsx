@@ -12,7 +12,7 @@ interface ISideMenu {
   props: any;
 }
 const SideMenu: React.FC<ISideMenu> = ({ onclickbutton, props }) => {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
 
   const [ImageURL, setImageURL] = useState('');
 
@@ -212,7 +212,7 @@ const SideMenu: React.FC<ISideMenu> = ({ onclickbutton, props }) => {
 
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
-    onclickbutton(!collapsed)
+    onclickbutton(collapsed)
   };
 
 

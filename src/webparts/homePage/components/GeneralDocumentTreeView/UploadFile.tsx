@@ -332,8 +332,8 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                 closeButtonAriaLabel="Close"
                 type={PanelType.large}
                 onRenderFooterContent={() => (<>
-                    <PrimaryButton onClick={submit} styles={{ root: { marginRight: 8 } }} className={styles["sub-btn"]}>{DisplayLabel.Submit}</PrimaryButton>
-                    <DefaultButton onClick={dismissUploadPanel} className={styles["can-btn"]}>{DisplayLabel.Cancel}</DefaultButton>
+                    <PrimaryButton onClick={submit} styles={{ root: { marginRight: 8 } }} className={styles["primary-btn"]}>{DisplayLabel.Submit}</PrimaryButton>
+                    <DefaultButton onClick={dismissUploadPanel} className={styles["light-btn"]}>{DisplayLabel.Cancel}</DefaultButton>
                 </>)}
                 isFooterAtBottom={true}
             >
@@ -363,7 +363,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                         <div className={styles.col2}>
                             <IconButton
                                 iconProps={{ iconName: 'Add' }}
-                                style={{ background: "#009ef7", color: "#fff", border: "#009ef7" }}
+                                style={{ background: "#009ef7", color: "#fff", border: "#009ef7", marginTop: "34px" }}
                                 onClick={addAttachment}
                                 label=""
                             />

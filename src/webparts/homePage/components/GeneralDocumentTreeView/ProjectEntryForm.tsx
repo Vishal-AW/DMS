@@ -87,17 +87,17 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
         }));
     };
 
-    // const peoplePickerContext: IPeoplePickerContext = {
-    //     absoluteUrl: context.pageContext.web.absoluteUrl,
-    //     msGraphClientFactory: context.msGraphClientFactory,
-    //     spHttpClient: context.spHttpClient
-    // };
-
     const peoplePickerContext: IPeoplePickerContext = {
         absoluteUrl: context.pageContext.web.absoluteUrl,
-        msGraphClientFactory: context.msGraphClientFactory as any as import("@pnp/spfx-controls-react/node_modules/@microsoft/sp-http-msgraph/dist/index-internal").MSGraphClientFactory,
-        spHttpClient: context.spHttpClient as any as import("@pnp/spfx-controls-react/node_modules/@microsoft/sp-http-base/dist/index-internal").SPHttpClient
+        msGraphClientFactory: context.msGraphClientFactory,
+        spHttpClient: context.spHttpClient
     };
+
+    // const peoplePickerContext: IPeoplePickerContext = {
+    //     absoluteUrl: context.pageContext.web.absoluteUrl,
+    //     msGraphClientFactory: context.msGraphClientFactory as any as import("@pnp/spfx-controls-react/node_modules/@microsoft/sp-http-msgraph/dist/index-internal").MSGraphClientFactory,
+    //     spHttpClient: context.spHttpClient as any as import("@pnp/spfx-controls-react/node_modules/@microsoft/sp-http-base/dist/index-internal").SPHttpClient
+    // };
 
 
 
@@ -453,8 +453,8 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                 type={PanelType.medium}
                 onRenderFooterContent={() => (
                     <>
-                        {FormType !== "ViewForm" ? <PrimaryButton onClick={submit} styles={buttonStyles} className={styles["sub-btn"]}>{FormType === "EntryForm" ? DisplayLabel.Submit : DisplayLabel.Update}</PrimaryButton> : <></>}
-                        <DefaultButton onClick={() => dismissPanel(false)} className={styles["can-btn"]}>{DisplayLabel.Cancel}</DefaultButton>
+                        {FormType !== "ViewForm" ? <PrimaryButton onClick={submit} styles={buttonStyles} className={styles["primary-btn"]}>{FormType === "EntryForm" ? DisplayLabel.Submit : DisplayLabel.Update}</PrimaryButton> : <></>}
+                        <DefaultButton onClick={() => dismissPanel(false)} className={styles["light-btn"]}>{DisplayLabel.Cancel}</DefaultButton>
                     </>
                 )}
                 isFooterAtBottom={true}

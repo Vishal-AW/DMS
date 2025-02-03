@@ -74,7 +74,7 @@ export default function SearchFilter({ props }: any): JSX.Element {
                 case "Dropdown":
                 case "Multiple Select":
                     return (
-                        <div className={dynamicControl.length > 5 ? styles.col6 : styles.col12} key={index}>
+                        <div className={dynamicControl.length > 5 ? styles.col6 : styles.col6} key={index}>
                             <Dropdown
                                 placeholder="Select an option"
                                 label={item.Title}
@@ -236,7 +236,7 @@ export default function SearchFilter({ props }: any): JSX.Element {
                                 </div>
                                 <div className="col-md-2">
                                     <div className="form-group">
-                                        <DefaultButton onClick={ContentSearchData} text={DisplayLabel?.SearchData} className={styles['sub-btn']} />
+                                        <DefaultButton onClick={ContentSearchData} text={DisplayLabel?.SearchData} className={styles['primary-btn']} />
                                     </div>
                                 </div>
                             </div>
@@ -252,8 +252,8 @@ export default function SearchFilter({ props }: any): JSX.Element {
                             <div className={styles.row}>{renderDynamicControls()}</div>
                             <div className={styles.container} >
                                 <div className={styles.containerOne} >
-                                    <DefaultButton onClick={SearchData} text={DisplayLabel?.SearchData} className={styles['sub-btn']} />
-                                    <DefaultButton onClick={Reset} text={DisplayLabel?.Reset} className={styles['sub-btn']} />
+                                    <DefaultButton onClick={SearchData} styles={{ root: { marginRight: 8 } }} text={DisplayLabel?.SearchData} className={styles['primary-btn']} />
+                                    <DefaultButton onClick={Reset} text={DisplayLabel?.Reset} className={styles['light-btn']} />
                                 </div>
                             </div>
                         </Form>
