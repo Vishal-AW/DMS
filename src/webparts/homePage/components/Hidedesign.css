@@ -133,6 +133,10 @@ body {
     background-color: #f1f1f1;
 }
 
+.ms-Stack {
+    height: 100% !important;
+    margin-bottom: 40px !important;
+}
 
 .ps-menu-button {
     color: #000 !important;
@@ -548,3 +552,15 @@ div:focus-visible,
 .ms-Panel-content {
     padding-top: 20px !important;
 }
+
+/*Pagination*/
+.ReactTable .-pagination .-btn {
+    background: #0d6efd !important;
+    border-radius: 4px !important;
+    color: #fff !important;
+}
+
+/* .ms-Stack {
+    display: flex !important;
+    flex-wrap: wrap !important;
+} */

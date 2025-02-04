@@ -75,16 +75,24 @@
 .row {
     @include ms-Grid-row;
     margin-bottom: 10px;
+    display: flex;
+    flex-wrap: wrap;
 }
 
 .col3 {
     @include ms-Grid-col;
     @include ms-md3;
+    // box-sizing: border-box;
+    // background-color: #f9f9f9;
+    // border: 1px solid #ddd;
+    // border-radius: 5px;
+    // box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .col9 {
     @include ms-Grid-col;
     @include ms-md9;
+
 }
 
 
@@ -154,7 +162,7 @@
     // padding: 12px 22px;
     text-align: center;
     color: #fff;
-    background: #009EF7;
+    background: #0d6efd;
     text-decoration: none;
     // margin: 3px 15px 0px 3px;
     //font-size: 15px;
@@ -166,7 +174,7 @@
 
 .primary-btn:hover {
     color: #fff;
-    background: #009EF7;
+    background: #0d6efd;
 }
 
 .light-btn {

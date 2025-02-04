@@ -1812,9 +1812,9 @@ export default function Master({ props }: any): JSX.Element {
 
               <div className={cls["modal"]} style={showLoader}></div>
               {!isEditMode ? (
-                <DefaultButton onClick={submitTileData} text={DisplayLabel?.Submit} className={styles['primary-btn']} />
+                <DefaultButton onClick={submitTileData} text={DisplayLabel?.Submit} className={styles['primary-btn']} styles={{ root: { marginRight: 8 } }} />
               ) :
-                <DefaultButton onClick={UpdateTileData} text={DisplayLabel?.Update} className={styles['primary-btn']} />
+                <DefaultButton onClick={UpdateTileData} text={DisplayLabel?.Update} className={styles['info-btn']} styles={{ root: { marginRight: 8 } }} />
               }
               <DefaultButton text={DisplayLabel?.Cancel} onClick={closePanel} className={styles['light-btn']} allowDisabledFocus />
             </div>
