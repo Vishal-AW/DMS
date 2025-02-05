@@ -24,6 +24,7 @@ interface IUploadFileProps {
     LibraryDetails: any;
 }
 function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPath, libName, folderName, files, folderObject, LibraryDetails }: IUploadFileProps) {
+    // const fileInputRef = useRef<HTMLInputElement | null>(null);
     const DisplayLabel: ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}');
     const [configData, setConfigData] = useState<any[]>([]);
     const [dynamicControl, setDynamicControl] = useState<any[]>([]);
@@ -220,6 +221,8 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
         };
         setAttachmentsFiles((prev) => [...prev, newAttachment]);
         setAttachment({});
+        // fileInputRef.current!.value = '';
+
     };
 
     const onClickDetails = (index: number) => {
@@ -270,8 +273,9 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
             }
 
             const Fileuniqueid = await uuidv4();
+            const folderData = JSON.parse(JSON.stringify(folderObject, (key, value) => (value === null || (Array.isArray(value) && value.length === 0)) ? undefined : value));
             let obj: any = {
-                ...folderObject,
+                ...folderData,
                 ...dynamicValues,
                 ActualName: item.attachment.name,
                 FolderDocumentPath: `/${folderPath}`,
@@ -358,6 +362,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                         <div className={styles.col10}>
                             <TextField type="file" label={DisplayLabel.ChooseFile} required onChange={(event: React.ChangeEvent<HTMLInputElement>) => { if (event.target.files) setAttachment(event.target.files[0]); }}
                                 errorMessage={attachmentErr}
+                                value={attachment.name || ""}
                             />
                         </div>
                         <div className={styles.col2}>
@@ -466,3 +471,4 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
 }
 
 export default React.memo(UploadFiles);
+

@@ -208,7 +208,7 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
                                 errorMessage={selectedUserError}
                                 onChange={handelPeoplePicker}
                                 showHiddenInUI={false}
-                                principalTypes={[PrincipalType.User]}
+                                principalTypes={[PrincipalType.User, PrincipalType.SharePointGroup]}
                             />
                         </div>
                         <div className={styles.col6}>

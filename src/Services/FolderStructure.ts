@@ -118,3 +118,94 @@ const removeAllPermissions = async (context: WebPartContext, folderUrl: string) 
         console.error('Error in removeAllPermissions:', error);
     }
 };
+
+export const breakRoleInheritanceForLib = async (context: WebPartContext, libName: string, userIds: any[]) => {
+
+    const breakInheritanceUrl = `${context.pageContext.web.absoluteUrl}/_api/web/lists/getbytitle('${libName}')/breakroleinheritance(true)`;
+    return await context.spHttpClient.post(
+        breakInheritanceUrl,
+        SPHttpClient.configurations.v1,
+        {
+            headers: {
+                Accept: 'application/json;odata=verbose',
+                'Content-Type': 'application/json;odata=verbose',
+            },
+        }
+    ).then(async (response: SPHttpClientResponse) => {
+        if (response.ok) {
+            await removeAllPermissionsForLib(context, libName);
+            return await grantPermissionsForLib(context, libName, [...userIds]);
+        }
+    });
+
+};
+
+
+const removeAllPermissionsForLib = async (context: WebPartContext, libName: string) => {
+    const roleAssignmentsUrl = `${context.pageContext.web.absoluteUrl}/_api/web/lists/getByTitle('${libName}')/roleassignments`;
+
+    try {
+        return await context.spHttpClient.get(roleAssignmentsUrl,
+            SPHttpClient.configurations.v1,
+            {
+                headers: {
+                    'Accept': 'application/json;odata=nometadata',
+                    'odata-version': ''
+                }
+            }).then(async (response: SPHttpClientResponse) => {
+                if (response.ok) {
+                    const data = await response.json();
+                    for (const assignment of data.value) {
+                        const deleteUrl = `${roleAssignmentsUrl}/removeroleassignment(principalid=${assignment.PrincipalId})`;
+
+                        const deleteResponse = await context.spHttpClient.post(
+                            deleteUrl,
+                            SPHttpClient.configurations.v1,
+                            {
+                                headers: {
+                                    Accept: "application/json;odata=nometadata", // Consistent header value
+                                    "Content-Type": "application/json;odata=nometadata",
+                                },
+                            }
+                        );
+
+                        if (!deleteResponse.ok) {
+                            console.error('Failed to remove role assignment:', assignment.PrincipalId);
+                        }
+                    }
+                } else {
+                    console.error('Failed to fetch role assignments:', response.statusText);
+                }
+            }).catch((err: any) => {
+                console.log(err);
+            });
+
+
+    } catch (error) {
+        console.error('Error in removeAllPermissions:', error);
+    }
+};
+
+const grantPermissionsForLib = async (context: WebPartContext, libName: string, userIds: any[]) => {
+    try {
+        for (const userId of userIds) {
+            const permissionUrl = `${context.pageContext.web.absoluteUrl}/_api/web/lists/getbytitle('${libName}')/roleassignments/addroleassignment(principalid=${userId},roleDefId=1073741827)`;
+            const response = await context.spHttpClient.post(
+                permissionUrl,
+                SPHttpClient.configurations.v1,
+                {
+                    headers: {
+                        Accept: 'application/json;odata=verbose',
+                        'Content-Type': 'application/json;odata=verbose',
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                console.error('Failed to grant permission for user ID:', userId);
+            }
+        }
+    } catch (error) {
+        console.error(error);
+    }
+};

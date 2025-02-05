@@ -61,8 +61,10 @@ export default function TreeView({ props }: any) {
     const [panelSize, setPanelSize] = useState(PanelType.medium);
     const [hideDialog, setHideDialog] = useState<boolean>(false);
 
-    if (tileObject === null)
+    if (tileObject === null) {
         location.href = "#/Dashboard";
+        location.reload();
+    }
 
     const libDetails: any = JSON.parse(tileObject as string);
     const libName = libDetails.LibraryName;
@@ -415,11 +417,17 @@ export default function TreeView({ props }: any) {
             setFolderNameErr(DisplayLabel.ThisFieldisRequired);
             return;
         }
+        const isDuplicate = childFolders[folderPath].filter((el: any) => el.Name === folderName);
+        if (isDuplicate.length > 0) {
+            setFolderNameErr(DisplayLabel.FolderAlreadyExist);
+            return;
+        }
         setShowLoader({ display: "block" });
         const users = [folderObject?.ListItemAllFields.ProjectmanagerId, folderObject?.ListItemAllFields.PublisherId, ...admin];
         FolderStructure(props.context, `${folderPath}/${folderName}`, users, libName).then((response) => {
+            const folderData = JSON.parse(JSON.stringify(folderObject?.ListItemAllFields, (key, value) => (value === null || (Array.isArray(value) && value.length === 0)) ? undefined : value));
             let obj: any = {
-                ...folderObject?.ListItemAllFields
+                ...folderData
             };
 
             updateLibrary(props.SiteURL, props.spHttpClient, obj, response, libName).then((response) => {
