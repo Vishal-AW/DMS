@@ -238,7 +238,7 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
                         </div>
                     </div>
                     <div className={styles.row}>
-                        <div className={styles.col6}><DefaultButton text={DisplayLabel.GrantPermissions} onClick={grantPermission} className={styles["primary-btn"]} /></div>
+                        <div className={styles.col6}><DefaultButton text={DisplayLabel.GrantPermissions} onClick={grantPermission} className={styles.primaryBtn} /></div>
                     </div>
                     {/* User Permissions Table */}
                     <div className={styles.row}>

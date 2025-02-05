@@ -479,7 +479,7 @@ export default function TreeView({ props }: any) {
                 <div className={styles.row}>
                     <div className={styles.col12}>
                         {/* <PrimaryButton text={DisplayLabel.NewRequest} onClick={projectCreation} style={{ float: "right" }} /> */}
-                        <DefaultButton onClick={projectCreation} text={DisplayLabel?.NewRequest} className={styles['primary-btn']} style={{ float: "right" }} />
+                        <DefaultButton onClick={projectCreation} text={DisplayLabel?.NewRequest} className={styles.primaryBtn} style={{ float: "right" }} />
                     </div>
                 </div>
             </div>
@@ -585,8 +585,8 @@ export default function TreeView({ props }: any) {
                             <div className={styles.col12}>
                                 {folderPath === libName ? <></> :
                                     <div style={{ float: "right" }}>
-                                        <DefaultButton text={DisplayLabel.Upload} onClick={() => setIsOpenUploadPanel(true)} className={styles['secondary-btn']} styles={{ root: { marginRight: 8 } }} />
-                                        {files.length === 0 ? <DefaultButton className={styles['info-btn']} text={DisplayLabel.NewFolder} onClick={() => { setIsOpenFolderPanel(true); setFolderName(""); }} /> : <></>}
+                                        <DefaultButton text={DisplayLabel.Upload} onClick={() => setIsOpenUploadPanel(true)} className={styles.secondaryBtn} styles={{ root: { marginRight: 8 } }} />
+                                        {files.length === 0 ? <DefaultButton className={styles.infoBtn} text={DisplayLabel.NewFolder} onClick={() => { setIsOpenFolderPanel(true); setFolderName(""); }} /> : <></>}
                                     </div>
                                 }
                             </div>
@@ -622,8 +622,8 @@ export default function TreeView({ props }: any) {
                 closeButtonAriaLabel="Close"
                 type={PanelType.medium}
                 onRenderFooterContent={() => (<>
-                    <DefaultButton onClick={createFolder} className={styles["primary-btn"]}>{DisplayLabel.Submit}</DefaultButton>
-                    <DefaultButton onClick={dismissFolderPanel} className={styles["light-btn"]}>{DisplayLabel.Cancel}</DefaultButton>
+                    <DefaultButton onClick={createFolder} className={styles.primaryBtn}>{DisplayLabel.Submit}</DefaultButton>
+                    <DefaultButton onClick={dismissFolderPanel} className={styles.lightBtn}>{DisplayLabel.Cancel}</DefaultButton>
                 </>)}
                 isFooterAtBottom={true}
             >
@@ -648,7 +648,7 @@ export default function TreeView({ props }: any) {
                 onDismiss={dismissCommanPanel}
                 closeButtonAriaLabel="Close"
                 type={panelSize}
-                onRenderFooterContent={() => <>{actionButton}<DefaultButton onClick={dismissCommanPanel} className={styles["light-btn"]}>Cancel</DefaultButton></>}
+                onRenderFooterContent={() => <>{actionButton}<DefaultButton onClick={dismissCommanPanel} className={styles.lightBtn}>Cancel</DefaultButton></>}
                 isFooterAtBottom={true}
             >
                 <div style={{ marginTop: "10px" }}>
