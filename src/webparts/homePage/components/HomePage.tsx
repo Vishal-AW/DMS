@@ -62,8 +62,8 @@ export default function HomePage(props: IHomePageProps): JSX.Element {
               background: "#f4f4f4", // Content background color
               padding: "20px", // Content padding
               transition: "margin-left", // Smooth content adjustment
-              marginLeft: collapsed ? "80px" : "250px", // Adjust based on sidebar width
-              width: collapsed ? "calc(100% - 80px)" : "calc(100% - 250px)"
+              marginLeft: collapsed ? "250px" : "80px", // Adjust based on sidebar width
+              width: collapsed ? "calc(100% - 250px)" : "calc(100% - 80px)"
             }}
           >
 

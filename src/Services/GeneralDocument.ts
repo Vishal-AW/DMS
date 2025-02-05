@@ -77,7 +77,6 @@ export function updateLibrary(WebUrl: string, spHttpClient: SPHttpClient, metaDa
 }
 
 export async function UploadFile(WebUrl: string, spHttpClient: any, file: string, DisplayName: string | File, DocumentLib: string, jsonBody: any, FolderPath: string): Promise<any> {
-
     // let fileupload = FolderPath +"/"+FolderName;
     return new Promise((resolve) => {
         const spOpts: ISPHttpClientOptions = {

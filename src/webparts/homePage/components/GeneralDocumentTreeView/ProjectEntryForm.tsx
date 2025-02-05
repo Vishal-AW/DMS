@@ -194,7 +194,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
     };
 
     const renderDynamicControls = useCallback(() => {
-        return dynamicControl.map((item: any, index: number) => {
+        return dynamicControl.filter((item: any, index: number) => !item.IsFieldAllowInFile).map((item: any, index: number) => {
             const filterObj = configData.find((ele) => ele.Id === item.Id);
 
             if (!filterObj) return null;
@@ -413,7 +413,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
         setIsSuffixRequired(folderObject.ListItemAllFields.IsSuffixRequired);
         if (folderObject.ListItemAllFields.IsSuffixRequired) {
             setSuffix(folderObject.ListItemAllFields.DocumentSuffix);
-            folderObject.ListItemAllFields.DocumentSuffix === "Other" ? setOtherSuffix(OtherSuffix) : "";
+            folderObject.ListItemAllFields.DocumentSuffix === "Other" ? setOtherSuffix(folderObject.ListItemAllFields.OtherSuffix) : "";
         }
         if (libraryDetails.AllowApprover) {
             setIsApprovalRequired(folderObject.ListItemAllFields.DefineRole);
@@ -453,8 +453,8 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                 type={PanelType.medium}
                 onRenderFooterContent={() => (
                     <>
-                        {FormType !== "ViewForm" ? <PrimaryButton onClick={submit} styles={buttonStyles} className={styles["sub-btn"]}>{FormType === "EntryForm" ? DisplayLabel.Submit : DisplayLabel.Update}</PrimaryButton> : <></>}
-                        <DefaultButton onClick={() => dismissPanel(false)} className={styles["can-btn"]}>{DisplayLabel.Cancel}</DefaultButton>
+                        {FormType !== "ViewForm" ? <PrimaryButton onClick={submit} styles={buttonStyles} className={styles["info-btn"]}>{FormType === "EntryForm" ? DisplayLabel.Submit : DisplayLabel.Update}</PrimaryButton> : <></>}
+                        <DefaultButton onClick={() => dismissPanel(false)} className={styles["light-btn"]}>{DisplayLabel.Cancel}</DefaultButton>
                     </>
                 )}
                 isFooterAtBottom={true}
