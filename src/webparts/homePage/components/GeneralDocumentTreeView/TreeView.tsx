@@ -157,7 +157,6 @@ export default function TreeView({ props }: any) {
                 const menuProps = useConst<IContextualMenuProps>(() => createMenuProps(row));
                 return <DefaultButton text={DisplayLabel.Action} className={styles['info-btn']} menuProps={menuProps} />;
             }
-
         }
     ];
     const createMenuProps = (item: any): IContextualMenuProps => ({
@@ -650,7 +649,7 @@ export default function TreeView({ props }: any) {
                 onDismiss={dismissCommanPanel}
                 closeButtonAriaLabel="Close"
                 type={panelSize}
-                onRenderFooterContent={() => <>{actionButton}<DefaultButton onClick={dismissCommanPanel} className={styles['light-btn']}>Cancel</DefaultButton></>}
+                onRenderFooterContent={() => <>{actionButton}<DefaultButton onClick={dismissCommanPanel} className={styles["light-btn"]}>Cancel</DefaultButton></>}
                 isFooterAtBottom={true}
             >
                 <div style={{ marginTop: "10px" }}>
