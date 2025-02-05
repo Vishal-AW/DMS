@@ -153,7 +153,7 @@ export default function TreeView({ props }: any) {
         {
             Header: DisplayLabel.Action, accessor: "Id", Cell: ({ row }: { row: any; }) => {
                 const menuProps = useConst<IContextualMenuProps>(() => createMenuProps(row));
-                return <DefaultButton text={DisplayLabel.Action} menuProps={menuProps} />;
+                return <DefaultButton text={DisplayLabel.Action} className={styles['info-btn']} menuProps={menuProps} />;
             }
 
         }
@@ -474,6 +474,8 @@ export default function TreeView({ props }: any) {
                         <DefaultButton onClick={projectCreation} text={DisplayLabel?.NewRequest} className={styles['primary-btn']} style={{ float: "right" }} />
                     </div>
                 </div>
+
+
             </div>
 
             {/* <div className={styles.grid}>
@@ -614,7 +616,7 @@ export default function TreeView({ props }: any) {
                 closeButtonAriaLabel="Close"
                 type={PanelType.medium}
                 onRenderFooterContent={() => (<>
-                    <DefaultButton onClick={createFolder} className={styles["primary-btn"]}>{DisplayLabel.Submit}</DefaultButton>
+                    <DefaultButton onClick={createFolder} className={styles["primary-btn"]} styles={{ root: { marginRight: 8 } }}>{DisplayLabel.Submit}</DefaultButton>
                     <DefaultButton onClick={dismissFolderPanel} className={styles["light-btn"]}>{DisplayLabel.Cancel}</DefaultButton>
                 </>)}
                 isFooterAtBottom={true}
@@ -655,3 +657,6 @@ export default function TreeView({ props }: any) {
         </div>
     );
 }
+
+
+
