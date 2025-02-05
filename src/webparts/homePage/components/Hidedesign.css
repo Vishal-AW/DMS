@@ -51,6 +51,10 @@ body {
     }
 }
 
+.CanvasZoneSectionContainer {
+    max-width: 100% !important;
+}
+
 .ps-menuitem-root {
     display: block !important;
     cursor: pointer;
