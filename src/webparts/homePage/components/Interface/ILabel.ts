@@ -137,4 +137,5 @@ export interface ILabel {
     EnterName: string;
     SelectPermissionLevel: string;
     GrantPermissions: string;
+    FolderAlreadyExist: string;
 }

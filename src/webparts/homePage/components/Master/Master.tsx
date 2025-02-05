@@ -1332,7 +1332,7 @@ export default function Master({ props }: any): JSX.Element {
                           errorMessage={AccessTileUserErr}
                           onChange={onPeoplePickerChange}
                           showHiddenInUI={false}
-                          principalTypes={[PrincipalType.User]}
+                          principalTypes={[PrincipalType.User, PrincipalType.SharePointGroup]}
                           defaultSelectedUsers={isEditMode ? assignID : undefined}
                         />
 
