@@ -237,8 +237,8 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
                 closeButtonAriaLabel="Close"
                 type={PanelType.medium}
                 onRenderFooterContent={() => (<>
-                    <PrimaryButton onClick={ApproveFile} styles={buttonStyles} className={styles["sub-btn"]}>{DisplayLabel.ApproveButton}</PrimaryButton>
-                    <DefaultButton className={styles["can-btn"]} onClick={RejectFile}>{DisplayLabel.RejectButton}</DefaultButton>
+                    <PrimaryButton onClick={ApproveFile} styles={buttonStyles} className={styles["primary-btn"]}>{DisplayLabel.ApproveButton}</PrimaryButton>
+                    <DefaultButton className={styles["primary-btn"]} onClick={RejectFile}>{DisplayLabel.RejectButton}</DefaultButton>
                 </>)}
                 isFooterAtBottom={true}
             >

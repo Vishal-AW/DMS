@@ -1263,7 +1263,7 @@ export default function Master({ props }: any): JSX.Element {
       <div>
 
         <div className={styles.alignbutton} style={{ paddingRight: '0px' }}>
-          <DefaultButton id="requestButton" className={styles.submit} text={DisplayLabel?.Add} onClick={openAddPanel}  ></DefaultButton>
+          <DefaultButton id="requestButton" className={styles['primary-btn']} text={DisplayLabel?.Add} onClick={openAddPanel}  ></DefaultButton>
         </div>
 
         <Stack horizontal styles={stackStyles} tokens={stackTokens}>
@@ -1812,11 +1812,11 @@ export default function Master({ props }: any): JSX.Element {
 
               <div className={cls["modal"]} style={showLoader}></div>
               {!isEditMode ? (
-                <DefaultButton onClick={submitTileData} text={DisplayLabel?.Submit} className={styles['sub-btn']} />
+                <DefaultButton onClick={submitTileData} text={DisplayLabel?.Submit} className={styles['primary-btn']} styles={{ root: { marginRight: 8 } }} />
               ) :
-                <DefaultButton onClick={UpdateTileData} text={DisplayLabel?.Update} className={styles['sub-btn']} />
+                <DefaultButton onClick={UpdateTileData} text={DisplayLabel?.Update} className={styles['info-btn']} styles={{ root: { marginRight: 8 } }} />
               }
-              <DefaultButton text={DisplayLabel?.Cancel} onClick={closePanel} className={styles['can-btn']} allowDisabledFocus />
+              <DefaultButton text={DisplayLabel?.Cancel} onClick={closePanel} className={styles['light-btn']} allowDisabledFocus />
             </div>
           </div>
 
