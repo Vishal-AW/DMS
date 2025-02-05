@@ -42,16 +42,10 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
     const [isPopupBoxVisible, setIsPopupBoxVisible] = useState<boolean>(false);
     const [showLoader, setShowLoader] = useState({ display: "none" });
 
-    // const peoplePickerContext: IPeoplePickerContext = {
-    //     absoluteUrl: context.pageContext.web.absoluteUrl,
-    //     msGraphClientFactory: context.msGraphClientFactory,
-    //     spHttpClient: context.spHttpClient
-    // };
-
     const peoplePickerContext: IPeoplePickerContext = {
         absoluteUrl: context.pageContext.web.absoluteUrl,
-        msGraphClientFactory: context.msGraphClientFactory as any as import("@pnp/spfx-controls-react/node_modules/@microsoft/sp-http-msgraph/dist/index-internal").MSGraphClientFactory,
-        spHttpClient: context.spHttpClient as any as import("@pnp/spfx-controls-react/node_modules/@microsoft/sp-http-base/dist/index-internal").SPHttpClient
+        msGraphClientFactory: context.msGraphClientFactory,
+        spHttpClient: context.spHttpClient
     };
 
 

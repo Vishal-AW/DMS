@@ -18,6 +18,7 @@ import TreeView from './GeneralDocumentTreeView/TreeView';
 import ConfigMaster from './Master/ConfigEntryForm';
 import SearchFilter from './GeneralDocumentTreeView/SearchFilter';
 import SearchComponent from './GeneralDocumentTreeView/Search';
+import TemplateMaster from './Master/TemplateMaster';
 
 
 
@@ -73,6 +74,7 @@ export default function HomePage(props: IHomePageProps): JSX.Element {
               <Route path='/TreeView' element={<TreeView props={props}></TreeView>}></Route>
               <Route path='/Datatable' element={<Datatable></Datatable>}></Route>
               <Route path='/ConfigMaster' element={<ConfigMaster props={props}></ConfigMaster>}></Route>
+              <Route path='/TemplateMaster' element={<TemplateMaster props={props}></TemplateMaster>}></Route>
               <Route path='/SearchFilter' element={<SearchFilter props={props}></SearchFilter>}></Route>
               <Route path='/SearchComponent' element={<SearchComponent context={props.context}></SearchComponent>}></Route>
 
