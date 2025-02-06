@@ -233,3 +233,13 @@
     color: #fff;
     background: #7239ea;
 }
+
+.customHrdot {
+    border: dashed !important;
+    height: 2px;
+    background-color: gray;
+    /* Change color as needed */
+    margin-top: 10px;
+    /* Adjust spacing */
+    border-top: var(--bs-border-width) dashed !important;
+}

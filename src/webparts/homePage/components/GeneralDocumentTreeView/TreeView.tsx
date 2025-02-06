@@ -547,11 +547,12 @@ export default function TreeView({ props }: any) {
                 <Stack.Item grow styles={stackItemStyles} >
                     <div className={styles.grid}>
                         <div className={styles.row}>
-                            <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "EmptyRecycleBin" }} text={DisplayLabel.RecycleBin} onClick={getRecycleData} /></div>
-                            <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "DocumentApproval" }} text={DisplayLabel.Approval} onClick={() => setTables("Approver")} /></div>
-                            <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "Search" }} text={DisplayLabel.AdvancedSearch} onClick={advancedSearch} /></div>
+                            <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "EmptyRecycleBin", style: { color: "#f1416c" } }} text={DisplayLabel.RecycleBin} onClick={getRecycleData} /></div>
+                            <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "DocumentApproval", style: { color: "#50cd89" } }} text={DisplayLabel.Approval} onClick={() => setTables("Approver")} /></div>
+                            <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "Search", style: { color: "#7239ea" } }} text={DisplayLabel.AdvancedSearch} onClick={advancedSearch} /></div>
                         </div>
                     </div>
+                    <hr className="customHrdot" style={{ borderTop: 'var(--bs-border-width) dashed !important' }} />
                     <ul className={styles["tree-view"]}>
                         <li>
                             <div className={styles["tree-node"]}>

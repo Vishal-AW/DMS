@@ -181,7 +181,7 @@ export default function Master({ props }: any): JSX.Element {
     {
       Header: DisplayLabel?.Action,
       Cell: ({ row }: { row: any; }) => (
-        <FontIcon aria-label="Edit" onClick={() => openEditPanel(row._original.Id)} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer' }}></FontIcon>
+        <FontIcon aria-label="Edit" onClick={() => openEditPanel(row._original.Id)} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer', backgroundColor: '#f5f8fa', padding: '6px 9px', borderRadius: '4px' }}></FontIcon>
       )
     }
   ];

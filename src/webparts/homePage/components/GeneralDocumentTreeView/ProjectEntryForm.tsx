@@ -448,7 +448,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                 type={PanelType.medium}
                 onRenderFooterContent={() => (
                     <>
-                        {FormType !== "ViewForm" ? <PrimaryButton onClick={submit} styles={buttonStyles} className={styles["info-btn"]}>{FormType === "EntryForm" ? DisplayLabel.Submit : DisplayLabel.Update}</PrimaryButton> : <></>}
+                        {FormType !== "ViewForm" ? <PrimaryButton onClick={submit} styles={buttonStyles} className={styles["primary-btn"]}>{FormType === "EntryForm" ? DisplayLabel.Submit : DisplayLabel.Update}</PrimaryButton> : <></>}
                         <DefaultButton onClick={() => dismissPanel(false)} className={styles["light-btn"]}>{DisplayLabel.Cancel}</DefaultButton>
                     </>
                 )}
