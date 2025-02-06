@@ -154,6 +154,12 @@ export async function GetAllLabel(WebUrl: string, spHttpClient: SPHttpClient, La
       SelectPermissionLevel: getValue("SelectPermissionLevel", data, Language),
       GrantPermissions: getValue("GrantPermissions", data, Language),
       FolderAlreadyExist: getValue("FolderAlreadyExist", data, Language),
+
+      ActiveStatus: getValue("ActiveStatus", data, Language),
+      TemplateName: getValue("TemplateName", data, Language),
+      EditRecord: getValue("EditRecord", data, Language),
+      AddNewRecord: getValue("AddNewRecord", data, Language),
+      SpecialCharacterNotAllowed: getValue("SpecialCharacterNotAllowed", data, Language),
     };
 
     // 

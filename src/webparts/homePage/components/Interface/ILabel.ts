@@ -138,4 +138,10 @@ export interface ILabel {
     SelectPermissionLevel: string;
     GrantPermissions: string;
     FolderAlreadyExist: string;
+
+    ActiveStatus: string;
+    TemplateName: string;
+    EditRecord: string;
+    AddNewRecord: string;
+    SpecialCharacterNotAllowed: string;
 }
