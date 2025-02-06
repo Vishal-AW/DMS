@@ -475,6 +475,11 @@ div:focus-visible,
 
 .ms-Button:hover {
     border: none !important;
+
+}
+
+.ms-Button--commandBar:hover {
+    background-color: unset !important;
 }
 
 .submit:hover {

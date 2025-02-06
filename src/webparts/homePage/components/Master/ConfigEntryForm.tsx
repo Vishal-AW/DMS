@@ -106,7 +106,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
         {
             Header: DisplayLabel?.Action,
             Cell: ({ row }: { row: any; }) => (
-                <FontIcon aria-label="Edit" onClick={() => openEditPanel(row._original.Id)} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer' }}></FontIcon>
+                <FontIcon aria-label="Edit" onClick={() => openEditPanel(row._original.Id)} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer', backgroundColor: '#f5f8fa', padding: '6px 9px', borderRadius: '4px' }}></FontIcon>
             )
         }
     ];
@@ -581,7 +581,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                 role="tabpanel"
                 onRenderFooterContent={() => (
                     <>
-                        <DefaultButton onClick={SaveItemData} text={isEditMode ? (DisplayLabel?.Update) : DisplayLabel?.Submit} className={styles['primary-btn']} />
+                        <DefaultButton onClick={SaveItemData} text={isEditMode ? (DisplayLabel?.Update) : DisplayLabel?.Submit} className={styles['primary-btn']} styles={{ root: { marginRight: 8 } }} />
                         <DefaultButton text={DisplayLabel?.Cancel} onClick={closePanel} className={styles['light-btn']} allowDisabledFocus />
                     </>
                 )}

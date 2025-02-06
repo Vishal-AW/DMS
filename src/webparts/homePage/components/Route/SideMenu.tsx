@@ -14,6 +14,8 @@ interface ISideMenu {
 const SideMenu: React.FC<ISideMenu> = ({ onclickbutton, props }) => {
   const [collapsed, setCollapsed] = useState(true);
 
+  const [isHovered, setIsHovered] = useState(false); // Track hover state
+
   const [ImageURL, setImageURL] = useState('');
 
 
@@ -215,14 +217,28 @@ const SideMenu: React.FC<ISideMenu> = ({ onclickbutton, props }) => {
     onclickbutton(collapsed)
   };
 
+  const handleMouseEnter = () => {
+    if (!collapsed) return; // Only expand if it's collapsed
+    setIsHovered(true); // Hover in: Sidebar expands
+  };
+
+  const handleMouseLeave = () => {
+    if (!collapsed) return; // Don't collapse if already expanded manually
+    setIsHovered(false); // Hover out: Sidebar collapses
+  };
+
 
 
   return (
 
     <div style={{ display: 'flex', height: '100vh' }}>
-      <Sidebar collapsed={collapsed} style={{
-        color: '#fff',// Text color
-      }}
+      <Sidebar collapsed={collapsed && !isHovered}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        style={{
+          color: '#fff',// Text color
+          transition: 'width 0.3s ease-in-out',
+        }}
       >
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '65px', padding: '0 25px' }}>
@@ -234,6 +250,10 @@ const SideMenu: React.FC<ISideMenu> = ({ onclickbutton, props }) => {
             onClick={toggleSidebar}
           >
             <Icon iconName="DoubleChevronLeftMed" style={{ fontSize: '16px', verticalAlign: 'middle', color: '#a4a7b9', cursor: 'pointer', textAlign: 'center' }} />
+            {/* <Icon
+              iconName={collapsed ? "DoubleChevronRightMed" : "DoubleChevronLeftMed"}
+              style={{ fontSize: '16px', verticalAlign: 'middle', color: '#a4a7b9', textAlign: 'center' }}
+            /> */}
           </span>
         </div>
 
