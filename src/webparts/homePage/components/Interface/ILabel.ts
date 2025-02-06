@@ -144,4 +144,13 @@ export interface ILabel {
     EditRecord: string;
     AddNewRecord: string;
     SpecialCharacterNotAllowed: string;
+    TemplateNameIsAlreadyExist: string;
+    EnterTemplateName: string;
+    EnterFolderName: string;
+    EditFolder: string;
+    AddFolder: string;
+    SelectParentFolder: string;
+    SelectTemplateName: string;
+    IsthisaChildFolder: string;
+
 }
