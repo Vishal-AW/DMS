@@ -5,10 +5,9 @@ import styles from '../Master/Master.module.scss';
 import cls from '../HomePage.module.scss';
 
 import {
-  DefaultButton, Panel, PanelType, TextField, Toggle, Dropdown, IDropdownStyles, Checkbox, ChoiceGroup,
+  DefaultButton, Panel, PanelType, TextField, Toggle, Dropdown, Checkbox, ChoiceGroup,
   IIconProps,
   IconButton,
-  IDropdownOption,
   FontIcon,
 } from 'office-ui-fabric-react';
 import { PeoplePicker, PrincipalType, IPeoplePickerContext } from "@pnp/spfx-controls-react/lib/PeoplePicker";
@@ -26,6 +25,9 @@ import { getConfigActive } from "../../../../Services/ConfigService";
 import { getActiveRedundancyDays } from "../../../../Services/ArchiveRedundancyDaysService";
 import { ISPHttpClientOptions, SPHttpClient, SPHttpClientResponse } from "@microsoft/sp-http-base";
 import PopupBox from "../ResuableComponents/PopupBox";
+import { breakRoleInheritanceForLib, grantPermissionsForLib } from "../../../../Services/FolderStructure";
+import { getListData } from "../../../../Services/GeneralDocument";
+import Select from "react-select";
 
 
 export default function Master({ props }: any): JSX.Element {
@@ -47,8 +49,8 @@ export default function Master({ props }: any): JSX.Element {
   const [showLoader, setShowLoader] = useState({ display: "none" });
   const [DisplayLabel, setDisplayLabel] = useState<ILabel>();
   const [selectedFile, setSelectedFile] = useState<File | { name: string; } | null>(null);
-  const [assignName, setAssignName] = useState<string>("");
   const [assignID, setAssignID] = useState<string[]>([]);
+  const [assignEmail, setAssignEmail] = useState<string[]>([]);
   const [TileAdminName, setTileAdminName] = useState<string>("");
   const [TileAdminID, setTileAdminID] = useState<string[]>([]);
   const [order0Data, setorder0Data] = useState([]);
@@ -57,7 +59,7 @@ export default function Master({ props }: any): JSX.Element {
   const [RedundancyDataText, setRedundancyDataText] = useState('');
   const [configData, setConfigData] = useState([]);
   const [RedundancyData, setRedundancyData] = useState([]);
-  const [order0DataDataID, setorder0DataDataID] = useState<string | undefined>();
+  const [order0DataDataID, setorder0DataDataID] = useState<any>(null);
   const [order0DataDataText, setorder0DataText] = useState('');
   const [isToggleDisabled, setIsToggleDisabled] = useState(false);
   const [isTileStatus, setIsTileStatus] = React.useState<boolean>(true);
@@ -84,6 +86,8 @@ export default function Master({ props }: any): JSX.Element {
   const [CurrentEditID, setCurrentEditID] = useState<number>(0);
   const [FileuniqueIdData, setFileuniqueIdData] = useState("");
   const [tableData, setTableData] = useState<any[]>([]);
+  const [permission, setPermission] = useState<any[]>([]);
+  const [admin, setAdmin] = useState<any[]>([]);
 
 
   const [formData, setFormData] = useState<any>({
@@ -108,7 +112,6 @@ export default function Master({ props }: any): JSX.Element {
 
   const hidePopup = React.useCallback(() => {
     setisPopupVisible(false);
-    clearField();
     closePanel();
     setShowLoader({ display: "none" });
   }, [isPopupVisible]);
@@ -117,13 +120,13 @@ export default function Master({ props }: any): JSX.Element {
 
 
   const closePanel = () => {
+    clearField();
+    clearError();
     setIsPanelOpen(false);
   };
 
 
   useEffect(() => {
-
-    fetchData();
     let DisplayLabel: ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}'); //localStorage.getItem('DisplayLabel')|| null;
     setDisplayLabel(DisplayLabel);
     clearField();
@@ -135,8 +138,13 @@ export default function Master({ props }: any): JSX.Element {
     setRefrenceNOData(`${moment().format('YYYY')}-00001`);
     setRefExample(RefrenceNOData);
     setisPopupVisible(false);
+    getAdmin();
   }, []);
 
+  const getAdmin = async () => {
+    const data = await getListData(`${props.SiteURL}/_api/web/lists/getbytitle('DMS_GroupName')/items`, props.context);
+    setAdmin(data.value.map((el: any) => (el.GroupNameId)));
+  };
   const fetchData = async () => {
     let FetchallTileData: any = await getTileAllData(props.SiteURL, props.spHttpClient);
     let TilesData = FetchallTileData.value;
@@ -203,11 +211,17 @@ export default function Master({ props }: any): JSX.Element {
 
     if (!isEditMode) {
       const AccessTileData: string[] = EditSettingData[0].Permission
-        ? EditSettingData[0].Permission.map((person: any) => person.EMail)
+        ? EditSettingData[0].Permission.map((person: any) => {
+          const email = person.Name.split('|');
+          return email.includes("membership") ? email.pop() : person.Name;
+        })
         : [];
-      setAssignID(AccessTileData);
+      const accessEmail = EditSettingData[0].Permission.map((person: any) => person.Name);
+      setAssignID(accessEmail);
+      setAssignEmail(AccessTileData);
     } else {
       setAssignID([]);
+      setAssignEmail([]);
     }
 
     if (!isEditMode) {
@@ -222,10 +236,10 @@ export default function Master({ props }: any): JSX.Element {
     await setIsDropdownVisible(EditSettingData[0].AllowOrder);
     if (EditSettingData[0].AllowOrder === true) {
       const EditOrder0Data = MainTableSetdata.filter((item: any) => item.Order0 === EditSettingData[0].Order0);
-      await setorder0DataDataID(EditOrder0Data[0]?.Order0 ?? null);
+      await setorder0DataDataID({ value: EditOrder0Data[0]?.Order0, label: EditOrder0Data[0]?.Order0 });
     }
     else {
-      setorder0DataDataID('');
+      setorder0DataDataID(null);
     }
 
     getAllColumns(EditSettingData[0].LibraryName);
@@ -378,46 +392,18 @@ export default function Master({ props }: any): JSX.Element {
 
   const GetMainListData = async () => {
     let GetTileMAinData: any = await getTileAllData(props.SiteURL, props.spHttpClient);
-
-    console.log(GetTileMAinData);
-
     const OrdervalueData = GetTileMAinData.value;
-
     const sortedById = [...OrdervalueData].sort((a, b) => b.ID - a.ID);
-
     const sortedAsc = [...sortedById].sort((a, b) => a.Order0 - b.Order0);
-
     await setUorder0Data(sortedAsc);
-
-    console.log(uOrder0Data);
-
-    console.log(sortedAsc);
-
-
-
-    let options: any = [];
-
-    sortedAsc.forEach((Order0Data: { ID: any; Order0: any; }) => {
-
-      options.push({
-
-        key: Order0Data.Order0,
-
-        text: Order0Data.Order0
-
-      });
-
-    });
-
+    const options: any = sortedAsc.map((item: any) => ({ value: item.Order0, label: item.Order0 }));
     setorder0Data(options);
   };
 
 
-  const handleorder0DataDropdownChange = (
-    event: React.FormEvent<HTMLDivElement>, option?: IDropdownOption) => {
-    setorder0DataDataID(option?.key as string);
-    setorder0DataText(option?.text as string);
-    console.log(order0DataDataText);
+  const handleorder0DataDropdownChange = (option?: any) => {
+    setorder0DataDataID(option);
+    setorder0DataText(option?.label as string);
   };
 
   const getAllData = async () => {
@@ -427,60 +413,21 @@ export default function Master({ props }: any): JSX.Element {
 
 
   const ConfigMasterData = async () => {
-
-    let ConfigData: any = await getConfigActive(props.SiteURL, props.spHttpClient);
-
-    let ConfigvalueData = ConfigData.value;
-
-    console.log(ConfigvalueData);
-
-
-    let options: any = [];
-
-    ConfigvalueData.forEach((InternalTitleNameData: { Title: any; ID: any; InternalTitleName: any; }) => {
-
-      options.push({
-
-        key: InternalTitleNameData.ID,
-
-        text: InternalTitleNameData.Title
-
-      });
-
-    });
-
+    const ConfigData: any = await getConfigActive(props.SiteURL, props.spHttpClient);
+    const ConfigvalueData = ConfigData.value;
+    const options: any = ConfigvalueData.map((item: any) => ({ value: item.ID, label: item.Title }));
     setConfigData(options);
   };
 
   const RedundancyDaysData = async () => {
 
-    let ActiveRedundancyDaysData: any = await getActiveRedundancyDays(props.SiteURL, props.spHttpClient);
-
-    let ActiveRedundancyDaysvalueData = ActiveRedundancyDaysData.value;
-
-    console.log(ActiveRedundancyDaysvalueData);
-
-
-    let options: any = [];
-
-    ActiveRedundancyDaysvalueData.forEach((RedundancyDaysData: { RedundancyDays: any; ID: any; RedundancyDaysData: any; }) => {
-
-      options.push({
-
-        key: RedundancyDaysData.ID,
-
-        text: RedundancyDaysData.RedundancyDays
-
-      });
-
-    });
-
+    const ActiveRedundancyDaysData: any = await getActiveRedundancyDays(props.SiteURL, props.spHttpClient);
+    const options: any = ActiveRedundancyDaysData.value.map((item: any) => ({ value: item.ID, label: item.RedundancyDays }));
     setRedundancyData(options);
   };
 
 
-  const handleArchiveDropdownChange = (
-    event: React.FormEvent<HTMLDivElement>, option?: IDropdownOption) => {
+  const handleArchiveDropdownChange = (option?: any) => {
     setRedundancyDataID(option?.key as string);
     setRedundancyDataText(option?.text as string);
   };
@@ -608,9 +555,6 @@ export default function Master({ props }: any): JSX.Element {
       let NewArchiveName = " ";
       setArchiveTest(NewArchiveName);
     }
-
-
-
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -638,17 +582,11 @@ export default function Master({ props }: any): JSX.Element {
     setSelectedUsers(items);
 
     console.log("Users to process:", selectedUsers);
-    const Users: any = items.map((item: any) => item.secondaryText);
+    const Users: any = items.map((item: any) => item.id);
+    const Emails: any = items.map((item: any) => item.secondaryText);
+    setAssignID(Users);
+    setAssignEmail(Emails);
 
-    if (items.length > 0) {
-      setAssignName(items[0].text);
-      setAssignID(Users);
-    } else {
-      setAssignName("");
-      setAssignID([]);
-    }
-    console.log(assignName);
-    console.log(assignID);
   };
 
 
@@ -678,9 +616,9 @@ export default function Master({ props }: any): JSX.Element {
     spHttpClient: props.context.spHttpClient
   };
 
-  const dropdownStyles: Partial<IDropdownStyles> = {
-    dropdown: { width: 250 },
-  };
+  // const dropdownStyles: Partial<IDropdownStyles> = {
+  //   dropdown: { width: 250 },
+  // };
 
   const stackStyles: IStackStyles = { root: { height: "100vh", marginTop: 15 } };
   const stackItemStyles: IStackItemStyles = {
@@ -805,9 +743,8 @@ export default function Master({ props }: any): JSX.Element {
 
     setTileName("");
     setSelectedFile(null);
-    setAssignName("");
     setTileAdminName("");
-    setorder0DataDataID("");
+    setorder0DataDataID(null);
     setIsTileStatus(false);
     setIsAllowApprover(false);
     setIsDropdownVisible(false);
@@ -845,8 +782,14 @@ export default function Master({ props }: any): JSX.Element {
 
   const validation = () => {
     let isValidForm = true;
+    const internalName = TileName.replace(/[^a-zA-Z0-9]/g, '');
+    const isDuplicate = MainTableSetdata.filter((item: any) => item.LibraryName === internalName);
     if (TileName === "" || TileName === undefined || TileName === null) {
       setTileErr(DisplayLabel?.ThisFieldisRequired as string);
+      isValidForm = false;
+    }
+    else if (isDuplicate.length > 0 && !isEditMode) {
+      setTileErr(DisplayLabel?.TileNameAlreadyExist as string);
       isValidForm = false;
     }
     else if (selectedFile === null) {
@@ -956,6 +899,10 @@ export default function Master({ props }: any): JSX.Element {
           return user.Id;
         })
       );
+
+      let permissionData = userIds.map((el) => ({ Type: "User", IDs: el }));
+      permissionData.push({ Type: "Admin", IDs: TilesIds[0] }, { Type: "Admin", IDs: admin[0] });
+      setPermission(permissionData);
 
       let orderData;
       if (isDropdownVisible === true) {
@@ -1128,7 +1075,7 @@ export default function Master({ props }: any): JSX.Element {
       let flagData = "";
 
 
-      let TileSequence: any = order0DataDataID === "" ? "" : order0DataDataID;
+      let TileSequence: any = order0DataDataID === null ? "" : order0DataDataID.value;
       if (Sequencedata[0].Order0 != TileSequence) {
         if (Sequencedata[0].Order0 > TileSequence) {
           flagData = "forward";
@@ -1169,6 +1116,10 @@ export default function Master({ props }: any): JSX.Element {
         })
       );
 
+      let permissionData = userIds.map((el) => ({ Type: "User", IDs: el }));
+      permissionData.push({ Type: "Admin", IDs: TilesIds[0] });
+      setPermission(permissionData);
+      grantPermissionsForLib(props.context, Internal, permissionData);
 
       let option = {
         __metadata: { type: "SP.Data.DMS_x005f_Mas_x005f_TileListItem" },
@@ -1332,8 +1283,8 @@ export default function Master({ props }: any): JSX.Element {
                           errorMessage={AccessTileUserErr}
                           onChange={onPeoplePickerChange}
                           showHiddenInUI={false}
-                          principalTypes={[PrincipalType.User, PrincipalType.SharePointGroup]}
-                          defaultSelectedUsers={isEditMode ? assignID : undefined}
+                          principalTypes={[PrincipalType.User, PrincipalType.SharePointGroup, PrincipalType.SecurityGroup]}
+                          defaultSelectedUsers={isEditMode ? assignEmail : undefined}
                         />
 
                       </div>
@@ -1371,7 +1322,7 @@ export default function Master({ props }: any): JSX.Element {
                           errorMessage={TileAdminUserErr}
                           onChange={onTilePeoplePickerChange}
                           showHiddenInUI={false}
-                          principalTypes={[PrincipalType.User]}
+                          principalTypes={[PrincipalType.User, PrincipalType.SharePointGroup, PrincipalType.SecurityGroup]}
                           defaultSelectedUsers={isEditMode ? TileAdminID : undefined}
                         />
                       </div>
@@ -1384,13 +1335,17 @@ export default function Master({ props }: any): JSX.Element {
                     <div className="col-md-3">
                       <div className="form-group">
                         {isDropdownVisible && (
-                          <><label className={styles.Headerlabel}>{DisplayLabel?.Selectorder}<span style={{ color: "red" }}>*</span></label><Dropdown
-                            placeholder="Select an option"
-                            options={order0Data}
-                            onChange={handleorder0DataDropdownChange}
-                            selectedKey={order0DataDataID}
-                            errorMessage={TileSelectorderErr}
-                            styles={dropdownStyles} /></>
+                          <>
+                            <label className={styles.Headerlabel}>{DisplayLabel?.Selectorder}<span style={{ color: "red" }}>*</span></label>
+                            <Select
+                              options={order0Data}
+                              value={order0DataDataID}
+                              onChange={handleorder0DataDropdownChange}
+                              isSearchable
+                              placeholder={DisplayLabel?.Selectanoption}
+                            />
+                            {TileSelectorderErr && <p style={{ color: "rgb(164, 38, 44)" }}>{TileSelectorderErr}</p>}
+                          </>
                         )}
                       </div>
                     </div>
@@ -1447,12 +1402,12 @@ export default function Master({ props }: any): JSX.Element {
                       <tr style={{ borderBottom: '1px solid #ddd' }}>
                         <th style={{ padding: '10px' }}></th>
                         <th style={{ padding: '10px' }}>
-
-                          <Dropdown
-                            placeholder="Choose One"
+                          <Select
                             options={configData}
-                            selectedKey={formData.field}
+                            value={configData.find((option: any) => option.value === formData.field)}
                             onChange={handleInputChange1}
+                            isSearchable
+                            placeholder={DisplayLabel?.Selectanoption}
                           />
                         </th>
                         <th style={{ padding: '10px' }}>
@@ -1768,15 +1723,16 @@ export default function Master({ props }: any): JSX.Element {
                             }}
                           >
                             <label className={styles.Headerlabel} style={{ display: 'block' }}>{DisplayLabel?.SelectArchiveDays}</label>
-                            <Dropdown
-                              placeholder="Select an Option"
-                              options={RedundancyData}
-                              onChange={handleArchiveDropdownChange}
-                              selectedKey={RedundancyDataID}
-                              errorMessage={TileRedundancyDaysErr}
 
-                            //selectedKey={}
+                            <Select
+                              options={RedundancyData}
+                              value={RedundancyData.find((option: any) => option.value === RedundancyDataID)}
+                              onChange={handleArchiveDropdownChange}
+                              isSearchable
+                              placeholder={DisplayLabel?.Selectanoption}
+                              errorMessage={TileRedundancyDaysErr}
                             />
+                            {TileRedundancyDaysErr && <p style={{ color: "rgb(164, 38, 44)" }}>{TileRedundancyDaysErr}</p>}
                           </div>
 
                           {/* Initial Increment Choice Group */}
@@ -1854,12 +1810,14 @@ export default function Master({ props }: any): JSX.Element {
             count++;
             if (count === IListItem.length) {
               createAllColumns(IListItem);
+              isEditMode ? "" : breakRoleInheritanceForLib(props.context, TileName.replace(/[^a-zA-Z0-9]/g, ''), permission);
               console.log("GUID", ListGuid);
             }
           });
         });
     }
   }
+
   async function createAllColumns(IListItem: any) {
     let listCount = 0;
     for (let list = 0; list < IListItem.length; list++) {

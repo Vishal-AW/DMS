@@ -1,4 +1,4 @@
-import { DefaultButton, Dropdown, FontIcon, IconButton, IDropdownOption, IStackItemStyles, IStackStyles, IStackTokens, Panel, PanelType, Stack, TextField, Toggle } from "office-ui-fabric-react";
+import { DefaultButton, FontIcon, IconButton, IStackItemStyles, IStackStyles, IStackTokens, Panel, PanelType, Stack, TextField, Toggle } from "office-ui-fabric-react";
 import { ILabel } from '../Interface/ILabel';
 import * as React from "react";
 import styles from "./Master.module.scss";
@@ -18,9 +18,9 @@ export default function ConfigMaster({ props }: any): JSX.Element {
     const [isPanelOpen, setIsPanelOpen] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [FieldName, setFieldName] = useState("");
-    const [ColumnTypeID, setColumnTypeID] = useState('');
+    const [ColumnTypeID, setColumnTypeID] = useState<any>(null);
     const [ListNameID, setListNameID] = useState('');
-    const [DisplayColumnID, setDisplayColumnID] = useState('');
+    const [DisplayColumnID, setDisplayColumnID] = useState<any>(null);
     const [IsShowasFilter, setIsShowasFilter] = React.useState<boolean>(false);
     const [IsStaticValue, setIsStaticValues] = React.useState<boolean>(false);
     const [options, setOptions] = React.useState<string[]>([]);
@@ -137,12 +137,12 @@ export default function ConfigMaster({ props }: any): JSX.Element {
         // }));
         // console.log(Listoptions);
 
-        setColumnTypeID(EditConfigData[0].ColumnType);
+        setColumnTypeID({ value: EditConfigData[0].ColumnType, label: EditConfigData[0].ColumnType });
         setListNameID(EditConfigData[0].InternalListName);
         setSelectedListOption({ value: EditConfigData[0].InternalListName, label: EditConfigData[0].InternalListName });
 
 
-        setDisplayColumnID(EditConfigData[0].DisplayValue);
+        setDisplayColumnID({ value: EditConfigData[0].DisplayValue, label: EditConfigData[0].DisplayValue });
 
         const TableData = (EditConfigData[0].StaticDataObject === null ? [] : EditConfigData[0].StaticDataObject.split(';'));
         await setOptions(TableData);
@@ -303,22 +303,22 @@ export default function ConfigMaster({ props }: any): JSX.Element {
     };
 
 
-    const dropdownOptions: IDropdownOption[] = [
-        { key: 'Single line of Text', text: 'Single line of Text' },
-        { key: 'Multiple lines of Text', text: 'Multiple lines of Text' },
-        { key: 'Dropdown', text: 'Dropdown' },
-        { key: 'Multiple Select', text: 'Multiple Select' },
-        { key: 'Radio', text: 'Radio' },
-        { key: 'Date and Time', text: 'Date and Time' },
-        { key: 'Person or Group', text: 'Person or Group' },
+    const dropdownOptions = [
+        { value: 'Single line of Text', label: 'Single line of Text' },
+        { value: 'Multiple lines of Text', label: 'Multiple lines of Text' },
+        { value: 'Dropdown', label: 'Dropdown' },
+        { value: 'Multiple Select', label: 'Multiple Select' },
+        { value: 'Radio', label: 'Radio' },
+        { value: 'Date and Time', label: 'Date and Time' },
+        { value: 'Person or Group', label: 'Person or Group' },
     ];
 
-    const handleColumnTypeonChange = (event: React.FormEvent<HTMLDivElement>, option?: IDropdownOption) => {
-        setColumnTypeID(option?.key as string);
+    const handleColumnTypeonChange = (option?: any) => {
+        setColumnTypeID(option);
 
         if (option) {
 
-            if (option.key === "Single line of Text") {
+            if (option.value === "Single line of Text") {
                 setToggleVisible(false);
                 setToggleVisible1(false);
 
@@ -328,7 +328,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                 setTableVisible(false);
                 setIsToggleDisabled(false);
                 setisColumnTypeDisabled(false);
-            } else if (option.key === "Multiple lines of Text") {
+            } else if (option.value === "Multiple lines of Text") {
                 setToggleVisible(false);
                 setToggleVisible1(false);
                 setDropdownVisible(false);
@@ -337,7 +337,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                 setIsToggleDisabled(false);
                 setisColumnTypeDisabled(false);
             }
-            else if (option.key === "Dropdown") {
+            else if (option.value === "Dropdown") {
                 setToggleVisible(true);
                 setToggleVisible1(true);
                 setDropdownVisible(true);
@@ -346,7 +346,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                 setIsToggleDisabled(false);
                 setisColumnTypeDisabled(false);
             }
-            else if (option.key === "Multiple Select") {
+            else if (option.value === "Multiple Select") {
                 setToggleVisible(true);
                 setToggleVisible1(true);
                 setDropdownVisible(true);
@@ -355,7 +355,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                 setIsToggleDisabled(false);
                 setisColumnTypeDisabled(false);
             }
-            else if (option.key === "Radio") {
+            else if (option.value === "Radio") {
                 setToggleVisible(true);
                 setToggleVisible1(true);
                 setDropdownVisible(false);
@@ -366,7 +366,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                 setisColumnTypeDisabled(false);
 
             }
-            else if (option.key === "Date and Time") {
+            else if (option.value === "Date and Time") {
                 setToggleVisible(true);
                 setToggleVisible1(false);
                 setDropdownVisible(false);
@@ -375,7 +375,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                 setIsToggleDisabled(false);
                 setisColumnTypeDisabled(false);
             }
-            else if (option.key === "Person or Group") {
+            else if (option.value === "Person or Group") {
                 setToggleVisible(true);
                 setToggleVisible1(false);
                 setDropdownVisible(false);
@@ -407,23 +407,12 @@ export default function ConfigMaster({ props }: any): JSX.Element {
         let DisplayColumnData = data.d.results;
         console.log(DisplayColumnData);
 
-        let optionsData: any = [];
+        const optionsData: any = DisplayColumnData.map((item: any) => ({ value: item.Title, label: item.Title }));
 
-        DisplayColumnData.forEach((InternalTitleNameData: { Title: any; InternalTitleName: any; }) => {
-
-            optionsData.push({
-
-                key: InternalTitleNameData.Title,
-
-                text: InternalTitleNameData.Title
-
-            });
-
-        });
         setDisplaycolumnListData(optionsData);
     };
-    const handleDisplayColumnonChange = async (event: React.FormEvent<HTMLDivElement>, option?: IDropdownOption) => {
-        setDisplayColumnID(option?.key as string);
+    const handleDisplayColumnonChange = async (option?: any) => {
+        setDisplayColumnID(option);
     };
 
     const hidePopup = React.useCallback(() => {
@@ -436,10 +425,10 @@ export default function ConfigMaster({ props }: any): JSX.Element {
     const clearField = () => {
         setCurrentEditID(0);
         setFieldName("");
-        setColumnTypeID('');
+        setColumnTypeID(null);
         setListNameID('');
         setSelectedListOption(null);
-        setDisplayColumnID('');
+        setDisplayColumnID(null);
         setIsShowasFilter(false);
         setIsStaticValues(false);
         setOptions([]);
@@ -480,7 +469,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                 alert(DisplayLabel?.Atleasttwooptionrecordrequired);
             }
         }
-        else if (IsStaticValue === false && ColumnTypeID === "Dropdown") {
+        else if (IsStaticValue === false && ColumnTypeID.value === "Dropdown") {
             if (ListNameID === "" || ListNameID === undefined || ListNameID === null) {
                 setListNameIDErr(DisplayLabel?.ThisFieldisRequired as string);
                 isValidForm = false;
@@ -513,7 +502,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                 ddlColumn = null;
             } else {
                 ddlListName = ListNameID;
-                ddlColumn = DisplayColumnID;
+                ddlColumn = DisplayColumnID.value;
             }
             let FieldNameNew = FieldName.split(" ").join("");
             let Name = FieldName;
@@ -525,7 +514,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                 Title: Name.trim(),
                 InternalTitleName: FieldNameNew,
                 IsActive: true,
-                ColumnType: ColumnTypeID,
+                ColumnType: ColumnTypeID.value,
                 IsStaticValue: IsStaticValue,
                 StaticDataObject: options.join(';'),
                 InternalListName: ddlListName,
@@ -611,14 +600,14 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                     <div className="col-md-5">
                         <div className="form-group">
                             <label className={styles.Headerlabel}>{DisplayLabel?.ColumnType}<span style={{ color: "red" }}>*</span></label>
-                            <Dropdown
-                                placeholder={DisplayLabel?.Selectanoption}
+                            <Select
                                 options={dropdownOptions}
+                                value={ColumnTypeID}
                                 onChange={handleColumnTypeonChange}
-                                selectedKey={ColumnTypeID}
-                                errorMessage={ColumnTypeIDErr}
-                                disabled={isColumnTypeDisabled}
+                                isSearchable
+                                placeholder={DisplayLabel?.Selectanoption}
                             />
+                            {ColumnTypeIDErr && <p style={{ color: "rgb(164, 38, 44)" }}>{ColumnTypeIDErr}</p>}
                         </div>
                     </div>
                 </div>
@@ -652,14 +641,6 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                         <div className="col-md-5">
                             <div className="form-group">
                                 <label className={styles.Headerlabel}>{DisplayLabel?.ListName}<span style={{ color: "red" }}>*</span></label>
-
-                                {/* <Dropdown
-                                    placeholder={DisplayLabel?.Selectanoption}
-                                    options={ListData}
-                                    onChange={handleListNameonChange}
-                                    selectedKey={ListNameID}
-                                    errorMessage={ListNameIDErr}
-                                /> */}
                                 <Select
                                     options={ListData}
                                     value={selectedListOption}
@@ -668,19 +649,29 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                                     placeholder={DisplayLabel?.Selectanoption}
                                     errorMessage={ListNameIDErr}
                                 />
+                                {ListNameIDErr && <p style={{ color: "rgb(164, 38, 44)" }}>{ListNameIDErr}</p>}
                             </div>
                         </div>)}
                     {isSecondaryDropdownVisible && (
                         <div className="col-md-5">
                             <div className="form-group">
                                 <label className={styles.Headerlabel}>{DisplayLabel?.DisplayColumn}<span style={{ color: "red" }}>*</span></label>
-                                <Dropdown
+                                {/* <Dropdown
                                     placeholder={DisplayLabel?.Selectanoption}
                                     options={DisplaycolumnListData}
                                     onChange={handleDisplayColumnonChange}
                                     selectedKey={DisplayColumnID}
                                     errorMessage={DisplayColumnIDErr}
+                                /> */}
+                                <Select
+                                    options={DisplaycolumnListData}
+                                    value={DisplayColumnID}
+                                    onChange={handleDisplayColumnonChange}
+                                    isSearchable
+                                    placeholder={DisplayLabel?.Selectanoption}
+                                    errorMessage={DisplayColumnIDErr}
                                 />
+                                {DisplayColumnIDErr && <p style={{ color: "rgb(164, 38, 44)" }}>{DisplayColumnIDErr}</p>}
                             </div>
                         </div>)}
                 </div>

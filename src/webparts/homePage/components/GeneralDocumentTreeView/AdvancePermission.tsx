@@ -1,4 +1,4 @@
-import { Checkbox, Dropdown, IDropdownStyles, Panel, PanelType, PrimaryButton } from "@fluentui/react";
+import { Checkbox, Panel, PanelType, PrimaryButton } from "@fluentui/react";
 import * as React from "react";
 import styles from "./TreeView.module.scss";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
@@ -8,7 +8,7 @@ import { commonPostMethod, getPermission } from "../../../../Services/GeneralDoc
 import PopupBox, { ConfirmationDialog } from "../ResuableComponents/PopupBox";
 import { ILabel } from "../Interface/ILabel";
 import { DefaultButton } from "office-ui-fabric-react";
-
+import Select from "react-select";
 export interface IAdvanceProps {
     isOpen: boolean;
     dismissPanel: () => void;
@@ -43,10 +43,6 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
     // };
 
 
-
-    const dropdownStyles: Partial<IDropdownStyles> = {
-        dropdown: { width: 300 },
-    };
 
     const permissionDetails: Record<string, string> = {
         "1073741829": DisplayLabel.FullControlAccessDec,
@@ -161,6 +157,15 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
         setSelectedUser(ids);
         console.log(ids);
     };
+    const otions = [
+        { value: "1073741829", label: DisplayLabel.FullControlAccess },
+        { value: "1073741828", label: DisplayLabel.DesignAccess },
+        { value: "1073741830", label: DisplayLabel.EditAccess },
+        { value: "1073741827", label: DisplayLabel.ContributeAccess },
+        { value: "1073741826", label: DisplayLabel.ReadAccess },
+        { value: "1073741832", label: DisplayLabel.RestrictedViewAccess },
+        { value: "1073741924", label: DisplayLabel.ViewOnlyAccess },
+    ];
 
     return (
         <div>
@@ -208,26 +213,21 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
                                 errorMessage={selectedUserError}
                                 onChange={handelPeoplePicker}
                                 showHiddenInUI={false}
-                                principalTypes={[PrincipalType.User, PrincipalType.SharePointGroup]}
+                                principalTypes={[PrincipalType.User, PrincipalType.SharePointGroup, PrincipalType.SecurityGroup]}
                             />
                         </div>
                         <div className={styles.col6}>
-                            <Dropdown
-                                required={true}
-                                label={DisplayLabel.SelectPermissionLevel}
-                                options={[
-                                    { key: "1073741829", text: DisplayLabel.FullControlAccess },
-                                    { key: "1073741828", text: DisplayLabel.DesignAccess },
-                                    { key: "1073741830", text: DisplayLabel.EditAccess },
-                                    { key: "1073741827", text: DisplayLabel.ContributeAccess },
-                                    { key: "1073741826", text: DisplayLabel.ReadAccess },
-                                    { key: "1073741832", text: DisplayLabel.RestrictedViewAccess },
-                                    { key: "1073741924", text: DisplayLabel.ViewOnlyAccess },
-                                ]}
-                                errorMessage={selectedPermissionError}
-                                styles={dropdownStyles}
-                                onChange={(ev, opt) => setOption(opt?.key as string)}
+
+                            <label className={styles.Headerlabel}>{DisplayLabel?.SelectPermissionLevel}<span style={{ color: "red" }}>*</span></label>
+                            <Select
+                                required
+                                options={otions}
+                                value={otions.find((item: any) => item.value === option)}
+                                onChange={(opt: any) => setOption(opt?.value as string)}
+                                isSearchable
+                                placeholder={DisplayLabel?.Selectanoption}
                             />
+                            {selectedPermissionError && <p style={{ color: "rgb(164, 38, 44)" }}>{selectedPermissionError}</p>}
                         </div>
                     </div>
 

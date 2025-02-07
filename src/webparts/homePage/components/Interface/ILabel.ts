@@ -138,4 +138,6 @@ export interface ILabel {
     SelectPermissionLevel: string;
     GrantPermissions: string;
     FolderAlreadyExist: string;
+    TileNameAlreadyExist: string;
+    CreateStructure: string;
 }
