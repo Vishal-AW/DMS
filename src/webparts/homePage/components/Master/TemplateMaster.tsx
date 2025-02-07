@@ -46,11 +46,11 @@ export default function TemplateMaster({ props }: any): JSX.Element {
     const fetchData = async () => {
         let FetchTemplateData: any = await getTemplate(props.SiteURL, props.spHttpClient);
 
-        let ConfigData = FetchTemplateData.value;
+        let TemplateMasterData = FetchTemplateData.value;
 
-        setData(ConfigData);
+        setData(TemplateMasterData);
 
-        console.log(ConfigData);
+        console.log(TemplateMasterData);
     };
 
     const TemplateTablecolumns = [
@@ -76,7 +76,7 @@ export default function TemplateMaster({ props }: any): JSX.Element {
     ];
 
     const openEditTemplatePanel = async (rowData: any) => {
-
+        clearTemplatedField();
         setisTemplatePanelOpen(true);
         setisTemplateEditMode(true);
 
@@ -128,12 +128,19 @@ export default function TemplateMaster({ props }: any): JSX.Element {
 
     const validation = () => {
         let isValidForm = true;
+        const isDuplicate = MainTableSetdata.some(
+            (Data) => Data.Name.toLowerCase() === Template.toLowerCase()
+        );
         if (Template === "" || Template === undefined || Template === null) {
             setTemplateErr(DisplayLabel?.ThisFieldisRequired as string);
             isValidForm = false;
         }
-        if (Template.match(/[`~,.<>;':"\/\[\]\|{}()=_+@#$%&?*]/)) {
+        if (/[*|\":<>[\]{}`\\()'!%;@#&$]/.test(Template)) {
             setTemplateErr(DisplayLabel?.SpecialCharacterNotAllowed as string);
+            isValidForm = false;
+        }
+        if (isDuplicate && !isTemplateEditMode) {
+            setTemplateErr(DisplayLabel?.TemplateNameIsAlreadyExist as string);
             isValidForm = false;
         }
 
@@ -225,6 +232,7 @@ export default function TemplateMaster({ props }: any): JSX.Element {
                                 value={Template}
                                 onChange={(el: React.ChangeEvent<HTMLInputElement>) => SetTemplate(el.target.value)}
                                 errorMessage={TemplateErr}
+                                placeholder={DisplayLabel?.EnterTemplateName}
                             />
                         </div>
                     </div>

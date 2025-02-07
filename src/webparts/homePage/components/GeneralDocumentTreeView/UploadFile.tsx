@@ -11,6 +11,7 @@ import PopupBox from "../ResuableComponents/PopupBox";
 import { getStatusByInternalStatus } from "../../../../Services/StatusSerivce";
 import cls from '../HomePage.module.scss';
 import { ILabel } from "../Interface/ILabel";
+import Select from "react-select";
 
 interface IUploadFileProps {
     isOpenUploadPanel: boolean;
@@ -77,6 +78,12 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
         if (libraryData.value[0]?.DynamicControl) {
             let jsonData = JSON.parse(libraryData.value[0].DynamicControl);
             jsonData = jsonData.filter((ele: any) => ele.IsActiveControl && ele.IsFieldAllowInFile);
+            jsonData = jsonData.map((el: any) => {
+                if (el.ColumnType === "Person or Group") {
+                    el.InternalTitleName = `${el.InternalTitleName}Id`;
+                }
+                return el;
+            });
             setDynamicControl(jsonData);
             bindDropdown(jsonData);
         }
@@ -88,17 +95,14 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
             if (item.ColumnType === "Dropdown" || item.ColumnType === "Multiple Select") {
                 if (item.IsStaticValue) {
                     dropdownOptions = item.StaticDataObject.split(";").map((ele: string) => ({
-                        key: ele,
-                        text: ele,
+                        value: ele,
+                        label: ele,
                     }));
                 } else {
-                    const data = await getListData(
-                        `${context.pageContext.web.absoluteUrl}/_api/web/lists/getbytitle('${item.InternalListName}')/items?$top=5000&$filter=Active eq 1&$orderby=${item.DisplayValue} asc`,
-                        context
-                    );
+                    const data = await getListData(`${context.pageContext.web.absoluteUrl}/_api/web/lists/getbytitle('${item.InternalListName}')/items?$top=5000&$filter=Active eq 1&$orderby=${item.DisplayValue} asc`, context);
                     dropdownOptions = data.value.map((ele: any) => ({
-                        key: ele[item.DisplayValue],
-                        text: ele[item.DisplayValue],
+                        value: ele[item.DisplayValue],
+                        label: ele[item.DisplayValue],
                     }));
                 }
                 setOptions((prev: any) => ({ ...prev, [item.InternalTitleName]: dropdownOptions }));
@@ -119,15 +123,17 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                 case "Multiple Select":
                     return (
                         <div className={styles.col6} key={index}>
-                            <Dropdown
-                                label={item.Title}
-                                options={options[item.InternalTitleName] || []}
+                            <label className={styles.Headerlabel}>{item.Title}{item.IsRequired ? <span style={{ color: "red" }}>*</span> : <></>}</label>
+                            <Select
+                                options={options[item.InternalTitleName]}
                                 required={item.IsRequired}
-                                multiSelect={item.ColumnType === "Multiple Select"}
-                                onChange={(ev, option) => handleInputChange(item.InternalTitleName, option?.key)}
-                                selectedKey={dynamicValues[item.InternalTitleName] || ""}
-                                errorMessage={dynamicValuesErr[item.InternalTitleName]}
+                                value={(options[item.InternalTitleName] || []).find((option: any) => option.value === dynamicValues[item.InternalTitleName])}
+                                onChange={(option: any) => handleInputChange(item.InternalTitleName, option?.value)}
+                                isSearchable
+                                placeholder={DisplayLabel?.Selectanoption}
+                                isMulti={item.ColumnType === "Multiple Select"}
                             />
+                            {dynamicValuesErr[item.InternalTitleName] && <p style={{ color: "rgb(164, 38, 44)" }}>{dynamicValuesErr[item.InternalTitleName]}</p>}
                         </div>
                     );
 
@@ -153,7 +159,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                                         );
                                         setDynamicValues((prevValues) => ({
                                             ...prevValues,
-                                            [item.InternalTitleName]: userIds,
+                                            [item.InternalTitleName]: userIds[0],
                                         }));
                                     } catch (error) {
                                         console.error("Error fetching user IDs:", error);
@@ -356,7 +362,6 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                         <div className={styles.col10}>
                             <TextField type="file" label={DisplayLabel.ChooseFile} required onChange={(event: React.ChangeEvent<HTMLInputElement>) => { if (event.target.files) setAttachment(event.target.files[0]); }}
                                 errorMessage={attachmentErr}
-                                value={attachment.name || ""}
                             />
                         </div>
                         <div className={styles.col2}>
@@ -408,7 +413,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                                                             });
                                                         }
                                                         setFilterFilesData(filterFiles);
-                                                        setFilesData(filterFiles.map((el: any) => ({ key: el.Name, text: el.ListItemAllFields.ActualName })));
+                                                        setFilesData(filterFiles.map((el: any) => ({ value: el.Name, label: el.ListItemAllFields.ActualName })));
                                                         setAttachmentsFiles(attach);
                                                         // await setAttachmentsFiles((prev) => prev.map((ele, i) => i === index ? { ...ele, isUpdateExistingFile: option?.key } : ele));
                                                         const filterD = attach.filter((el, i) => el.isUpdateExistingFile === "Yes");
@@ -418,17 +423,20 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                                                 />
                                             </td>
                                             {isUpdateExistingFile ? <td>
-                                                <Dropdown
+
+                                                <Select
                                                     options={filesData}
-                                                    selectedKey={item.OldFileName}
-                                                    onChange={(ev, option) => {
-                                                        const fData = filterFilesData.filter((ele: any) => ele.Name == option?.key);
+                                                    value={filesData.find((option: any) => option.value === item.OldFileName)}
+                                                    onChange={(option: any) => {
+                                                        const fData = filterFilesData.filter((ele: any) => ele.Name == option?.value);
                                                         let level = 1.0;
                                                         if (fData.length > 0)
                                                             level = parseFloat(fData[0].ListItemAllFields.Level) + 1.0;
 
-                                                        setAttachmentsFiles((prev) => prev.map((ele, i) => i === index ? { ...ele, OldFileName: option?.key, version: level.toFixed(1) } : ele));
+                                                        setAttachmentsFiles((prev) => prev.map((ele, i) => i === index ? { ...ele, OldFileName: option?.value, version: level.toFixed(1) } : ele));
                                                     }}
+                                                    isSearchable
+                                                    placeholder={DisplayLabel?.Selectanoption}
                                                     disabled={item.isDisabled}
                                                 />
                                             </td> : <></>}

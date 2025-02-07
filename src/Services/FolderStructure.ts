@@ -186,10 +186,12 @@ const removeAllPermissionsForLib = async (context: WebPartContext, libName: stri
     }
 };
 
-const grantPermissionsForLib = async (context: WebPartContext, libName: string, userIds: any[]) => {
+export const grantPermissionsForLib = async (context: WebPartContext, libName: string, userIds: any[]) => {
     try {
         for (const userId of userIds) {
-            const permissionUrl = `${context.pageContext.web.absoluteUrl}/_api/web/lists/getbytitle('${libName}')/roleassignments/addroleassignment(principalid=${userId},roleDefId=1073741827)`;
+            const permissionType = userId.Type === "User" ? 1073741827 : 1073741829;
+
+            const permissionUrl = `${context.pageContext.web.absoluteUrl}/_api/web/lists/getbytitle('${libName}')/roleassignments/addroleassignment(principalid=${userId.IDs},roleDefId=${permissionType})`;
             const response = await context.spHttpClient.post(
                 permissionUrl,
                 SPHttpClient.configurations.v1,

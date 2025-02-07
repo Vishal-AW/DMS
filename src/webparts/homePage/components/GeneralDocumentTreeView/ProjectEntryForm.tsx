@@ -2,7 +2,6 @@ import React, { memo, useCallback, useEffect, useState } from "react";
 import {
     ChoiceGroup,
     DefaultButton,
-    Dropdown,
     Panel,
     PanelType,
     PrimaryButton,
@@ -25,6 +24,7 @@ import { getUserIdFromLoginName } from "../../../../DAL/Commonfile";
 import PopupBox from "../ResuableComponents/PopupBox";
 import cls from '../HomePage.module.scss';
 import { ILabel } from "../Interface/ILabel";
+import Select from 'react-select';
 
 export interface IProjectEntryProps {
     isOpen: boolean;
@@ -80,6 +80,8 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
     const [projectManagerEmail, setProjectManagerEmail] = useState("");
     const [publisherEmail, setPublisherEmail] = useState("");
     const [panelTitle, setPanelTitle] = useState(DisplayLabel.EntryForm);
+    const [createStructure, setCreateStructure] = useState<boolean>(false);
+
     const handleInputChange = (fieldName: string, value: any) => {
         setDynamicValues((prevValues) => ({
             ...prevValues,
@@ -92,8 +94,6 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
         msGraphClientFactory: context.msGraphClientFactory,
         spHttpClient: context.spHttpClient
     };
-
-
 
 
     const handleToggleChange = (_: React.MouseEvent<HTMLElement>, checked?: boolean) => {
@@ -136,8 +136,8 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
             "Suffix"
         );
         const column = data.value.map((item: any) => ({
-            key: item.PSName,
-            text: item.PSName,
+            value: item.PSName,
+            label: item.PSName,
         }));
         setSuffixData(column);
     };
@@ -170,8 +170,8 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
             if (item.ColumnType === "Dropdown" || item.ColumnType === "Multiple Select") {
                 if (item.IsStaticValue) {
                     dropdownOptions = item.StaticDataObject.split(";").map((ele: string) => ({
-                        key: ele,
-                        text: ele,
+                        value: ele,
+                        label: ele,
                     }));
                 } else {
                     const data = await getListData(
@@ -179,8 +179,8 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                         context
                     );
                     dropdownOptions = data.value.map((ele: any) => ({
-                        key: ele[item.DisplayValue],
-                        text: ele[item.DisplayValue],
+                        value: ele[item.DisplayValue],
+                        label: ele[item.DisplayValue],
                     }));
                 }
                 setOptions((prev: any) => ({ ...prev, [item.InternalTitleName]: dropdownOptions }));
@@ -199,16 +199,18 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                 case "Multiple Select":
                     return (
                         <div className={dynamicControl.length > 5 ? styles.col6 : styles.col12} key={index}>
-                            <Dropdown
-                                label={item.Title}
-                                options={options[item.InternalTitleName] || []}
+                            <label className={styles.Headerlabel}>{item.Title}{item.IsRequired ? <span style={{ color: "red" }}>*</span> : <></>}</label>
+                            <Select
+                                options={options[item.InternalTitleName]}
                                 required={item.IsRequired}
-                                multiSelect={item.ColumnType === "Multiple Select"}
-                                onChange={(ev, option) => handleInputChange(item.InternalTitleName, option?.key)}
-                                selectedKey={dynamicValues[item.InternalTitleName] || ""}
-                                errorMessage={dynamicValuesErr[item.InternalTitleName]}
+                                value={options[item.InternalTitleName].find((option: any) => option.value === dynamicValues[item.InternalTitleName])}
+                                onChange={(option: any) => handleInputChange(item.InternalTitleName, option?.value)}
+                                isSearchable
+                                placeholder={DisplayLabel?.Selectanoption}
+                                isMulti={item.ColumnType === "Multiple Select"}
                                 disabled={isDisabled}
                             />
+                            {dynamicValuesErr[item.InternalTitleName] && <p style={{ color: "rgb(164, 38, 44)" }}>{dynamicValuesErr[item.InternalTitleName]}</p>}
                         </div>
                     );
 
@@ -330,7 +332,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
         }
 
         if (dynamicControl.length > 0) {
-            dynamicControl.forEach((item: any) => {
+            dynamicControl.filter((item: any, index: number) => !item.IsFieldAllowInFile).forEach((item: any) => {
                 if (item.IsRequired && !dynamicValues[item.InternalTitleName]) {
                     setDynamicValuesErr((prev) => ({
                         ...prev,
@@ -493,15 +495,16 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                         <>
                             <div className={styles.row}>
                                 <div className={styles.col12}>
-                                    <Dropdown
-                                        label={DisplayLabel.DocumentSuffix}
+                                    <label className={styles.Headerlabel}>{DisplayLabel.DocumentSuffix}<span style={{ color: "red" }}>*</span> </label>
+                                    <Select
                                         options={SuffixData}
-                                        required
-                                        onChange={(ev, option: any) => setSuffix(option.key as string)}
-                                        selectedKey={Suffix}
-                                        errorMessage={SuffixErr}
+                                        value={SuffixData.find((option: any) => option.value === Suffix)}
+                                        onChange={(option: any) => setSuffix(option.value as string)}
+                                        isSearchable
+                                        placeholder={DisplayLabel?.Selectanoption}
                                         disabled={isDisabled}
                                     />
+                                    {SuffixErr && <p style={{ color: "rgb(164, 38, 44)" }}>{SuffixErr}</p>}
                                 </div>
                             </div>
 
@@ -605,7 +608,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                                 showtooltip={true}
                                 required
                                 showHiddenInUI={false}
-                                // principalTypes={[PrincipalType.User]}
+                                principalTypes={[PrincipalType.User, PrincipalType.SharePointGroup, PrincipalType.SecurityGroup]}
                                 onChange={async (items) => {
                                     try {
                                         const userIds = await Promise.all(
@@ -623,6 +626,28 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                             />
                                 : <></>
                             }
+                        </div>
+                    </div>
+                    <div className={styles.row}>
+                        <div className={styles.col6}>
+                            <Toggle
+                                label={DisplayLabel.CreateStructure}
+                                onChange={() => { setCreateStructure((pre) => !pre); }}
+                                disabled={isDisabled}
+                                checked={createStructure}
+                            />
+                        </div>
+                        <div className={styles.col6}>
+                            <label className={styles.Headerlabel}>{DisplayLabel.DocumentSuffix}<span style={{ color: "red" }}>*</span> </label>
+                            <Select
+                                options={SuffixData}
+                                value={SuffixData.find((option: any) => option.value === Suffix)}
+                                onChange={(option: any) => setSuffix(option.value as string)}
+                                isSearchable
+                                placeholder={DisplayLabel?.Selectanoption}
+                                disabled={isDisabled}
+                            />
+                            {SuffixErr && <p style={{ color: "rgb(164, 38, 44)" }}>{SuffixErr}</p>}
                         </div>
                     </div>
                 </div>

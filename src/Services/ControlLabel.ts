@@ -160,6 +160,16 @@ export async function GetAllLabel(WebUrl: string, spHttpClient: SPHttpClient, La
       EditRecord: getValue("EditRecord", data, Language),
       AddNewRecord: getValue("AddNewRecord", data, Language),
       SpecialCharacterNotAllowed: getValue("SpecialCharacterNotAllowed", data, Language),
+      TemplateNameIsAlreadyExist: getValue("TemplateNameIsAlreadyExist", data, Language),
+      EnterTemplateName: getValue("EnterTemplateName", data, Language),
+      EnterFolderName: getValue("EnterFolderName", data, Language),
+      EditFolder: getValue("EditFolder", data, Language),
+      AddFolder: getValue("AddFolder", data, Language),
+      SelectParentFolder: getValue("SelectParentFolder", data, Language),
+      SelectTemplateName: getValue("SelectTemplateName", data, Language),
+      IsthisaChildFolder: getValue("IsthisaChildFolder", data, Language),
+      TileNameAlreadyExist: getValue("TileNameAlreadyExist", data, Language),
+      CreateStructure: getValue("CreateStructure", data, Language),
     };
 
     // 

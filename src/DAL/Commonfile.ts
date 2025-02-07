@@ -138,13 +138,13 @@ export async function UploadFile(WebUrl: string, spHttpClient: any, file: string
     const spOpts: ISPHttpClientOptions = {
       body: file
     };
-    var redirectionURL = WebUrl + "/_api/Web/GetFolderByServerRelativeUrl('" + DocumentLib + "')/Files/Add(url='" + DisplayName + "', overwrite=true)?$expand=ListItemAllFields"
+    var redirectionURL = WebUrl + "/_api/Web/GetFolderByServerRelativeUrl('" + DocumentLib + "')/Files/Add(url='" + DisplayName + "', overwrite=true)?$expand=ListItemAllFields";
     const responsedata = spHttpClient.post(redirectionURL, SPHttpClient.configurations.v1, spOpts).then((response: SPHttpClientResponse) => {
       response.json().then(async (responseJSON: any) => {
         // console.log(responseJSON.ListItemAllFields.ID);
         var serverRelURL = await responseJSON.ServerRelativeUrl;
         if (jsonBody != null) {
-          await UpdateItem(WebUrl, spHttpClient, DocumentLib, jsonBody, responseJSON.ListItemAllFields.ID)
+          await UpdateItem(WebUrl, spHttpClient, DocumentLib, jsonBody, responseJSON.ListItemAllFields.ID);
 
         }
         resolve(responseJSON);
@@ -328,7 +328,18 @@ async function userData(groupData: any) {
   }
 }
 
-
+export async function isMember(context: WebPartContext, GroupName: string) {
+  let url = context.pageContext.web.absoluteUrl + "/_api/web/sitegroups/getByName('" + GroupName + "')/Users?$filter=Id eq " + context.pageContext.legacyPageContext["userId"];
+  return await context.spHttpClient.get(url, SPHttpClient.configurations.v1, {
+    headers: {
+      'Accept': 'application/json;odata=nometadata',
+      'Content-type': 'application/json;odata=nometadata',
+      'odata-version': ''
+    },
+  }).then((response: SPHttpClientResponse) => {
+    return response.json();
+  });
+}
 
 
 

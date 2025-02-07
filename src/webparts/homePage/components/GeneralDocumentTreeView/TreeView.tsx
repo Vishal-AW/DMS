@@ -18,6 +18,7 @@ import ApprovalFlow from "./ApprovalFlow";
 import cls from '../HomePage.module.scss';
 import { useConst } from '@fluentui/react-hooks';
 import { ILabel } from "../Interface/ILabel";
+import { isMember } from "../../../../DAL/Commonfile";
 
 
 interface Folder {
@@ -40,9 +41,7 @@ export default function TreeView({ props }: any) {
     const linkRef = useRef<Record<string, HTMLDivElement | null>>({});
     const [showContextualMenu, setShowContextualMenu] = React.useState<{ [key: string]: boolean; }>({});
     const [nodeId, setNodeId] = useState(0);
-
     const [folders, setFolders] = useState<Folder[]>([]);
-    const [folderPath, setFolderPath] = useState("");
     const [rightFolders, setRightFolders] = useState<Folder[]>([]);
     const [childFolders, setChildFolders] = useState<Record<string, Folder[]>>({});
     const [files, setFiles] = useState([]);
@@ -81,8 +80,10 @@ export default function TreeView({ props }: any) {
     const [isPopupBoxVisible, setIsPopupBoxVisible] = useState<boolean>(false);
     const [projectUpdateData, setProjectUpdateData] = useState<any>({});
     const [actionFolderPath, setActionFolderPath] = useState("");
-    const [extention, setExtention] = useState("");
+    const [extension, setExtension] = useState("");
     const [fileName, setFileName] = useState("");
+    const [folderPath, setFolderPath] = useState(libName);
+    const [isValidUser, setIsValidUser] = useState<boolean>(false);
 
     useEffect(() => {
         fetchFolders(libName, "");
@@ -107,8 +108,6 @@ export default function TreeView({ props }: any) {
                 setRightFolders(updatedFolders);
                 if (folderPath === libName) {
                     setFolders(data.Folders);
-
-
                 } else {
                     setChildFolders((prev) => ({
                         ...prev,
@@ -128,6 +127,8 @@ export default function TreeView({ props }: any) {
     const getAdmin = async () => {
         const data = await getListData(`${props.SiteURL}/_api/web/lists/getbytitle('DMS_GroupName')/items`, props.context);
         setAdmin(data.value.map((el: any) => (el.GroupNameId)));
+        const isMembers = await isMember(props.context, "ProjectAdmin");
+        setIsValidUser(isMembers.value.length > 0);
     };
 
     const [expandedNodes, setExpandedNodes] = useState<string[]>([libName]);
@@ -137,12 +138,12 @@ export default function TreeView({ props }: any) {
         setFolderName(nodeName);
         setFolderPath(folderPath);
         setFolderObject(obj);
-        if (expandedNodes.includes(nodeName)) {
+        if (expandedNodes.includes(nodeName))
             setExpandedNodes(expandedNodes.filter((name) => name !== nodeName));
-        } else {
+        else
             setExpandedNodes([...expandedNodes, nodeName]);
-            fetchFolders(folderPath, nodeName);
-        }
+
+        fetchFolders(folderPath, nodeName);
     };
 
     const columns = [
@@ -185,16 +186,11 @@ export default function TreeView({ props }: any) {
                 key: 'rename',
                 text: DisplayLabel.Rename,
                 onClick: () => {
+                    setFileNameErr("");
                     setPanelTitle(DisplayLabel.Rename);
                     const fileDetails = item._original.ListItemAllFields.ActualName.split(".");
-                    setExtention(fileDetails[1]);
+                    setExtension(fileDetails[1]);
                     setFileName(fileDetails[0]);
-                    setPanelForm(<>
-                        <div className={styles.col10}>
-                            <TextField value={fileName} required errorMessage={fileNameErr} onChange={(event: React.ChangeEvent<HTMLInputElement>) => { setFileName(event.target.value); }} />
-                        </div>
-                        <div className={styles.col2}><TextField readOnly value={extention} /></div>
-                    </>);
                     setActionButton(<PrimaryButton text={DisplayLabel.Rename} style={{ marginRight: "10px" }} onClick={() => renameTheFile(item._original.ListItemAllFields.Id)} />);
                     setIsOpenCommonPanel(true);
                 }
@@ -224,6 +220,17 @@ export default function TreeView({ props }: any) {
             // }
         ],
     });
+    useEffect(() => {
+        setPanelForm(<>
+            <div className={styles.col10}>
+                <TextField value={fileName} required errorMessage={fileNameErr} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                    setFileName(event.target.value);
+                }} />
+            </div>
+            <div className={styles.col2}><TextField readOnly value={extension} /></div>
+        </>);
+
+    }, [fileName, extension, fileNameErr]);
     const getPreviewUrl = (filePath: string) => {
         const extension = filePath?.split('.').pop()?.toLowerCase();
         switch (extension) {
@@ -252,7 +259,7 @@ export default function TreeView({ props }: any) {
         else {
             setShowLoader({ display: "block" });
             const obj = {
-                ActualName: `${fileName}.${extention}`
+                ActualName: `${fileName}.${extension}`
             };
             updateLibrary(props.SiteURL, props.spHttpClient, obj, id, libName).then((response) => {
                 dismissFolderPanel();
@@ -477,70 +484,10 @@ export default function TreeView({ props }: any) {
             <div className={styles.grid}>
                 <div className={styles.row}>
                     <div className={styles.col12}>
-                        {/* <PrimaryButton text={DisplayLabel.NewRequest} onClick={projectCreation} style={{ float: "right" }} /> */}
-                        <DefaultButton onClick={projectCreation} text={DisplayLabel?.NewRequest} className={styles['primary-btn']} style={{ float: "right" }} />
+                        {isValidUser || libDetails.TileAdminId === props.userID ? <DefaultButton onClick={projectCreation} text={DisplayLabel?.NewRequest} className={styles['primary-btn']} style={{ float: "right" }} /> : ""}
                     </div>
                 </div>
-
-
             </div>
-
-            {/* <div className={styles.grid}>
-                <div className={styles.row}>
-                    <div className={styles.col3}>
-                        <div className={styles.row}>
-                            <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "EmptyRecycleBin" }} text={DisplayLabel.RecycleBin} onClick={getRecycleData} /></div>
-                            <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "DocumentApproval" }} text={DisplayLabel.Approval} onClick={() => setTables("Approver")} /></div>
-                            <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "Search" }} text={DisplayLabel.AdvancedSearch} onClick={advancedSearch} /></div>
-
-                            <ul className={styles["tree-view"]}>
-                                <li>
-                                    <div className={styles["tree-node"]}>
-                                        <span
-                                            onClick={() => toggleNode(libName, libName, {})}
-                                            style={{ cursor: "pointer" }}
-
-
-                                        >
-                                            <Icon
-                                                iconName={
-                                                    expandedNodes.includes(libName)
-                                                        ? "FabricOpenFolderHorizontal"
-                                                        : "FabricFolderFill"
-                                                }
-                                                className={styles["folder-icon"]}
-                                                style={{ marginRight: "5px", color: "#0162e8" }}
-                                            />
-                                            <span className={styles["node-name"]}>{libDetails.TileName}</span>
-                                        </span>
-                                    </div>
-                                    <ul className="nested-list">
-                                        {expandedNodes.includes(libName) && renderTree(folders, libName)}
-                                    </ul>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div className={styles.col9}>
-                        <div className={styles.grid}>
-                            <div className={styles.row}>
-                                <div className={styles.col12}>Dashboard/{folderPath}</div>
-                            </div>
-                            <div className={styles.row}>
-                                <div className={styles.col12}>
-                                    {folderPath === libName ? <></> :
-                                        <div style={{ float: "right" }}>
-                                            <DefaultButton text={DisplayLabel.Upload} onClick={() => setIsOpenUploadPanel(true)} className={styles['secondary-btn']} styles={{ root: { marginRight: 8 } }} />
-                                            {files.length === 0 ? <DefaultButton className={styles['info-btn']} text={DisplayLabel.NewFolder} onClick={() => { setIsOpenFolderPanel(true); setFolderName(""); }} /> : <></>}
-                                        </div>
-                                    }
-                                </div>
-                            </div>
-                        </div>
-                        {bindTable()}
-                    </div>
-                </div>
-            </div> */}
 
 
             <Stack enableScopedSelectors horizontal styles={stackStyles} tokens={stackTokens} className="ms-Grid">
@@ -587,7 +534,7 @@ export default function TreeView({ props }: any) {
                             <div className={styles.col12}>
                                 {folderPath === libName ? <></> :
                                     <div style={{ float: "right" }}>
-                                        <DefaultButton text={DisplayLabel.Upload} onClick={() => setIsOpenUploadPanel(true)} className={styles['secondary-btn']} styles={{ root: { marginRight: 8 } }} />
+                                        {rightFolders.length === 0 && (isValidUser || libDetails.TileAdminId === props.userID) ? <DefaultButton text={DisplayLabel.Upload} onClick={() => setIsOpenUploadPanel(true)} className={styles['secondary-btn']} styles={{ root: { marginRight: 8 } }} /> : <></>}
                                         {files.length === 0 ? <DefaultButton className={styles['info-btn']} text={DisplayLabel.NewFolder} onClick={() => { setIsOpenFolderPanel(true); setFolderName(""); }} /> : <></>}
                                     </div>
                                 }
