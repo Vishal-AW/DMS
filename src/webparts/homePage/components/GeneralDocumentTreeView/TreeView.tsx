@@ -544,7 +544,7 @@ export default function TreeView({ props }: any) {
 
 
             <Stack enableScopedSelectors horizontal styles={stackStyles} tokens={stackTokens} className="ms-Grid">
-                <Stack.Item grow styles={stackItemStyles} >
+                <Stack.Item grow styles={stackItemStyles} className={styles.col3}>
                     <div className={styles.grid}>
                         <div className={styles.row}>
                             <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "EmptyRecycleBin", style: { color: "#f1416c" } }} text={DisplayLabel.RecycleBin} onClick={getRecycleData} /></div>
