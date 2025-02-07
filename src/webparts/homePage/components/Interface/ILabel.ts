@@ -138,6 +138,20 @@ export interface ILabel {
     SelectPermissionLevel: string;
     GrantPermissions: string;
     FolderAlreadyExist: string;
+
+    ActiveStatus: string;
+    TemplateName: string;
+    EditRecord: string;
+    AddNewRecord: string;
+    SpecialCharacterNotAllowed: string;
+    TemplateNameIsAlreadyExist: string;
+    EnterTemplateName: string;
+    EnterFolderName: string;
+    EditFolder: string;
+    AddFolder: string;
+    SelectParentFolder: string;
+    SelectTemplateName: string;
+    IsthisaChildFolder: string;
     TileNameAlreadyExist: string;
     CreateStructure: string;
 }

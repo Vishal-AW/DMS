@@ -158,7 +158,6 @@ export default function TreeView({ props }: any) {
                 const menuProps = useConst<IContextualMenuProps>(() => createMenuProps(row));
                 return <DefaultButton text={DisplayLabel.Action} className={styles['info-btn']} menuProps={menuProps} />;
             }
-
         }
     ];
     const createMenuProps = (item: any): IContextualMenuProps => ({
@@ -492,14 +491,15 @@ export default function TreeView({ props }: any) {
 
 
             <Stack enableScopedSelectors horizontal styles={stackStyles} tokens={stackTokens} className="ms-Grid">
-                <Stack.Item grow styles={stackItemStyles} className={styles.col3}>
+                <Stack.Item grow styles={stackItemStyles} >
                     <div className={styles.grid}>
                         <div className={styles.row}>
-                            <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "EmptyRecycleBin" }} text={DisplayLabel.RecycleBin} onClick={getRecycleData} /></div>
-                            <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "DocumentApproval" }} text={DisplayLabel.Approval} onClick={() => setTables("Approver")} /></div>
-                            <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "Search" }} text={DisplayLabel.AdvancedSearch} onClick={advancedSearch} /></div>
+                            <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "EmptyRecycleBin", style: { color: "#f1416c" } }} text={DisplayLabel.RecycleBin} onClick={getRecycleData} /></div>
+                            <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "DocumentApproval", style: { color: "#50cd89" } }} text={DisplayLabel.Approval} onClick={() => setTables("Approver")} /></div>
+                            <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "Search", style: { color: "#7239ea" } }} text={DisplayLabel.AdvancedSearch} onClick={advancedSearch} /></div>
                         </div>
                     </div>
+                    <hr className="customHrdot" style={{ borderTop: 'var(--bs-border-width) dashed !important' }} />
                     <ul className={styles["tree-view"]}>
                         <li>
                             <div className={styles["tree-node"]}>
@@ -597,7 +597,7 @@ export default function TreeView({ props }: any) {
                 onDismiss={dismissCommanPanel}
                 closeButtonAriaLabel="Close"
                 type={panelSize}
-                onRenderFooterContent={() => <>{actionButton}<DefaultButton onClick={dismissCommanPanel} className={styles['light-btn']}>Cancel</DefaultButton></>}
+                onRenderFooterContent={() => <>{actionButton}<DefaultButton onClick={dismissCommanPanel} className={styles["light-btn"]}>Cancel</DefaultButton></>}
                 isFooterAtBottom={true}
             >
                 <div style={{ marginTop: "10px" }}>

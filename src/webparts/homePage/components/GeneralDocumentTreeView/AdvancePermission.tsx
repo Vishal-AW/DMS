@@ -36,11 +36,6 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
         spHttpClient: context.spHttpClient
     };
 
-    // const peoplePickerContext: IPeoplePickerContext = {
-    //     absoluteUrl: context.pageContext.web.absoluteUrl,
-    //     msGraphClientFactory: context.msGraphClientFactory as any as import("@pnp/spfx-controls-react/node_modules/@microsoft/sp-http-msgraph/dist/index-internal").MSGraphClientFactory,
-    //     spHttpClient: context.spHttpClient as any as import("@pnp/spfx-controls-react/node_modules/@microsoft/sp-http-base/dist/index-internal").SPHttpClient
-    // };
 
 
 
