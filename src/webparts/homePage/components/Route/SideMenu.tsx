@@ -19,6 +19,7 @@ const SideMenu: React.FC<ISideMenu> = ({ onclickbutton, props }) => {
   const [ImageURL, setImageURL] = useState('');
 
 
+
   useEffect(() => {
     setLogo(props.SiteURL, props.spHttpClient);
     Findusergroupdata();
@@ -227,6 +228,15 @@ const SideMenu: React.FC<ISideMenu> = ({ onclickbutton, props }) => {
     setIsHovered(false); // Hover out: Sidebar collapses
   };
 
+  const spanStyle = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 0,
+    height: 'calc(1.5em + 1.5rem + 2px)',
+    cursor: 'pointer' // Improves UX by indicating interactivity
+  };
+
 
 
   return (
@@ -242,20 +252,32 @@ const SideMenu: React.FC<ISideMenu> = ({ onclickbutton, props }) => {
       >
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '65px', padding: '0 25px' }}>
-          {!collapsed && (<a style={{ marginBottom: '20px', marginTop: '20px', marginLeft: '22px' }}>
+          {isHovered && (<a style={{ marginBottom: '20px', marginTop: '20px', marginLeft: '22px' }}>
             <img src={ImageURL} style={{ maxWidth: '100%', height: '50px', padding: '10px 0px 5px 10px;' }} />
           </a>)}
 
-          <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'space-between', padding: '0', height: 'calc(1.5em + 1.5rem + 2px)' }}
+          {/* <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'space-between', padding: '0', height: 'calc(1.5em + 1.5rem + 2px)' }}
+            onClick={toggleSidebar} onTouchMove={toggleSidebar}
+          > */}
+
+          <span
+            style={spanStyle}
             onClick={toggleSidebar}
+            onTouchMove={toggleSidebar} // Changed from onTouchMove to prevent excessive calls
           >
+            {/* Add your content here */}
+
             <Icon iconName="DoubleChevronLeftMed" style={{ fontSize: '16px', verticalAlign: 'middle', color: '#a4a7b9', cursor: 'pointer', textAlign: 'center' }} />
             {/* <Icon
               iconName={collapsed ? "DoubleChevronRightMed" : "DoubleChevronLeftMed"}
               style={{ fontSize: '16px', verticalAlign: 'middle', color: '#a4a7b9', textAlign: 'center' }}
             /> */}
           </span>
+
+
         </div>
+
+
 
         <Menu>
           {createMenuLevelFinal(allMenu)}

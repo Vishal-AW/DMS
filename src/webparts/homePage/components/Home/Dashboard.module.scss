@@ -81,3 +81,112 @@
   }
 
 }
+
+
+
+.dashcards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin: 4rem 5vw;
+  padding: 0;
+  list-style-type: none;
+}
+
+.dashcard {
+  position: relative;
+  display: block;
+  height: 100%;
+  border-radius: 20px;
+  overflow: hidden;
+  text-decoration: none;
+}
+
+.dashcard__image {
+  width: 100%;
+  height: auto;
+}
+
+.dashcard__overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  border-top-right-radius: 40px;
+  background-color: #fff;
+  transform: translateY(100%);
+  transition: .2s ease-in-out;
+}
+
+.dashcard:hover .dashcard__overlay {
+  transform: translateY(0);
+}
+
+.dashcard__header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 2em;
+  padding: 12px;
+  border-top-right-radius: 0px;
+  background-color: #fff;
+  transform: translateY(-100%);
+  transition: .2s ease-in-out;
+
+}
+
+.dashcard__arc {
+  width: 80px;
+  height: 80px;
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  z-index: 1;
+}
+
+.dashcard__arc path {
+  fill: #fff;
+  d: path("M 40 80 c 22 0 40 -22 40 -40 v 40 Z") !important;
+}
+
+.dashcard:hover .dashcard__header {
+  transform: translateY(0);
+}
+
+.dashcard__thumb {
+  flex-shrink: 0;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
+
+.dashcard__title {
+  font-size: 1em;
+  margin: 0 0 .3em;
+  color: #6A515E;
+}
+
+.dashcard__tagline {
+  display: block;
+  margin: 1em 0;
+  font-family: "MockFlowFont";
+  font-size: .8em;
+  color: #D7BDCA;
+}
+
+.dashcard__status {
+  font-size: .8em;
+  color: #D7BDCA;
+}
+
+.dashcard__description {
+  padding: 4px;
+  margin: 0;
+  color: #D7BDCA;
+  font-family: "MockFlowFont";
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  // -webkit-line-clamp: 3;
+  overflow: hidden;
+}
