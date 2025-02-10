@@ -6,7 +6,7 @@ export function getParent(WebUrl: string, spHttpClient: any) {
   return getMethod(WebUrl, spHttpClient, filter);
 }
 export function getActiveFolder(WebUrl: string, spHttpClient: any) {
-  let filter = "IsActive eq 1";
+  let filter = "Active eq 1";
 
   return getMethod(WebUrl, spHttpClient, filter);
 }

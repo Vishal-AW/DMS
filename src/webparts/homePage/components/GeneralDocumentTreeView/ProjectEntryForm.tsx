@@ -25,6 +25,8 @@ import PopupBox from "../ResuableComponents/PopupBox";
 import cls from '../HomePage.module.scss';
 import { ILabel } from "../Interface/ILabel";
 import Select from 'react-select';
+import { getTemplateActive } from "../../../../Services/TemplateService";
+import { getActiveFolder } from "../../../../Services/FolderMasterService";
 
 export interface IProjectEntryProps {
     isOpen: boolean;
@@ -81,6 +83,9 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
     const [publisherEmail, setPublisherEmail] = useState("");
     const [panelTitle, setPanelTitle] = useState(DisplayLabel.EntryForm);
     const [createStructure, setCreateStructure] = useState<boolean>(false);
+    const [allFolderTemplate, setAllFolderTemplate] = useState<any>([]);
+    const [folderTemplate, setFolderTemplate] = useState<any>("");
+    const [folderStructure, setFolderStructure] = useState<any>([]);
 
     const handleInputChange = (fieldName: string, value: any) => {
         setDynamicValues((prevValues) => ({
@@ -104,6 +109,8 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
         fetchLibraryDetails();
         fetchSuffixData();
         getAllUsers();
+        getFolderStructure();
+        getFolderTemplate();
     }, []);
 
     useEffect(() => {
@@ -118,6 +125,16 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
 
     }, [isOpen]);
 
+    const getFolderTemplate = async () => {
+        const data = await getTemplateActive(context.pageContext.web.absoluteUrl, context.spHttpClient);
+        if (data.value.length > 0)
+            setAllFolderTemplate(data.value.map((el: any) => ({ value: el.Name, label: el.Name })));
+    };
+
+    const getFolderStructure = async () => {
+        const data = await getActiveFolder(context.pageContext.web.absoluteUrl, context.spHttpClient);
+        setFolderStructure(data.value);
+    };
 
     const getAllUsers = async () => {
         const data = await getListData(`${context.pageContext.web.absoluteUrl}/_api/web/siteusers?$filter=PrincipalType eq 1`, context);
@@ -125,10 +142,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
             setAllUsers(data.value);
         }
     };
-    // const getAdmin = async () => {
-    //     const data = await getListData(`${context.pageContext.web.absoluteUrl}/_api/web/lists/getbytitle('DMS_GroupName')/items`, context);
-    //     setAdmin(data.value.map((el: any) => (el.GroupNameId)));
-    // };
+
     const fetchSuffixData = async () => {
         const data = await getActiveTypeData(
             context.pageContext.web.absoluteUrl,
@@ -367,12 +381,15 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
         setShowLoader({ display: "block" });
         if (FormType === "EntryForm") {
             const users = [...folderAccess, ...usersIds, ...publisher, ...approver, ...admin];
-            FolderStructure(context, `${LibraryDetails.LibraryName}/${folderName}`, users, LibraryDetails.LibraryName).then((response) => {
-                updateFolderMetaData(response);
+            FolderStructure(context, `${LibraryDetails.LibraryName}/${folderName}`, users, LibraryDetails.LibraryName).then(async (response) => {
+                await updateFolderMetaData(response);
+                if (createStructure) {
+                    createFolderStructure();
+                }
             });
         }
         else {
-            updateFolderMetaData(folderObject.ListItemAllFields.Id);
+            await updateFolderMetaData(folderObject.ListItemAllFields.Id);
             const folders = await getAllFolder(context.pageContext.web.absoluteUrl, context, folderPath);
             folders.Folders.map((folder: any) => { updateFolderMetaData(folder.ListItemAllFields.Id); });
         }
@@ -385,7 +402,9 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
             OtherSuffix: OtherSuffix || "",
             IsSuffixRequired: isSuffixRequired,
             PSType: "Suffix",
-            DefineRole: isApprovalRequired
+            DefineRole: isApprovalRequired,
+            CreateFolder: createStructure,
+            Template: folderTemplate,
         };
         if (isApprovalRequired) {
             const filterApprover = allUsers.filter((el: any) => el.Id === approver[0])[0];
@@ -399,11 +418,54 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
         }
 
         updateLibrary(context.pageContext.web.absoluteUrl, context.spHttpClient, obj, id, LibraryDetails.LibraryName).then((response) => {
-            dismissPanel(false);
-            setShowLoader({ display: "none" });
-            setIsPopupBoxVisible(true);
+            if (!createStructure) {
+                dismissPanel(false);
+                setShowLoader({ display: "none" });
+                setIsPopupBoxVisible(true);
+            }
         });
     };
+
+    const createFolderStructure = async () => {
+        const filterFolders = folderStructure.filter((el: any) => el.TemplateName.Name === folderTemplate);
+        const firstlevel = getFirstLevel(filterFolders);
+        let count = 0;
+        firstlevel.map(async (folder: any) => {
+            const response = await FolderStructure(context, `${LibraryDetails.LibraryName}/${folderName}/${folder.FolderName}`, folderAccess, LibraryDetails.LibraryName);
+            await updateFolderMetaData(response);
+            const ChildLevel = getEqualToData(filterFolders, folder.Id);
+            createChildFolder(ChildLevel, folder.FolderName);
+            count++;
+            if (firstlevel.length === count) {
+                dismissPanel(false);
+                setShowLoader({ display: "none" });
+                setIsPopupBoxVisible(true);
+            }
+        });
+    };
+
+    const createChildFolder = async (folder: any, Name: any) => {
+        folder.map(async (folder: any) => {
+            const ChildLevel = getEqualToData(folderStructure, folder.Id);
+            if (ChildLevel.length > 0) {
+                const response = await FolderStructure(context, `${LibraryDetails.LibraryName}/${folderName}/${Name}/${folder.FolderName}`, folderAccess, LibraryDetails.LibraryName);
+                await updateFolderMetaData(response);
+                await createChildFolder(ChildLevel, `${Name}/${folder.FolderName}`);
+            }
+            else {
+                const response = await FolderStructure(context, `${LibraryDetails.LibraryName}/${folderName}/${Name}/${folder.FolderName}`, folderAccess, LibraryDetails.LibraryName);
+                await updateFolderMetaData(response);
+            }
+        });
+    };
+
+    function getFirstLevel(item: any) {
+        return item.filter((it: any) => it.ParentFolderIdId == null);
+    }
+
+    function getEqualToData(Folders: any, id: number) {
+        return Folders.filter((it: any) => it.ParentFolderIdId === id);
+    }
 
     const bindFormData = () => {
         setFolderName(folderObject.Name);
@@ -637,18 +699,19 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                                 checked={createStructure}
                             />
                         </div>
-                        <div className={styles.col6}>
-                            <label className={styles.Headerlabel}>{DisplayLabel.DocumentSuffix}<span style={{ color: "red" }}>*</span> </label>
-                            <Select
-                                options={SuffixData}
-                                value={SuffixData.find((option: any) => option.value === Suffix)}
-                                onChange={(option: any) => setSuffix(option.value as string)}
-                                isSearchable
-                                placeholder={DisplayLabel?.Selectanoption}
-                                disabled={isDisabled}
-                            />
-                            {SuffixErr && <p style={{ color: "rgb(164, 38, 44)" }}>{SuffixErr}</p>}
-                        </div>
+                        {
+                            createStructure ? <div className={styles.col6}>
+                                <label className={styles.Headerlabel}>{DisplayLabel.TemplateName}<span style={{ color: "red" }}>*</span> </label>
+                                <Select
+                                    options={allFolderTemplate}
+                                    value={allFolderTemplate.find((option: any) => option.value === folderTemplate)}
+                                    onChange={(option: any) => setFolderTemplate(option.value as string)}
+                                    isSearchable
+                                    placeholder={DisplayLabel?.Selectanoption}
+                                />
+                                {SuffixErr && <p style={{ color: "rgb(164, 38, 44)" }}>{SuffixErr}</p>}
+                            </div> : <></>
+                        }
                     </div>
                 </div>
 
