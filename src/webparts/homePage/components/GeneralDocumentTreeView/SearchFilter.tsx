@@ -3,13 +3,14 @@ import { Accordion, Form } from "react-bootstrap";
 import styles from "../Master/Master.module.scss";
 import { useCallback, useEffect, useState } from "react";
 import { ILabel } from '../Interface/ILabel';
-import { ChoiceGroup, DefaultButton, Dropdown, TextField } from "office-ui-fabric-react";
+import { ChoiceGroup, DefaultButton, TextField } from "office-ui-fabric-react";
 import { IPeoplePickerContext, PeoplePicker, PrincipalType } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 import { getUserIdFromLoginName } from "../../../../DAL/Commonfile";
 import { getListData, getDocument } from "../../../../Services/GeneralDocument";
 import { getConfigActive } from "../../../../Services/ConfigService";
 import { getDataByLibraryName } from "../../../../Services/MasTileService";
 //import { useNavigate } from "react-router-dom";
+import Select from 'react-select';
 export default function SearchFilter({ props }: any): JSX.Element {
 
     const libraryName: any = sessionStorage.getItem("LibName");
@@ -75,7 +76,7 @@ export default function SearchFilter({ props }: any): JSX.Element {
                 case "Multiple Select":
                     return (
                         <div className={dynamicControl.length > 5 ? styles.col6 : styles.col6} key={index}>
-                            <Dropdown
+                            {/* <Dropdown
                                 placeholder="Select an option"
                                 label={item.Title}
                                 options={options[item.InternalTitleName] || []}
@@ -84,6 +85,13 @@ export default function SearchFilter({ props }: any): JSX.Element {
                                 onChange={(ev, option) => handleInputChange(item.InternalTitleName, option?.key)}
                                 selectedKey={dynamicValues[item.InternalTitleName] || ""}
                             //errorMessage={dynamicValuesErr[item.InternalTitleName]}
+                            /> */}
+                            <Select
+                                options={options[item.InternalTitleName] || []}
+                                value={(options[item.InternalTitleName] || []).find((option: any) => option.value === dynamicValues[item.InternalTitleName])}
+                                onChange={(option: any) => handleInputChange(item.InternalTitleName, option?.value)}
+                                isSearchable
+                                placeholder={DisplayLabel?.Selectanoption}
                             />
                         </div>
                     );
@@ -164,8 +172,8 @@ export default function SearchFilter({ props }: any): JSX.Element {
             if (item.ColumnType === "Dropdown" || item.ColumnType === "Multiple Select") {
                 if (item.IsStaticValue) {
                     dropdownOptions = item.StaticDataObject.split(";").map((ele: string) => ({
-                        key: ele,
-                        text: ele,
+                        value: ele,
+                        label: ele,
                     }));
                 } else {
                     const data = await getListData(
@@ -173,8 +181,8 @@ export default function SearchFilter({ props }: any): JSX.Element {
                         props.context
                     );
                     dropdownOptions = data.value.map((ele: any) => ({
-                        key: ele[item.DisplayValue],
-                        text: ele[item.DisplayValue],
+                        value: ele[item.DisplayValue],
+                        label: ele[item.DisplayValue],
                     }));
                 }
                 setOptions((prev: any) => ({ ...prev, [item.InternalTitleName]: dropdownOptions }));
