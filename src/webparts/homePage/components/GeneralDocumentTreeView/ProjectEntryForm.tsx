@@ -203,7 +203,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                             <Select
                                 options={options[item.InternalTitleName]}
                                 required={item.IsRequired}
-                                value={options[item.InternalTitleName].find((option: any) => option.value === dynamicValues[item.InternalTitleName])}
+                                value={(options[item.InternalTitleName] || []).find((option: any) => option.value === dynamicValues[item.InternalTitleName])}
                                 onChange={(option: any) => handleInputChange(item.InternalTitleName, option?.value)}
                                 isSearchable
                                 placeholder={DisplayLabel?.Selectanoption}

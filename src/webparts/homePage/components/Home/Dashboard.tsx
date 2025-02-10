@@ -180,29 +180,63 @@ export default function Dashboard({ props }: any): JSX.Element {
 
 
 
+    // <div className={styles["row1-container"]}>
+    //   {
+    //     tileData.length > 0 ? tileData.map((el: any) => (
+    //       <div className="col-xl-3 col-lg-6 col-md-12 mb-4" onClick={() => { openLib(el); }}>
+    //         <div className={styles["card-container"]}>
+    //           <div className={styles["card-content"]}>
+    //             <div className={styles["card-image"]}>
+    //               <img
+    //                 src={el.Documentpath ? el.Documentpath : `${props.SiteURL}/DMS_TileDocument/Default.jpg`}
+    //                 //src={el.Documentpath}
+    //                 alt={el.TileName}
+    //                 loading="lazy"
+    //               />
+    //             </div>
+    //             <div className={styles["card-details"]}>
+    //               <h5 className={styles["card-title"]}>{el.TileName}</h5>
+    //               <a href="javascript:void(0)" className={styles["card-link"]} target="_self">
+    //                 <span className={`${styles["fa-arrow-right"]} ${styles["arrow-button"]}`}></span>
+    //               </a>
+    //             </div>
+    //             <a href="javascript:void(0)" className={styles["card-overlay"]} target="_self"></a>
+    //           </div>
+    //         </div>
+    //       </div>
+    //     )) : (
+    //       <>
+    //         <h1 style={{ textAlign: "center", width: "100%" }}>No data available</h1>
+    //       </>
+    //     )
+    //   }
+    // </div>
+
     <div className={styles["row1-container"]}>
       {
         tileData.length > 0 ? tileData.map((el: any) => (
-          <div className="col-xl-3 col-lg-6 col-md-12 mb-4" onClick={() => { openLib(el); }}>
-            <div className={styles["card-container"]}>
-              <div className={styles["card-content"]}>
-                <div className={styles["card-image"]}>
-                  <img
-                    src={el.Documentpath ? el.Documentpath : `${props.SiteURL}/DMS_TileDocument/Default.jpg`}
-                    //src={el.Documentpath}
-                    alt={el.TileName}
-                    loading="lazy"
-                  />
+          <div className="col-xl-3 mb-4" onClick={() => { openLib(el); }}>
+            <a href="javascript:void(0)" className={styles["dashcard"]} >
+              <img className={styles["dashcard__image"]}
+                src={el.Documentpath ? el.Documentpath : `${props.SiteURL}/DMS_TileDocument/Default.jpg`}
+                //src={el.Documentpath}
+                alt={el.TileName}
+                loading="lazy" />
+
+              <div className={styles["dashcard__overlay"]}>
+                <div className={styles["dashcard__header"]}>
+                  <svg className={styles["dashcard__arc"]} xmlns="http://www.w3.org/2000/svg"> <path d="M 40 80 c 22 0 40 -22 40 -40 v 40 Z"
+                  /></svg>
+                  {/* <img className={styles["dashcard__thumb"]} src="https://i.imgur.com/oYiTqum.jpg" alt="" /> */}
+                  <div>
+                    <h3 className={styles["dashcard__title"]}>{el.TileName}</h3>
+                    {/* <span className={styles["dashcard__status"]}>1 hour ago</span> */}
+                  </div>
+                  <a href="javascript:void(0)" className={styles["card-overlay"]} target="_self"></a>
                 </div>
-                <div className={styles["card-details"]}>
-                  <h5 className={styles["card-title"]}>{el.TileName}</h5>
-                  <a href="javascript:void(0)" className={styles["card-link"]} target="_self">
-                    <span className={`${styles["fa-arrow-right"]} ${styles["arrow-button"]}`}></span>
-                  </a>
-                </div>
-                <a href="javascript:void(0)" className={styles["card-overlay"]} target="_self"></a>
+                <p className={styles["dashcard__description"]}></p>
               </div>
-            </div>
+            </a>
           </div>
         )) : (
           <>
@@ -211,77 +245,6 @@ export default function Dashboard({ props }: any): JSX.Element {
         )
       }
 
-      <div className={styles["row1-container"]}>
-        <div className="col-xl-3 mb-4">
-          <a href="" className={styles["dashcard"]} >
-            <img src="https://i.imgur.com/oYiTqum.jpg" className={styles["dashcard__image"]} alt="" />
-            {/* <img src={el.Documentpath ? el.Documentpath : `${props.SiteURL}/DMS_TileDocument/Default.jpg`}
-                    //src={el.Documentpath}
-                    alt={el.TileName}
-                    loading="lazy"
-                  /> */}
-            <div className={styles["dashcard__overlay"]}>
-              <div className={styles["dashcard__header"]}>
-                <svg className={styles["dashcard__arc"]} xmlns="http://www.w3.org/2000/svg"> <path d="M 40 80 c 22 0 40 -22 40 -40 v 40 Z"
-                /></svg>
-                <img className={styles["dashcard__thumb"]} src="https://i.imgur.com/oYiTqum.jpg" alt="" />
-                <div>
-                  <h3 className={styles["dashcard__title"]}>Add Tile For Test</h3>
-                  {/* <span className={styles["dashcard__status"]}>1 hour ago</span> */}
-                </div>
-              </div>
-              <p className={styles["dashcard__description"]}></p>
-            </div>
-          </a>
-        </div>
-
-        <div className="col-xl-3 mb-4" >
-          <a href="" className={styles["dashcard"]} >
-            <img src="https://i.imgur.com/oYiTqum.jpg" className={styles["dashcard__image"]} alt="" />
-            {/* <img src={el.Documentpath ? el.Documentpath : `${props.SiteURL}/DMS_TileDocument/Default.jpg`}
-                    //src={el.Documentpath}
-                    alt={el.TileName}
-                    loading="lazy"
-                  /> */}
-            <div className={styles["dashcard__overlay"]}>
-              <div className={styles["dashcard__header"]}>
-                <svg className={styles["dashcard__arc"]} xmlns="http://www.w3.org/2000/svg"> <path d="M 40 80 c 22 0 40 -22 40 -40 v 40 Z"
-                /></svg>
-                <img className={styles["dashcard__thumb"]} src="https://i.imgur.com/oYiTqum.jpg" alt="" />
-                <div>
-                  <h3 className={styles["dashcard__title"]}>Add Tile For Test</h3>
-                  {/* <span className={styles["dashcard__status"]}>1 hour ago</span> */}
-                </div>
-              </div>
-              <p className={styles["dashcard__description"]}></p>
-            </div>
-          </a>
-        </div>
-
-        <div className="col-xl-3 mb-4">
-          <a href="" className={styles["dashcard"]} >
-            <img src="https://i.imgur.com/oYiTqum.jpg" className={styles["dashcard__image"]} alt="" />
-            {/* <img src={el.Documentpath ? el.Documentpath : `${props.SiteURL}/DMS_TileDocument/Default.jpg`}
-                    //src={el.Documentpath}
-                    alt={el.TileName}
-                    loading="lazy"
-                  /> */}
-            <div className={styles["dashcard__overlay"]}>
-              <div className={styles["dashcard__header"]}>
-                <svg className={styles["dashcard__arc"]} xmlns="http://www.w3.org/2000/svg"> <path d="M 40 80 c 22 0 40 -22 40 -40 v 40 Z"
-                /></svg>
-                <img className={styles["dashcard__thumb"]} src="https://i.imgur.com/oYiTqum.jpg" alt="" />
-                <div>
-                  <h3 className={styles["dashcard__title"]}>Add Tile For Test</h3>
-                  {/* <span className={styles["dashcard__status"]}>1 hour ago</span> */}
-                </div>
-              </div>
-              <p className={styles["dashcard__description"]}></p>
-            </div>
-          </a>
-        </div>
-
-      </div>
     </div>
 
 
