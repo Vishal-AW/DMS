@@ -42,6 +42,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
     const [isUpdateExistingFile, setIsUpdateExistingFile] = useState<boolean>(false);
     const [isPopupBoxVisible, setIsPopupBoxVisible] = useState<boolean>(false);
     const [showLoader, setShowLoader] = useState({ display: "none" });
+    const [fileKey, setFileKey] = useState<number>(Date.now());
 
     const peoplePickerContext: IPeoplePickerContext = {
         absoluteUrl: context.pageContext.web.absoluteUrl,
@@ -221,6 +222,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
         };
         setAttachmentsFiles((prev) => [...prev, newAttachment]);
         setAttachment({});
+        setFileKey(Date.now());
         // fileInputRef.current!.value = '';
 
     };
@@ -362,6 +364,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                         <div className={styles.col10}>
                             <TextField type="file" label={DisplayLabel.ChooseFile} required onChange={(event: React.ChangeEvent<HTMLInputElement>) => { if (event.target.files) setAttachment(event.target.files[0]); }}
                                 errorMessage={attachmentErr}
+                                key={fileKey}
                             />
                         </div>
                         <div className={styles.col2}>

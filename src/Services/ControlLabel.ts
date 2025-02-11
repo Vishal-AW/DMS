@@ -170,6 +170,11 @@ export async function GetAllLabel(WebUrl: string, spHttpClient: SPHttpClient, La
       IsthisaChildFolder: getValue("IsthisaChildFolder", data, Language),
       TileNameAlreadyExist: getValue("TileNameAlreadyExist", data, Language),
       CreateStructure: getValue("CreateStructure", data, Language),
+      Checkout: getValue("Checkout", data, Language),
+      DiscardCheckOut: getValue("DiscardCheckOut", data, Language),
+      CheckIn: getValue("CheckIn", data, Language),
+      CheckoutConfirm: getValue("CheckoutConfirm", data, Language),
+      CheckedOutThisItem: getValue("CheckedOutThisItem", data, Language),
     };
 
     // 

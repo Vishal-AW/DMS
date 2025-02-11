@@ -434,7 +434,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
             const response = await FolderStructure(context, `${LibraryDetails.LibraryName}/${folderName}/${folder.FolderName}`, folderAccess, LibraryDetails.LibraryName);
             await updateFolderMetaData(response);
             const ChildLevel = getEqualToData(filterFolders, folder.Id);
-            createChildFolder(ChildLevel, folder.FolderName);
+            await createChildFolder(ChildLevel, folder.FolderName);
             count++;
             if (firstlevel.length === count) {
                 dismissPanel(false);
