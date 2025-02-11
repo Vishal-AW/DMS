@@ -4,6 +4,7 @@
   gap: 20px;
   justify-content: center;
   margin-top: 15px;
+  margin-bottom: 15px;
 
   .card-container {
     background: white;
@@ -97,14 +98,14 @@
   position: relative;
   display: block;
   height: 100%;
-  border-radius: 20px;
+  border-radius: 12px;
   overflow: hidden;
   text-decoration: none;
 }
 
 .dashcard__image {
   width: 100%;
-  height: auto;
+  height: 300px;
 }
 
 .dashcard__overlay {
@@ -128,7 +129,7 @@
   display: flex;
   align-items: center;
   gap: 2em;
-  padding: 12px;
+  padding: 25px;
   border-top-right-radius: 0px;
   background-color: #fff;
   transform: translateY(-100%);
