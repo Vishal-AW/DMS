@@ -2,9 +2,11 @@ import * as React from "react";
 import styles from '../Home/Dashboard.module.scss';
 import { useState } from "react";
 import { SPHttpClient, SPHttpClientResponse } from "@microsoft/sp-http-base";
+import cls from '../HomePage.module.scss';
 
 export default function Dashboard({ props }: any): JSX.Element {
   const [userRole, setuserRole] = useState('');
+  const [showLoader, setShowLoader] = useState({ display: "block" });
 
   let dinamicurl = "";
 
@@ -119,11 +121,13 @@ export default function Dashboard({ props }: any): JSX.Element {
               if (AllTileMainData.length == TileCount) {
                 TotalDisplayTiles.sort((a: any, b: any) => a.Order0 - b.Order0);
                 setTileData(TotalDisplayTiles);
+                setShowLoader({ display: "none" });
               }
             });
 
 
           }
+          else { setShowLoader({ display: "none" }); }
         });
 
       }
@@ -244,7 +248,7 @@ export default function Dashboard({ props }: any): JSX.Element {
           </>
         )
       }
-
+      <div className={cls["modal"]} style={showLoader}></div>
     </div>
 
 

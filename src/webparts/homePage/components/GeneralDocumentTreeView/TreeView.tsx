@@ -1,8 +1,8 @@
 import * as React from 'react';
-import { getAllFolder, getListData, updateLibrary } from "../../../../Services/GeneralDocument";
+import { commonPostMethod, getAllFolder, getListData, updateLibrary } from "../../../../Services/GeneralDocument";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./TreeView.module.scss";
-import { CommandBarButton, DefaultButton, DialogType, Icon, IStackItemStyles, IStackStyles, IStackTokens, Panel, PanelType, PrimaryButton, Stack } from "@fluentui/react";
+import { Callout, CommandBarButton, DefaultButton, DialogType, Icon, IStackItemStyles, IStackStyles, IStackTokens, Panel, PanelType, PrimaryButton, Stack, DirectionalHint } from "@fluentui/react";
 import ReactTableComponent from '../ResuableComponents/ReusableDataTable';
 import { ContextualMenu, ContextualMenuItemType, IContextualMenuProps } from '@fluentui/react/lib/ContextualMenu';
 // import { SPComponentLoader } from "@microsoft/sp-loader";
@@ -17,7 +17,7 @@ import UploadFiles from "./UploadFile";
 import ApprovalFlow from "./ApprovalFlow";
 import cls from '../HomePage.module.scss';
 import { useConst } from '@fluentui/react-hooks';
-import { ILabel } from "../Interface/ILabel";
+// import { ILabel } from "../Interface/ILabel";
 import { isMember } from "../../../../DAL/Commonfile";
 
 
@@ -37,7 +37,7 @@ const stackItemStyles: IStackItemStyles = {
 const stackTokens: IStackTokens = { childrenGap: 10 };
 export default function TreeView({ props }: any) {
 
-    const DisplayLabel: ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}');
+    const DisplayLabel: any = JSON.parse(localStorage.getItem('DisplayLabel') || '{}');
     const linkRef = useRef<Record<string, HTMLDivElement | null>>({});
     const [showContextualMenu, setShowContextualMenu] = React.useState<{ [key: string]: boolean; }>({});
     const [nodeId, setNodeId] = useState(0);
@@ -59,6 +59,13 @@ export default function TreeView({ props }: any) {
     const [fileNameErr, setFileNameErr] = useState("");
     const [panelSize, setPanelSize] = useState(PanelType.medium);
     const [hideDialog, setHideDialog] = useState<boolean>(false);
+    const [hideDialogCheckOut, setHideDialogCheckOut] = useState<boolean>(false);
+    const [ServerRelativeUrl, setServerRelativeUrl] = useState("");
+    const [comment, setComment] = useState("");
+    const [itemIds, setItemIds] = useState<number | null>(null);
+    // const [isHovering, setIsHovering] = useState(false);
+    const hoverRef = React.useRef<Record<string, HTMLDivElement | null>>({});
+
 
     if (tileObject === null) {
         location.href = "#/Dashboard";
@@ -148,7 +155,44 @@ export default function TreeView({ props }: any) {
 
     const columns = [
         { Header: DisplayLabel.SrNo, accessor: "Id", Cell: ({ row }: { row: any; }) => { return <span>{row._index + 1}</span>; } },
-        { Header: DisplayLabel.FileName, accessor: 'ListItemAllFields.ActualName' },
+        {
+            Header: DisplayLabel.FileName,
+            accessor: "ListItemAllFields.ActualName",
+            Cell: ({ row }: { row: any; }) => {
+                const item = row._original?.ListItemAllFields;
+                const checkedOutUser = row._original?.CheckedOutByUser;
+                const isCheckedOut = row._original?.CheckOutType === 0;
+                const isCheckedOutByCurrentUser = checkedOutUser?.Id === props.userID;
+
+                return (
+                    <div style={{ display: "flex", alignItems: "center" }} >
+                        {item?.ActualName}{" "}
+                        {isCheckedOut && (
+                            <div key={item.Id} onMouseOver={() => setItemIds(item?.Id)} onMouseLeave={() => setItemIds(null)} ref={(el) => { if (el) hoverRef.current[item?.Id] = el; }} style={{ display: "inline-block", position: "relative" }} >
+
+                                <Icon
+                                    iconName={isCheckedOutByCurrentUser ? "CheckedOutByYou12" : "CheckedOutByOther12"}
+                                    style={{ marginLeft: "5px", color: isCheckedOutByCurrentUser ? "#a4262c" : "#605e5c", cursor: "pointer" }}
+                                />
+
+                                {itemIds === item?.Id && (
+                                    <Callout
+                                        target={hoverRef.current[item.Id]}
+                                        onDismiss={() => setItemIds(null)}
+                                        setInitialFocus
+                                        gapSpace={10}
+                                        directionalHint={DirectionalHint.bottomLeftEdge}
+                                        styles={{ calloutMain: { padding: 16, maxWidth: 400, width: "auto", } }}
+                                    >
+                                        <p>{checkedOutUser?.Title} {DisplayLabel.CheckedOutThisItem}</p>
+                                    </Callout>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                );
+            },
+        },
         { Header: DisplayLabel.ReferenceNo, accessor: 'ListItemAllFields.ReferenceNo' },
         { Header: DisplayLabel.Versions, accessor: 'ListItemAllFields.Level' },
         { Header: DisplayLabel.Status, accessor: 'ListItemAllFields.DisplayStatus' },
@@ -160,66 +204,93 @@ export default function TreeView({ props }: any) {
             }
         }
     ];
-    const createMenuProps = (item: any): IContextualMenuProps => ({
-        shouldFocusOnMount: true,
-        items: [
+    const createMenuProps = (item: any): IContextualMenuProps => {
+        const button = libDetails.ShowMoreActions.split(";");
+        const menuItems: any = [
             {
                 key: 'deleteDocument',
                 text: DisplayLabel.Delete,
-                onClick: () => {
-                    setMessage(DisplayLabel.DeleteConfirmMsg);
-                    setItemId(item._original.ListItemAllFields.Id);
-                    setHideDialog(true);
-                },
+                onClick: () => commonFunction("Delete", item),
             },
-            {
-                key: 'versions',
-                text: DisplayLabel.Versions,
-                onClick: () => {
-                    const url = `${props.SiteURL}/_layouts/15/Versions.aspx?list=${libName}&FileName=${item._original.ServerRelativeUrl}&IsDlg=${item._original.ListItemAllFields.Id}`;
-                    setPanelForm(<iframe id="frame" src={url} style={{ width: "100%", height: "80vh" }}></iframe>);
-                    setPanelTitle(DisplayLabel.Versions);
-                    setIsOpenCommonPanel(true);
-                }
-            },
-            {
-                key: 'rename',
-                text: DisplayLabel.Rename,
-                onClick: () => {
-                    setFileNameErr("");
-                    setPanelTitle(DisplayLabel.Rename);
-                    const fileDetails = item._original.ListItemAllFields.ActualName.split(".");
-                    setExtension(fileDetails[1]);
-                    setFileName(fileDetails[0]);
-                    setActionButton(<PrimaryButton text={DisplayLabel.Rename} style={{ marginRight: "10px" }} onClick={() => renameTheFile(item._original.ListItemAllFields.Id)} />);
-                    setIsOpenCommonPanel(true);
-                }
-            },
-            {
-                key: 'download',
-                text: DisplayLabel.Download,
-                onClick: () => { location.href = `${props.SiteURL}/_layouts/15/download.aspx?SourceUrl=${item._original.ServerRelativeUrl}`; }
-            },
-            {
-                key: "preview",
-                text: DisplayLabel.Preview,
-                onClick: () => {
-                    setPanelSize(PanelType.smallFluid);
-                    setPanelTitle(DisplayLabel.Preview);
-                    const previewData = getPreviewUrl(item._original.ServerRelativeUrl);
-                    setPanelForm(previewData);
-                    setIsOpenCommonPanel(true);
-                }
-            },
-            // {
-            //     key: "viewDoc",
-            //     text: "View",
-            //     onClick: () => {
-            //         setProjectUpdateData(item._original.ListItemAllFields); setIsCreateProjectPopupOpen(true); setFormType("ViewForm");
-            //     }
-            // }
-        ],
-    });
+        ];
+        button.map((el: string) => {
+            menuItems.push({
+                key: el,
+                text: DisplayLabel[el],
+                onClick: () => commonFunction(el, item),
+            });
+        });
+        if (item._original.CheckOutType === 2) {
+            menuItems.push({
+                key: 'checkOut',
+                text: DisplayLabel.Checkout,
+                onClick: () => commonFunction("Checkout", item),
+            });
+        }
+        if (item._original.CheckOutType === 0) {
+            menuItems.push({
+                key: 'CheckIn',
+                text: DisplayLabel.CheckIn,
+                onClick: () => commonFunction("CheckIn", item),
+            }, {
+                key: 'DiscardCheckOut',
+                text: DisplayLabel.DiscardCheckOut,
+                onClick: () => commonFunction("DiscardCheckOut", item),
+            });
+        }
+        return {
+            shouldFocusOnMount: true,
+            items: menuItems
+        };
+    };
+    const commonFunction = async (action: string, item: any) => {
+        if (action === "Delete") {
+            setMessage(DisplayLabel.DeleteConfirmMsg);
+            setItemId(item._original.ListItemAllFields.Id);
+            setHideDialog(true);
+        }
+        else if (action === "Versions") {
+            const url = `${props.SiteURL}/_layouts/15/Versions.aspx?list=${libName}&FileName=${item._original.ServerRelativeUrl}&IsDlg=${item._original.ListItemAllFields.Id}`;
+            setPanelForm(<iframe id="frame" src={url} style={{ width: "100%", height: "80vh" }}></iframe>);
+            setPanelTitle(DisplayLabel.Versions);
+            setIsOpenCommonPanel(true);
+        }
+        else if (action === "Rename") {
+            setFileNameErr("");
+            setPanelTitle(DisplayLabel.Rename);
+            const fileDetails = item._original.ListItemAllFields.ActualName.split(".");
+            setExtension(fileDetails[1]);
+            setFileName(fileDetails[0]);
+            setActionButton(<PrimaryButton text={DisplayLabel.Rename} style={{ marginRight: "10px" }} onClick={() => renameTheFile(item._original.ListItemAllFields.Id)} />);
+            setIsOpenCommonPanel(true);
+        }
+        else if (action === "Download") { location.href = `${props.SiteURL}/_layouts/15/download.aspx?SourceUrl=${item._original.ServerRelativeUrl}`; }
+        else if (action === "Preview") {
+            setPanelSize(PanelType.smallFluid);
+            setPanelTitle(DisplayLabel.Preview);
+            const previewData = getPreviewUrl(item._original.ServerRelativeUrl);
+            setPanelForm(previewData);
+            setIsOpenCommonPanel(true);
+        }
+        else if (action === "Checkout") {
+            await commonPostMethod(`${props.SiteURL}/_api/web/GetFileByServerRelativeUrl('${item._original.ServerRelativeUrl}')/checkout`, props.context);
+            setIsPopupBoxVisible(true);
+            fetchFolders(folderPath, folderName);
+        }
+        else if (action === "CheckIn") {
+            setActionButton(<PrimaryButton text={DisplayLabel.Rename} style={{ marginRight: "10px" }} onClick={async () => {
+                await commonPostMethod(`${props.SiteURL}/_api/web/GetFileByServerRelativeUrl('${item._original.ServerRelativeUrl}')/checkin(comment='${comment}',checkintype=0)`, props.context);
+                setIsPopupBoxVisible(true);
+                fetchFolders(folderPath, folderName);
+            }} />);
+            setIsOpenCommonPanel(true);
+        }
+        else if (action === "DiscardCheckOut") {
+            setMessage(DisplayLabel.CheckoutConfirm);
+            setServerRelativeUrl(item._original.ServerRelativeUrl);
+            setHideDialogCheckOut(true);
+        }
+    };
     useEffect(() => {
         setPanelForm(<>
             <div className={styles.col10}>
@@ -231,6 +302,17 @@ export default function TreeView({ props }: any) {
         </>);
 
     }, [fileName, extension, fileNameErr]);
+
+
+    useEffect(() => {
+        setPanelForm(<>
+            <div className={styles.col10}>
+                <TextField value={comment} onChange={(event: React.ChangeEvent<HTMLInputElement>) => setComment(event.target.value)} />
+            </div>
+        </>);
+
+    }, [comment]);
+
     const getPreviewUrl = (filePath: string) => {
         const extension = filePath?.split('.').pop()?.toLowerCase();
         switch (extension) {
@@ -271,6 +353,7 @@ export default function TreeView({ props }: any) {
     };
 
     const closeDialog = useCallback(() => setHideDialog(false), []);
+    const closeDialogCheckOut = useCallback(() => setHideDialogCheckOut(false), []);
     const handleConfirm = useCallback(
         async (value: boolean) => {
             if (value) {
@@ -280,6 +363,14 @@ export default function TreeView({ props }: any) {
         },
         [itemId]
     );
+    const handleConfirmCheckOut = useCallback(async (value: boolean) => {
+        if (value) {
+            await commonPostMethod(`${props.SiteURL}/_api/web/GetFileByServerRelativeUrl('${ServerRelativeUrl}')/undocheckout()`, props.context);
+            setIsPopupBoxVisible(true);
+            fetchFolders(folderPath, folderName);
+        }
+    }, [ServerRelativeUrl]);
+
 
     const deleteDoc = async () => {
         const obj = {
@@ -609,6 +700,7 @@ export default function TreeView({ props }: any) {
                 </div>
             </Panel>
             <ConfirmationDialog hideDialog={hideDialog} closeDialog={closeDialog} handleConfirm={handleConfirm} msg={message} />
+            <ConfirmationDialog hideDialog={hideDialogCheckOut} closeDialog={closeDialogCheckOut} handleConfirm={handleConfirmCheckOut} msg={message} />
         </div>
     );
 }

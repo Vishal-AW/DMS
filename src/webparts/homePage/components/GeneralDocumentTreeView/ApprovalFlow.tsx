@@ -71,7 +71,7 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
             accessor: 'Id',
             Cell: ({ row }: { row: any; }) => (
                 action === "Approver" ? <FontIcon aria-label="Edit" onClick={() => openEditPanel(row._original.Id)} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer' }}></FontIcon> :
-                    <FontIcon aria-label="Restore" onClick={() => { setItemId(row._original.Id); setHideDialog(true); }} iconName="RemoveFromTrash" style={{ color: '#009ef7', cursor: 'pointer' }} />
+                    <FontIcon aria-label="Restore" title="Restore" onClick={() => { setItemId(row._original.Id); setHideDialog(true); }} iconName="RemoveFromTrash" style={{ color: '#009ef7', cursor: 'pointer' }} />
             )
         }
     ];

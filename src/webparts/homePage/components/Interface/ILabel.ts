@@ -154,4 +154,9 @@ export interface ILabel {
     IsthisaChildFolder: string;
     TileNameAlreadyExist: string;
     CreateStructure: string;
+    DiscardCheckOut: string;
+    Checkout: string;
+    CheckIn: string;
+    CheckoutConfirm: string;
+    CheckedOutThisItem: string;
 }
