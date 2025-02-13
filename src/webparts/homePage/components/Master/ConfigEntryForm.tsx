@@ -576,166 +576,167 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                 )}
 
                 headerText={isEditMode ? DisplayLabel?.EditNewRecords : DisplayLabel?.AddNewRecords}
-            >
-                <div className={`ms-Grid ${styles.inlineFormContainer}`}>
-                    <div className="col-md-5">
-                        <div className="form-group">
-                            <label className={styles.Headerlabel}>{DisplayLabel?.FieldName}<span style={{ color: "red" }}>*</span></label>
-
-                            {/* <TextField label="Title" errorMessage={TileError} value={TileName} onChange={(e: any) => { setTileName(e.target.value); }} /> */}
-
-                            <TextField
-                                placeholder="Enter Field Name"
-                                // onChange={(e: any) => { setTileName(e.target.value); }}
-                                //onChange={(e: any) => { setTileName(e.target.value); }}
-                                errorMessage={FieldNameErr}
-                                value={FieldName}
-                                onChange={(el: React.ChangeEvent<HTMLInputElement>) => setFieldName(el.target.value)}
-
-
-
-                            />
-                        </div>
-                    </div>
-                    <div className="col-md-5">
-                        <div className="form-group">
-                            <label className={styles.Headerlabel}>{DisplayLabel?.ColumnType}<span style={{ color: "red" }}>*</span></label>
-                            <Select
-                                options={dropdownOptions}
-                                value={ColumnTypeID}
-                                onChange={handleColumnTypeonChange}
-                                isSearchable
-                                placeholder={DisplayLabel?.Selectanoption}
-                            />
-                            {ColumnTypeIDErr && <p style={{ color: "rgb(164, 38, 44)" }}>{ColumnTypeIDErr}</p>}
-                        </div>
-                    </div>
-                </div>
-                <br /><br />
-                <div className={`ms-Grid ${styles.inlineFormContainer}`}>
-                    {isToggleVisible && (
-                        <div className="col-md-5">
+            >  <div className="container">
+                    <div className="row">
+                        <div className="column6">
                             <div className="form-group">
-                                <label className={styles.Headerlabel}>{DisplayLabel?.IsShowasFilter}<span style={{ color: "red" }}>*</span></label>
+                                <label className={styles.Headerlabel}>{DisplayLabel?.FieldName}<span style={{ color: "red" }}>*</span></label>
 
-                                <Toggle checked={IsShowasFilter} onChange={(_, checked) => handleIsShowasFilterToggleChange(checked!)} />
+                                {/* <TextField label="Title" errorMessage={TileError} value={TileName} onChange={(e: any) => { setTileName(e.target.value); }} /> */}
 
+                                <TextField
+                                    placeholder="Enter Field Name"
+                                    // onChange={(e: any) => { setTileName(e.target.value); }}
+                                    //onChange={(e: any) => { setTileName(e.target.value); }}
+                                    errorMessage={FieldNameErr}
+                                    value={FieldName}
+                                    onChange={(el: React.ChangeEvent<HTMLInputElement>) => setFieldName(el.target.value)}
+
+
+
+                                />
                             </div>
                         </div>
-                    )}
-                    {isToggleVisible1 && (
-                        <div className="col-md-5">
+                        <div className="column6">
                             <div className="form-group">
-                                <label className={styles.Headerlabel}>{DisplayLabel?.IsStaticValue}<span style={{ color: "red" }}>*</span></label>
-                                <Toggle checked={IsStaticValue} onChange={(_, checked) => handleIsStaticValueToggleChange(checked!)} disabled={isToggleDisabled} />
-
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-
-                <br /><br />
-                <div className={`ms-Grid ${styles.inlineFormContainer}`}>
-                    {isDropdownVisible && (
-                        <div className="col-md-5">
-                            <div className="form-group">
-                                <label className={styles.Headerlabel}>{DisplayLabel?.ListName}<span style={{ color: "red" }}>*</span></label>
+                                <label className={styles.Headerlabel}>{DisplayLabel?.ColumnType}<span style={{ color: "red" }}>*</span></label>
                                 <Select
-                                    options={ListData}
-                                    value={selectedListOption}
-                                    onChange={handleListNameonChange}
+                                    options={dropdownOptions}
+                                    value={ColumnTypeID}
+                                    onChange={handleColumnTypeonChange}
                                     isSearchable
                                     placeholder={DisplayLabel?.Selectanoption}
-                                    errorMessage={ListNameIDErr}
                                 />
-                                {ListNameIDErr && <p style={{ color: "rgb(164, 38, 44)" }}>{ListNameIDErr}</p>}
+                                {ColumnTypeIDErr && <p style={{ color: "rgb(164, 38, 44)" }}>{ColumnTypeIDErr}</p>}
                             </div>
-                        </div>)}
-                    {isSecondaryDropdownVisible && (
-                        <div className="col-md-5">
-                            <div className="form-group">
-                                <label className={styles.Headerlabel}>{DisplayLabel?.DisplayColumn}<span style={{ color: "red" }}>*</span></label>
-                                {/* <Dropdown
+                        </div>
+                    </div>
+                    <br /><br />
+                    <div className="row">
+                        {isToggleVisible && (
+                            <div className="column6">
+                                <div className="form-group">
+                                    <label className={styles.Headerlabel}>{DisplayLabel?.IsShowasFilter}<span style={{ color: "red" }}>*</span></label>
+
+                                    <Toggle checked={IsShowasFilter} onChange={(_, checked) => handleIsShowasFilterToggleChange(checked!)} />
+
+                                </div>
+                            </div>
+                        )}
+                        {isToggleVisible1 && (
+                            <div className="column6">
+                                <div className="form-group">
+                                    <label className={styles.Headerlabel}>{DisplayLabel?.IsStaticValue}<span style={{ color: "red" }}>*</span></label>
+                                    <Toggle checked={IsStaticValue} onChange={(_, checked) => handleIsStaticValueToggleChange(checked!)} disabled={isToggleDisabled} />
+
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+
+                    <br /><br />
+                    <div className="row">
+                        {isDropdownVisible && (
+                            <div className="column6">
+                                <div className="form-group">
+                                    <label className={styles.Headerlabel}>{DisplayLabel?.ListName}<span style={{ color: "red" }}>*</span></label>
+                                    <Select
+                                        options={ListData}
+                                        value={selectedListOption}
+                                        onChange={handleListNameonChange}
+                                        isSearchable
+                                        placeholder={DisplayLabel?.Selectanoption}
+                                        errorMessage={ListNameIDErr}
+                                    />
+                                    {ListNameIDErr && <p style={{ color: "rgb(164, 38, 44)" }}>{ListNameIDErr}</p>}
+                                </div>
+                            </div>)}
+                        {isSecondaryDropdownVisible && (
+                            <div className="column6">
+                                <div className="form-group">
+                                    <label className={styles.Headerlabel}>{DisplayLabel?.DisplayColumn}<span style={{ color: "red" }}>*</span></label>
+                                    {/* <Dropdown
                                     placeholder={DisplayLabel?.Selectanoption}
                                     options={DisplaycolumnListData}
                                     onChange={handleDisplayColumnonChange}
                                     selectedKey={DisplayColumnID}
                                     errorMessage={DisplayColumnIDErr}
                                 /> */}
-                                <Select
-                                    options={DisplaycolumnListData}
-                                    value={DisplayColumnID}
-                                    onChange={handleDisplayColumnonChange}
-                                    isSearchable
-                                    placeholder={DisplayLabel?.Selectanoption}
-                                    errorMessage={DisplayColumnIDErr}
-                                />
-                                {DisplayColumnIDErr && <p style={{ color: "rgb(164, 38, 44)" }}>{DisplayColumnIDErr}</p>}
-                            </div>
-                        </div>)}
-                </div>
-                <br /><br />
-                <div className={`ms-Grid ${styles.inlineFormContainer}`}>
-                    {isTableVisible && (
-                        <table className="addoption" style={{ width: '100%', borderCollapse: 'collapse' }}>
-                            <thead>
-                                <tr>
-                                    <th style={{ textAlign: 'left', width: '10%' }}>Sr. No.</th>
-                                    <th style={{ textAlign: 'left', width: '70%' }}>
-                                        Option *
+                                    <Select
+                                        options={DisplaycolumnListData}
+                                        value={DisplayColumnID}
+                                        onChange={handleDisplayColumnonChange}
+                                        isSearchable
+                                        placeholder={DisplayLabel?.Selectanoption}
+                                        errorMessage={DisplayColumnIDErr}
+                                    />
+                                    {DisplayColumnIDErr && <p style={{ color: "rgb(164, 38, 44)" }}>{DisplayColumnIDErr}</p>}
+                                </div>
+                            </div>)}
+                    </div>
+                    <br /><br />
+                    <div className="row">
+                        {isTableVisible && (
+                            <table className="addoption" style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <thead>
+                                    <tr>
+                                        <th style={{ textAlign: 'left', width: '10%' }}>Sr. No.</th>
+                                        <th style={{ textAlign: 'left', width: '70%' }}>
+                                            Option *
 
-                                    </th>
-                                    <th style={{ textAlign: 'center', width: '20%' }}>
-                                        Action
+                                        </th>
+                                        <th style={{ textAlign: 'center', width: '20%' }}>
+                                            Action
 
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td style={{ textAlign: 'left', width: '10%' }}></td>
-                                    <td style={{ textAlign: 'left', width: '70%' }}>
-                                        <div style={{ marginTop: '8px' }}>
-                                            <TextField
-                                                placeholder="Enter Option"
-                                                value={newOption}
-                                                onChange={(_, value) => setNewOption(value || '')}
-                                                styles={{ root: { width: '100%' } }}
-                                            />
-                                        </div>
-                                    </td>
-                                    <td style={{ textAlign: 'center', width: '20%' }}>
-                                        <IconButton
-                                            iconProps={{ iconName: 'Add' }}
-                                            title="Add Option"
-                                            ariaLabel="Add Option"
-                                            onClick={addOption}
-                                            styles={{ root: { marginTop: '8px', backgroundColor: '#009ef7 ', borderRadius: '50px !important', padding: '0px !important' }, icon: { color: '#fff' } }}
-                                        />
-                                    </td>
-                                </tr>
-
-                            </tbody>
-                            <tbody>
-                                {options.map((option, index) => (
-                                    <tr key={index} style={{ borderBottom: '1px solid #ddd' }}>
-                                        <td style={{ padding: '8px' }}>{index + 1}</td>
-                                        <td style={{ padding: '8px' }}>{option}</td>
-                                        <td style={{ textAlign: 'center' }}>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style={{ textAlign: 'left', width: '10%' }}></td>
+                                        <td style={{ textAlign: 'left', width: '70%' }}>
+                                            <div style={{ marginTop: '8px' }}>
+                                                <TextField
+                                                    placeholder="Enter Option"
+                                                    value={newOption}
+                                                    onChange={(_, value) => setNewOption(value || '')}
+                                                    styles={{ root: { width: '100%' } }}
+                                                />
+                                            </div>
+                                        </td>
+                                        <td style={{ textAlign: 'center', width: '20%' }}>
                                             <IconButton
-                                                iconProps={{ iconName: 'Delete' }}
-                                                title="Remove Option"
-                                                ariaLabel="Remove Option"
-                                                onClick={() => removeOption(index)}
-                                                styles={{ icon: { color: '#e81123' } }}
+                                                iconProps={{ iconName: 'Add' }}
+                                                title="Add Option"
+                                                ariaLabel="Add Option"
+                                                onClick={addOption}
+                                                styles={{ root: { marginTop: '8px', backgroundColor: '#009ef7 ', borderRadius: '50px !important', padding: '0px !important' }, icon: { color: '#fff' } }}
                                             />
                                         </td>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    )}
+
+                                </tbody>
+                                <tbody>
+                                    {options.map((option, index) => (
+                                        <tr key={index} style={{ borderBottom: '1px solid #ddd' }}>
+                                            <td style={{ padding: '8px' }}>{index + 1}</td>
+                                            <td style={{ padding: '8px' }}>{option}</td>
+                                            <td style={{ textAlign: 'center' }}>
+                                                <IconButton
+                                                    iconProps={{ iconName: 'Delete' }}
+                                                    title="Remove Option"
+                                                    ariaLabel="Remove Option"
+                                                    onClick={() => removeOption(index)}
+                                                    styles={{ icon: { color: '#e81123' } }}
+                                                />
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
                 </div>
                 <div className={cls["modal"]} style={showLoader}></div>
 

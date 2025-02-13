@@ -208,11 +208,6 @@ const SideMenu: React.FC<ISideMenu> = ({ onclickbutton, props }) => {
     return subArray;
   }
 
-
-
-
-
-
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
     onclickbutton(collapsed)
