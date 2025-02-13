@@ -2,7 +2,7 @@ import * as React from 'react';
 import { commonPostMethod, getAllFolder, getListData, updateLibrary } from "../../../../Services/GeneralDocument";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./TreeView.module.scss";
-import { Callout, CommandBarButton, DefaultButton, DialogType, Icon, IStackItemStyles, IStackStyles, IStackTokens, Panel, PanelType, PrimaryButton, Stack, DirectionalHint } from "@fluentui/react";
+import { CommandBarButton, DefaultButton, DialogType, Icon, IStackItemStyles, IStackStyles, IStackTokens, Panel, PanelType, PrimaryButton, Stack, DirectionalHint } from "@fluentui/react";
 import ReactTableComponent from '../ResuableComponents/ReusableDataTable';
 import { ContextualMenu, ContextualMenuItemType, IContextualMenuProps } from '@fluentui/react/lib/ContextualMenu';
 // import { SPComponentLoader } from "@microsoft/sp-loader";
@@ -19,6 +19,7 @@ import cls from '../HomePage.module.scss';
 import { useConst } from '@fluentui/react-hooks';
 // import { ILabel } from "../Interface/ILabel";
 import { isMember } from "../../../../DAL/Commonfile";
+import { TooltipHost } from '@fluentui/react';
 
 
 interface Folder {
@@ -62,9 +63,9 @@ export default function TreeView({ props }: any) {
     const [hideDialogCheckOut, setHideDialogCheckOut] = useState<boolean>(false);
     const [ServerRelativeUrl, setServerRelativeUrl] = useState("");
     const [comment, setComment] = useState("");
-    const [itemIds, setItemIds] = useState<number | null>(null);
+    // const [itemIds, setItemIds] = useState<number | null>(null);
     // const [isHovering, setIsHovering] = useState(false);
-    const hoverRef = React.useRef<Record<string, HTMLDivElement | null>>({});
+    // const hoverRef = React.useRef<Record<string, HTMLDivElement | null>>({});
 
 
     if (tileObject === null) {
@@ -153,6 +154,10 @@ export default function TreeView({ props }: any) {
         fetchFolders(folderPath, nodeName);
     };
 
+
+
+
+
     const columns = [
         { Header: DisplayLabel.SrNo, accessor: "Id", Cell: ({ row }: { row: any; }) => { return <span>{row._index + 1}</span>; } },
         {
@@ -168,30 +173,24 @@ export default function TreeView({ props }: any) {
                     <div style={{ display: "flex", alignItems: "center" }} >
                         {item?.ActualName}{" "}
                         {isCheckedOut && (
-                            <div key={item.Id} onMouseOver={() => setItemIds(item?.Id)} onMouseLeave={() => setItemIds(null)} ref={(el) => { if (el) hoverRef.current[item?.Id] = el; }} style={{ display: "inline-block", position: "relative" }} >
-
+                            <TooltipHost
+                                content={`${checkedOutUser?.Title} ${DisplayLabel.CheckedOutThisItem}`}
+                                directionalHint={DirectionalHint.rightCenter} // Positioning
+                                styles={{
+                                    root: { display: 'inline-block', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }
+                                }}
+                            >
                                 <Icon
                                     iconName={isCheckedOutByCurrentUser ? "CheckedOutByYou12" : "CheckedOutByOther12"}
-                                    style={{ marginLeft: "5px", color: isCheckedOutByCurrentUser ? "#a4262c" : "#605e5c", cursor: "pointer" }}
+                                    style={{ marginLeft: "5px", marginTop: '5px', color: isCheckedOutByCurrentUser ? "#a4262c" : "#605e5c", cursor: "pointer" }}
                                 />
-
-                                {itemIds === item?.Id && (
-                                    <Callout
-                                        target={hoverRef.current[item.Id]}
-                                        onDismiss={() => setItemIds(null)}
-                                        setInitialFocus
-                                        gapSpace={10}
-                                        directionalHint={DirectionalHint.bottomLeftEdge}
-                                        styles={{ calloutMain: { padding: 16, maxWidth: 400, width: "auto", } }}
-                                    >
-                                        <p>{checkedOutUser?.Title} {DisplayLabel.CheckedOutThisItem}</p>
-                                    </Callout>
-                                )}
-                            </div>
+                            </TooltipHost>
                         )}
                     </div>
+
+
                 );
-            },
+            }
         },
         { Header: DisplayLabel.ReferenceNo, accessor: 'ListItemAllFields.ReferenceNo' },
         { Header: DisplayLabel.Versions, accessor: 'ListItemAllFields.Level' },
@@ -582,7 +581,7 @@ export default function TreeView({ props }: any) {
 
 
             <Stack enableScopedSelectors horizontal styles={stackStyles} tokens={stackTokens} className="ms-Grid">
-                <Stack.Item grow styles={stackItemStyles} className={styles.col3}>
+                <Stack.Item grow styles={stackItemStyles} className='styles.column3'>
                     <div className={styles.grid}>
                         <div className={styles.row}>
                             <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "EmptyRecycleBin", style: { color: "#f1416c" } }} text={DisplayLabel.RecycleBin} onClick={getRecycleData} /></div>
@@ -616,7 +615,7 @@ export default function TreeView({ props }: any) {
                         </li>
                     </ul>
                 </Stack.Item>
-                <Stack.Item grow styles={stackItemStyles} className={styles.col9}>
+                <Stack.Item grow styles={stackItemStyles} className='column9'>
                     <div className={styles.grid}>
                         <div className={styles.row}>
                             <div className={styles.col12}>Dashboard/{folderPath}</div>
