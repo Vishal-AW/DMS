@@ -91,9 +91,9 @@ export default function Master({ props }: any): JSX.Element {
 
 
   const [formData, setFormData] = useState<any>({
-    field: '',
+    field: null,
     IsRequired: false,
-    IsActiveControl: false,
+    IsActiveControl: true,
     IsFieldAllowInFile: false,
     isShowAsFilter: false,
     Flag: "New",
@@ -445,12 +445,12 @@ export default function Master({ props }: any): JSX.Element {
     setFormData({ ...formData, [key]: value });
   };
 
-  const handleInputChange1 = async (event: any, option: any) => {
-    setFormData({ ...formData, field: option.key });
+  const handleInputChange1 = async (option: any) => {
+    setFormData({ ...formData, field: option.value });
 
     const TileDataforDropdown = await getConfigActive(props.SiteURL, props.spHttpClient);
     const TileDataValueforDropdown = TileDataforDropdown.value;
-    const selectedOption = TileDataValueforDropdown.find((element: any) => element.ID === option.key);
+    const selectedOption = TileDataValueforDropdown.find((element: any) => element.ID === option.value);
     console.log(selectedOption);
 
     if (selectedOption) {
@@ -477,7 +477,7 @@ export default function Master({ props }: any): JSX.Element {
       // Add new row
 
 
-      if (formData.field != "") {
+      if (formData.field !== null) {
 
         const TileDataforDropdown = await getConfigActive(props.SiteURL, props.spHttpClient);
         const TileDataValueforDropdown = TileDataforDropdown.value;
@@ -504,9 +504,9 @@ export default function Master({ props }: any): JSX.Element {
 
     // Reset form
     setFormData({
-      field: '',
+      field: null,
       IsRequired: false,
-      IsActiveControl: false,
+      IsActiveControl: true,
       IsFieldAllowInFile: false,
       isShowAsFilter: false,
       Flag: "New",
@@ -1404,7 +1404,7 @@ export default function Master({ props }: any): JSX.Element {
                         <th style={{ padding: '10px' }}>
                           <Select
                             options={configData}
-                            value={configData.find((option: any) => option.value === formData.field)}
+                            value={configData.find((option: any) => option.value === formData.field) || {}}
                             onChange={handleInputChange1}
                             isSearchable
                             placeholder={DisplayLabel?.Selectanoption}

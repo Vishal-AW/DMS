@@ -1,70 +1,76 @@
-import * as React from 'react';
-import { TextField, PrimaryButton } from 'office-ui-fabric-react';
-import { SPHttpClient } from '@microsoft/sp-http';
+import * as React from "react";
+import { WebPartContext } from "@microsoft/sp-webpart-base";
 
-interface SearchResult {
-    [key: string]: string; // Allows dynamic keys
+interface ISearchResult {
+    Title: string;
+    Path: string;
+    FileType: string;
+    Description?: string;
 }
 
-const SearchComponent = (props: { context: any; }) => {
-    const [query, setQuery] = React.useState<string>('');
-    const [results, setResults] = React.useState<SearchResult[]>([]);
+interface ISearchProps {
+    context: WebPartContext;
+}
 
-    const handleSearch = async () => {
-        if (!query.trim()) {
-            alert('Please enter a search term.');
-            return;
-        }
-        const libraryName = 'AWNK';
-        const searchUrl = `${props.context.pageContext.web.absoluteUrl}/_api/search/query?querytext='${query} Path:${props.context.pageContext.web.absoluteUrl}/Shared%20Documents/${libraryName}'`;
-        //const searchUrl = `${props.context.pageContext.web.absoluteUrl}/_api/search/query?querytext=${query}`;
+const SearchComponent: React.FC<ISearchProps> = ({ context }) => {
+    const [searchResults, setSearchResults] = React.useState<ISearchResult[]>([]);
+    const [searchQuery, setSearchQuery] = React.useState<string>("");
+
+    const libraryPath = `${context.pageContext.web.absoluteUrl}/AWNK`;
+
+    const getSearchResults = async () => {
+        if (!searchQuery) return;
+
+        const searchApiUrl = `${context.pageContext.web.absoluteUrl}/_api/search/query?querytext='${searchQuery}'&trimduplicates=false&rowlimit=10&selectproperties='Title,Path,FileType,Description'&refinementfilters='Path:"${libraryPath}"'`;
 
         try {
-            const response = await props.context.spHttpClient.get(
-                searchUrl,
-                SPHttpClient.configurations.v1
-            );
+            const response = await fetch(searchApiUrl, {
+                method: "GET",
+                headers: {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
+                    "odata-version": "",
+                },
+            });
 
-            if (response.ok) {
-                const data = await response.json();
-                const searchResults = data.PrimaryQueryResult.RelevantResults.Table.Rows.map((row: any) => {
-                    const result: SearchResult = {}; // Define as SearchResult
-                    row.Cells.forEach((cell: any) => {
-                        result[cell.Key] = cell.Value;
-                    });
-                    return result;
-                });
-                setResults(searchResults);
-            } else {
-                console.error('Search request failed: ', response.statusText);
-            }
+            if (!response.ok) throw new Error("Search API request failed");
+
+            const data = await response.json();
+            const results = data.PrimaryQueryResult.RelevantResults.Table.Rows.map((row: any) => {
+                const cells = row.Cells;
+                return {
+                    Title: cells.find((c: any) => c.Key === "Title")?.Value || "No Title",
+                    Path: cells.find((c: any) => c.Key === "Path")?.Value || "#",
+                    FileType: cells.find((c: any) => c.Key === "FileType")?.Value || "Unknown",
+                    Description: cells.find((c: any) => c.Key === "Description")?.Value || "No description available",
+                };
+            });
+
+            setSearchResults(results);
         } catch (error) {
-            console.error('Error fetching search results: ', error);
+            console.error("Error fetching search results:", error);
         }
     };
 
     return (
         <div>
-            <TextField
-                label="Search"
-                placeholder="Enter a keyword..."
-                value={query}
-                onChange={(e, newValue) => setQuery(newValue || '')}
+            <h2>Search Files</h2>
+            <input
+                type="text"
+                placeholder="Enter search term..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <PrimaryButton text="Search" onClick={handleSearch} />
+            <button onClick={getSearchResults}>Search</button>
+
             <div>
-                <h3>Results:</h3>
-                {results.length > 0 ? (
-                    <ul>
-                        {results.map((item, index) => (
-                            <li key={index}>
-                                <strong>{item.Title}</strong> - {item.Path}
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p>No results found.</p>
-                )}
+                {searchResults.map((item, index) => (
+                    <div key={index} style={{ borderBottom: "1px solid #ddd", padding: "10px 0" }}>
+                        <a href={item.Path} target="_blank" style={{ fontSize: "16px", fontWeight: "bold" }}>{item.Title}</a>
+                        <p style={{ margin: "5px 0", color: "#555" }}>{item.Description}</p>
+                        <span style={{ fontSize: "12px", color: "#777" }}>File Type: {item.FileType}</span>
+                    </div>
+                ))}
             </div>
         </div>
     );
