@@ -28,6 +28,7 @@ import PopupBox from "../ResuableComponents/PopupBox";
 import { breakRoleInheritanceForLib, grantPermissionsForLib } from "../../../../Services/FolderStructure";
 import { getListData } from "../../../../Services/GeneralDocument";
 import Select from "react-select";
+// import { wrap } from "lodash";
 
 
 export default function Master({ props }: any): JSX.Element {
@@ -1246,8 +1247,8 @@ export default function Master({ props }: any): JSX.Element {
               <Accordion.Header className={styles.Accodordianherder}>{DisplayLabel?.TileDetails} </Accordion.Header>
               <Accordion.Body>
                 <Form>
-                  <div className={`ms-Grid ${styles.inlineFormContainer}`}>
-                    <div className="col-md-3">
+                  <div className="row">
+                    <div className="column4">
                       <div className="form-group">
                         <label className={styles.Headerlabel}>{DisplayLabel?.TileName}<span style={{ color: "red" }}>*</span></label>
                         <TextField
@@ -1258,7 +1259,7 @@ export default function Master({ props }: any): JSX.Element {
                         />
                       </div>
                     </div>
-                    <div className="col-md-3">
+                    <div className="column4">
                       <div className="form-group">
                         <label className={styles.Headerlabel}>{DisplayLabel?.DisplayPicture}<span style={{ color: "red" }}>*</span></label>
                         <TextField
@@ -1272,7 +1273,7 @@ export default function Master({ props }: any): JSX.Element {
                         {selectedFile && <p>Selected File:{selectedFile.name}</p>}
                       </div>
                     </div>
-                    <div className="col-md-3">
+                    <div className="column4">
                       <div className="form-group">
                         <label className={styles.Headerlabel}>{DisplayLabel?.AccessToTile}<span style={{ color: "red" }}>*</span></label>
                         <PeoplePicker
@@ -1292,27 +1293,27 @@ export default function Master({ props }: any): JSX.Element {
 
                   </div>
                   <br /><br />
-                  <div className={`ms-Grid ${styles.inlineFormContainer2}`}>
-                    <div className="col-md-2">
+                  <div className="row">
+                    <div className="column3">
                       <div className="form-group">
                         <label className={styles.Headerlabel}>{DisplayLabel?.TileStatus}</label>
                         <Toggle checked={isTileStatus} onChange={(_, checked) => handleTileStatusToggleChange(checked!)} />
                       </div>
                     </div>
-                    <div className="col-md-2">
+                    <div className="column3">
                       <div className="form-group">
                         <label className={styles.Headerlabel}>{DisplayLabel?.AllowApprover}</label>
                         <Toggle checked={isAllowApprover} onChange={(_, checked) => handleAllowApproverToggleChange(checked!)} />
                       </div>
                     </div>
-                    <div className="col-md-2">
+                    <div className="column3">
                       <div className="form-group">
                         <label className={styles.Headerlabel}>{DisplayLabel?.Order}</label>
                         <Toggle checked={isDropdownVisible} onChange={(_, checked) => handleToggleChange(checked!)}
                         />
                       </div>
                     </div>
-                    <div className="col-md-3">
+                    <div className="column3">
                       <div className="form-group">
                         <label className={styles.Headerlabel}>{DisplayLabel?.TileAdmin1}<span style={{ color: "red" }}>*</span></label>
                         <PeoplePicker
@@ -1330,9 +1331,9 @@ export default function Master({ props }: any): JSX.Element {
 
                   </div>
                   <br /><br />
-                  <div className={`ms-Grid`}>
+                  <div className="row">
 
-                    <div className="col-md-3">
+                    <div className="column3">
                       <div className="form-group">
                         {isDropdownVisible && (
                           <>
@@ -1364,18 +1365,20 @@ export default function Master({ props }: any): JSX.Element {
                   <div style={{ marginBottom: '20px' }}>
                     <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>{DisplayLabel?.SelectMoreActions}</label>
                     <div
-                      style={{
-                        display: 'flex',
-                        gap: '15px',
-                        alignItems: 'center',
-                        /*backgroundColor: '#f5f8fa',*/
-                        color: '#5e6278',
-                        padding: '10px',
-                        /*border: '1px solid #f5f8fa',*/
-                      }}
+                      className="row"
+                    // style={{
+                    //   display: 'flex',
+                    //   gap: '15px',
+                    //   alignItems: 'center',
+                    //   /*backgroundColor: '#f5f8fa',*/
+                    //   color: '#5e6278',
+                    //   padding: '10px',
+                    //   /*border: '1px solid #f5f8fa',*/
+                    // }}
                     >
                       {actions.map((action) => (
                         <Checkbox
+                          className="column2"
                           label={action}
                           key={action}
                           onChange={(e, isChecked) => handleCheckboxChange(action, isChecked)}
@@ -1385,7 +1388,7 @@ export default function Master({ props }: any): JSX.Element {
                     </div>
                   </div>
 
-                  <div>
+                  <div style={{ overflow: 'auto' }}>
                     <table style={{ width: '100%', marginTop: '20px', borderCollapse: 'collapse' }}>
                       <thead>
                         <tr>
@@ -1483,16 +1486,16 @@ export default function Master({ props }: any): JSX.Element {
 
                   <div style={{ marginBottom: '20px' }}>
 
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                      {/* Dynamic Reference Toggle */}
-                      <div className="col-md-3">
+                    {/* Dynamic Reference Toggle */}
+                    <div className="row">
+                      <div className="column3">
                         <label className={styles.Headerlabel}>{DisplayLabel?.IsDynamicReference}<span style={{ color: "red" }}>*</span></label>
                         <Toggle
                           checked={DynamicDataReference}
                           onChange={(_, checked) => ToggleChangeforrefernceno(checked!)}
                         />
                       </div>
-                      <div className="col-md-6">
+                      <div className="column6">
                         <label className={styles.Headerlabel}>{DynamicDataReference ? DisplayLabel?.DynamicReferenceExample : DisplayLabel?.DefaultReferenceExample}</label>
                         <TextField
                           placeholder=" "
@@ -1501,7 +1504,6 @@ export default function Master({ props }: any): JSX.Element {
                           disabled
                         />
                       </div>
-
                     </div>
 
 
@@ -1510,20 +1512,21 @@ export default function Master({ props }: any): JSX.Element {
 
                         <label className={styles.Headerlabel} style={{ marginBottom: '10px', display: 'block' }}>{DisplayLabel?.ChooseFields}</label>
                         <div
-                          style={{
-                            display: 'flex',
-                            gap: '15px',
-                            alignItems: 'center',
-                            /* backgroundColor: '#f5f8fa',*/
-                            color: '#5e6278',
-                            padding: '10px',
-                            /* border: '1px solid #f5f8fa',*/
-                          }}
+                          className="row"
+                        // style={{
+                        //   display: 'flex',
+                        //   gap: '15px',
+                        //   alignItems: 'center',
+                        //   /* backgroundColor: '#f5f8fa',*/
+                        //   color: '#5e6278',
+                        //   padding: '10px',
+                        //   /* border: '1px solid #f5f8fa',*/
+                        // }}
                         >
 
-                          <Checkbox label="YYYY" checked={refFormatData.includes("YYYY")} onChange={(e, checked) => handleCheckboxToggle("YYYY", checked!)} />
-                          <Checkbox label="YY_YY" checked={refFormatData.includes("YY_YY")} onChange={(e, checked) => handleCheckboxToggle("YY_YY", checked!)} />
-                          <Checkbox label="MM" checked={refFormatData.includes("MM")} onChange={(e, checked) => handleCheckboxToggle("MM", checked!)} />
+                          <Checkbox className="column2" label="YYYY" checked={refFormatData.includes("YYYY")} onChange={(e, checked) => handleCheckboxToggle("YYYY", checked!)} />
+                          <Checkbox className="column2" label="YY_YY" checked={refFormatData.includes("YY_YY")} onChange={(e, checked) => handleCheckboxToggle("YY_YY", checked!)} />
+                          <Checkbox className="column2" label="MM" checked={refFormatData.includes("MM")} onChange={(e, checked) => handleCheckboxToggle("MM", checked!)} />
                           {
                             tableData.map((el) => (CheckboxData(el)))
 
@@ -1536,87 +1539,89 @@ export default function Master({ props }: any): JSX.Element {
 
 
                     {DynamicDataReference && (
-                      <div style={{ marginBottom: '20px' }}>
+                      <div
+                        className="row"
+                      // style={{
+                      //   display: 'flex',
+                      //   gap: '20px', // Space between the two choice groups
+                      //   alignItems: 'flex-start', // Align items at the start of each group
+                      // }}
+                      >
+                        {/* Separator Choice Group */}
                         <div
                           style={{
                             display: 'flex',
-                            gap: '20px', // Space between the two choice groups
-                            alignItems: 'flex-start', // Align items at the start of each group
+                            flexDirection: 'column', // Arrange label and ChoiceGroup vertically
+                            gap: '10px',
+                            // color: '#5e6278',
+                            padding: '10px',
+                            //border: '1px solid #f5f8fa',
+                            // flex: 1, // Make both sections take equal width
+
                           }}
                         >
-                          {/* Separator Choice Group */}
-                          <div
-                            className="col-md-4"
-                            style={{
-                              display: 'flex',
-                              flexDirection: 'column', // Arrange label and ChoiceGroup vertically
-                              gap: '10px',
-                              // color: '#5e6278',
-                              padding: '10px',
-                              //border: '1px solid #f5f8fa',
-                              flex: 1, // Make both sections take equal width
+                          <label className={styles.Headerlabel} style={{ display: 'block' }}>{DisplayLabel?.Separator}</label>
+                          <ChoiceGroup
+                            options={[
+                              { key: "-", text: "Hyphens ( - )" },
+                              { key: "/", text: "Slash ( / )" },
+                            ]}
+                            selectedKey={separator}
+                            onChange={(e, option) => {
+                              handleRadioChange("separator", option?.key!);
+                              setSeparator(option?.key!);
                             }}
-                          >
-                            <label className={styles.Headerlabel} style={{ display: 'block' }}>{DisplayLabel?.Separator}</label>
-                            <ChoiceGroup
-                              options={[
-                                { key: "-", text: "Hyphens ( - )" },
-                                { key: "/", text: "Slash ( / )" },
-                              ]}
-                              selectedKey={separator}
-                              onChange={(e, option) => {
-                                handleRadioChange("separator", option?.key!);
-                                setSeparator(option?.key!);
-                              }}
-                              required={true}
-                              styles={{
-                                flexContainer: {
-                                  display: "flex",
-                                  flexDirection: "row",
-                                  gap: "10px",
-                                  /* backgroundColor: "#f5f8fa",*/
-                                },
-                              }}
-                            />
-                          </div>
-
-                          {/* Initial Increment Choice Group */}
-                          <div
-                            className="col-md-8"
-                            style={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: '10px',
-                              padding: '10px',
-                              flex: 1,
+                            required={true}
+                            className="row"
+                            styles={{
+                              flexContainer: {
+                                display: "flex",
+                                flexDirection: "row",
+                                gap: "10px",
+                                flexWrap: 'wrap'
+                                /* backgroundColor: "#f5f8fa",*/
+                              },
                             }}
-                          >
-                            <label className={styles.Headerlabel} style={{ display: 'block' }}>{DisplayLabel?.InitialIncrement}</label>
+                          />
+                        </div>
 
-                            <ChoiceGroup
-                              options={[
-                                { key: "Continue", text: "Continue" },
-                                { key: "Monthly", text: "Monthly" },
-                                { key: "Yearly", text: "Yearly" },
-                                { key: "Financial Year", text: "Financial Year" },
-                                { key: "Manual", text: "Manual" },
-                              ]}
-                              selectedKey={increment}
-                              onChange={(e, option) => {
-                                handleRadioChange("increment", option?.key!);
-                                setIncrement(option?.key!);
-                              }}
-                              required={true}
-                              styles={{
-                                flexContainer: {
-                                  display: "flex",
-                                  flexDirection: "row",
-                                  gap: "10px",
-                                  /*backgroundColor: "#f5f8fa",*/
-                                },
-                              }}
-                            />
-                          </div>
+                        {/* Initial Increment Choice Group */}
+                        <div
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '10px',
+                            padding: '10px',
+                            flex: 1,
+                          }}
+                        >
+                          <label className={styles.Headerlabel} style={{ display: 'block' }}>{DisplayLabel?.InitialIncrement}</label>
+
+                          <ChoiceGroup
+                            options={[
+                              { key: "Continue", text: "Continue" },
+                              { key: "Monthly", text: "Monthly" },
+                              { key: "Yearly", text: "Yearly" },
+                              { key: "Financial Year", text: "Financial Year" },
+                              { key: "Manual", text: "Manual" },
+                            ]}
+                            selectedKey={increment}
+                            onChange={(e, option) => {
+                              handleRadioChange("increment", option?.key!);
+                              setIncrement(option?.key!);
+                            }}
+                            required={true}
+                            styles={{
+                              flexContainer: {
+                                display: "flex",
+                                flexDirection: "row",
+                                gap: "10px",
+                                flexWrap: 'wrap'
+
+                                /*backgroundColor: "#f5f8fa",*/
+                              },
+                            }}
+                          />
                         </div>
                       </div>
                     )}<br />
@@ -1679,9 +1684,9 @@ export default function Master({ props }: any): JSX.Element {
                 <Form>
                   <div style={{ marginBottom: '20px' }}>
 
-                    <div style={{ display: 'flex', gap: '10px' }}>
+                    <div className="row">
                       {/* Dynamic Reference Toggle */}
-                      <div className="col-md-3">
+                      <div className="column6">
                         <label className={styles.Headerlabel}>{DisplayLabel?.IsArchiveAllowed}<span style={{ color: "red" }}>*</span></label>
                         <Toggle
                           checked={IsArchiveAllowed}
@@ -1690,7 +1695,7 @@ export default function Master({ props }: any): JSX.Element {
                       </div>
 
                       {IsArchiveAllowed && (
-                        <div className="col-md-6">
+                        <div className="column6">
                           <label className={styles.Headerlabel}>{DisplayLabel?.ArchiveDocumentLibraryName}</label>
                           <TextField
                             placeholder=" "
@@ -1704,23 +1709,24 @@ export default function Master({ props }: any): JSX.Element {
                     {IsArchiveAllowed && (
                       <div style={{ marginBottom: '20px' }}>
                         <div
-                          style={{
-                            display: 'flex',
-                            gap: '20px', // Space between the two choice groups
-                            alignItems: 'flex-start', // Align items at the start of each group
-                          }}
+                          className="row"
+                        // style={{
+                        //   display: 'flex',
+                        //   gap: '20px', // Space between the two choice groups
+                        //   alignItems: 'flex-start', // Align items at the start of each group
+                        // }}
                         >
                           {/* Separator Choice Group */}
-                          <div className="col-md-3"
-                            style={{
-                              display: 'flex',
-                              flexDirection: 'column', // Arrange label and ChoiceGroup vertically
-                              gap: '10px',
-                              // color: '#5e6278',
-                              padding: '10px',
-                              //border: '1px solid #f5f8fa',
-                              flex: 1, // Make both sections take equal width
-                            }}
+                          <div className="column6"
+                          // style={{
+                          //   display: 'flex',
+                          //   flexDirection: 'column', // Arrange label and ChoiceGroup vertically
+                          //   gap: '10px',
+                          //   // color: '#5e6278',
+                          //   padding: '10px',
+                          //   //border: '1px solid #f5f8fa',
+                          //   flex: 1, // Make both sections take equal width
+                          // }}
                           >
                             <label className={styles.Headerlabel} style={{ display: 'block' }}>{DisplayLabel?.SelectArchiveDays}</label>
 
@@ -1737,13 +1743,13 @@ export default function Master({ props }: any): JSX.Element {
 
                           {/* Initial Increment Choice Group */}
                           <div
-                            className="col-md-6"
+                            className="column6"
                             style={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: '10px',
-                              padding: '10px',
-                              flex: 1,
+                              // display: 'flex',
+                              // flexDirection: 'column',
+                              // gap: '10px',
+                              // padding: '10px',
+                              // flex: 1,
                             }}
                           >
                             <label className={styles.Headerlabel} style={{ display: 'block' }}>{DisplayLabel?.ArchiveVersions}</label>
