@@ -198,9 +198,8 @@ export default function SearchFilter({ props }: any): JSX.Element {
         else {
             let query = ContentSearchinput == undefined ? "*" : ContentSearchinput;
             let GetLibraryName = libraryName;
-            const routePath = `${props.SiteURL}/_api/search/query?querytext='${query}'&Library='${GetLibraryName}'`;
-            //const routePath = `${props.SiteURL}?q=${query}&Library=${GetLibraryName}`;
-            console.log(routePath);
+            const routePath = `${props.SiteURL}/SitePages/Search.aspx?query='${query}'&Library='${GetLibraryName}'`;
+            window.open(routePath, "_blank");
         }
     };
 
