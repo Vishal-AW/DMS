@@ -429,8 +429,8 @@ export default function Master({ props }: any): JSX.Element {
 
 
   const handleArchiveDropdownChange = (option?: any) => {
-    setRedundancyDataID(option?.key as string);
-    setRedundancyDataText(option?.text as string);
+    setRedundancyDataID(option?.value as string);
+    setRedundancyDataText(option?.label as string);
   };
 
   const handleCheckboxChange = (action: string, isChecked: boolean | undefined) => {
