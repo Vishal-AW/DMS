@@ -6,8 +6,8 @@ import cls from '../HomePage.module.scss';
 
 import {
   DefaultButton, Panel, PanelType, TextField, Toggle, Dropdown, Checkbox, ChoiceGroup,
-  IIconProps,
-  IconButton,
+  // IIconProps,
+  // IconButton,
   FontIcon,
 } from 'office-ui-fabric-react';
 import { PeoplePicker, PrincipalType, IPeoplePickerContext } from "@pnp/spfx-controls-react/lib/PeoplePicker";
@@ -73,10 +73,10 @@ export default function Master({ props }: any): JSX.Element {
   const [IsArchiveAllowed, setArchiveAllowed] = React.useState<boolean>(false);
   const [selectedcheckboxActions, setSelectedcheckboxActions] = useState<string[]>([]);
   const actions = ["Preview", "Download", "Rename", "Versions"];
-  const addIcon: IIconProps = { iconName: 'Add' };
-  const saveIcon: IIconProps = { iconName: 'Save' };
-  const editIcon: IIconProps = { iconName: 'Edit' };
-  const deleteIcon: IIconProps = { iconName: 'Delete' };
+  //const addIcon: IIconProps = { iconName: 'Add' };
+  //const saveIcon: IIconProps = { iconName: 'Save' };
+  // const editIcon: IIconProps = { iconName: 'Edit' };
+  // const deleteIcon: IIconProps = { iconName: 'Delete' };
 
   const [refFormatData, setRefFormatData] = useState<string[]>([]);
   const [prefix, setPrefix] = useState<string>("");
@@ -1389,7 +1389,7 @@ export default function Master({ props }: any): JSX.Element {
                   </div>
 
                   <div style={{ overflow: 'auto' }}>
-                    <table style={{ width: '100%', marginTop: '20px', borderCollapse: 'collapse' }}>
+                    <table className="addoption" style={{ width: '100%', marginTop: '20px', borderCollapse: 'collapse' }}>
                       <thead>
                         <tr>
                           <th>{DisplayLabel?.SrNo}</th>
@@ -1426,13 +1426,15 @@ export default function Master({ props }: any): JSX.Element {
                           <Toggle checked={formData.isShowAsFilter} onChange={(e, checked) => handleInputChange('isShowAsFilter', checked)} disabled={isToggleDisabled} />
                         </th>
                         <th style={{ padding: '10px' }}>
-                          <IconButton
+                          {/* <IconButton
                             iconProps={formData.editingIndex >= 0 ? saveIcon : addIcon}
                             title={formData.editingIndex >= 0 ? 'Update' : 'Add'}
                             ariaLabel={formData.editingIndex >= 0 ? 'Update' : 'Add'}
                             onClick={handleSave}
-                            style={{ color: '#009EF7', font: 'bold', cursor: 'pointer' }}
-                          />
+                            style={{ color: '#fff', font: 'bold', cursor: 'pointer', backgroundColor: '#009ef7', borderRadius: '50% !important' }}
+                          /> */}
+                          <FontIcon aria-label="Add" onClick={() => handleSave()} iconName="Add" style={{ color: '#fff', cursor: 'pointer', backgroundColor: '#009ef7', padding: '4px 8px', borderRadius: '50%' }}></FontIcon>
+
                         </th>
                       </tr>
                       <tbody>
@@ -1446,22 +1448,28 @@ export default function Master({ props }: any): JSX.Element {
                             <td>{row.isShowAsFilter ? 'Yes' : 'No'}</td>
                             <td>
                               {/* Edit Button */}
-                              <IconButton
+                              {/* <IconButton
                                 iconProps={editIcon}
                                 title="Edit"
                                 ariaLabel="Edit"
                                 onClick={() => handleEdit(index)}
-                                style={{ color: '#009EF7', font: 'bold', cursor: 'pointer' }}
-                              />
+                                style={{ color: '#009EF7', font: 'bold', cursor: 'pointer', backgroundColor: '#f5f8fa', borderRadius: '4px', marginRight: '4px', padding: '0px !important' }}
+                              /> */}
+
+                              <FontIcon aria-label="Edit" onClick={() => handleEdit(index)} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer', backgroundColor: '#f5f8fa', padding: '6px 9px', borderRadius: '4px', marginRight: '4px' }}></FontIcon>
+
                               {/* Delete Button */}
                               {row.Flag && (
-                                <IconButton
-                                  iconProps={deleteIcon}
-                                  title="Delete"
-                                  ariaLabel="Delete"
-                                  onClick={() => handleDelete(index)}
-                                  style={{ color: 'red', font: 'bold', cursor: 'pointer' }}
-                                />
+                                // <IconButton
+                                //   iconProps={deleteIcon}
+                                //   title="Delete"
+                                //   ariaLabel="Delete"
+                                //   onClick={() => handleDelete(index)}
+                                //   style={{ color: 'red', font: 'bold', cursor: 'pointer', backgroundColor: '#f5f8fa', borderRadius: '4px' }}
+                                // />
+
+                                <FontIcon aria-label="Delete" onClick={() => handleDelete(index)} iconName="Delete" style={{ color: '#f1416c', cursor: 'pointer', backgroundColor: '#f5f8fa', padding: '6px 9px', borderRadius: '4px' }}></FontIcon>
+
                               )}
                             </td>
 

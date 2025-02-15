@@ -281,6 +281,8 @@ label {
     margin-bottom: 4px !important;
 }
 
+.css-13cymwt-control,
+.css-b62m3t-container,
 Select {
     width: 100% !important;
     background-color: #f5f8fa !important;
@@ -552,10 +554,11 @@ div:focus-visible,
 
 }
 
-.addoption .ms-Button--icon {
+/* .addoption .ms-Button--icon {
     border-radius: 50% !important;
     padding: 0px !important;
-}
+} */
+
 
 @media screen and (min-width: 1024px) {
     .a_b_50a7110f:not(.b_b_50a7110f) .m_b_50a7110f {
