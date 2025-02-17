@@ -245,8 +245,8 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
                 isFooterAtBottom={true}
             >
                 <div className={styles.grid}>
-                    <div className={styles.row}>
-                        <div className={styles.col12}>
+                    <div className="row">
+                        <div className="column12">
                             <TextField
                                 label={DisplayLabel.TileName}
                                 value={libraryName}
@@ -255,8 +255,8 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
                         </div>
                     </div>
 
-                    <div className={styles.row}>
-                        <div className={styles.col12}>
+                    <div className="row">
+                        <div className="column12">
                             <TextField
                                 label={DisplayLabel.FolderName}
                                 value={fileData?.FolderDocumentPath
@@ -268,8 +268,8 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
                     </div>
 
 
-                    <div className={styles.row}>
-                        <div className={styles.col12}>
+                    <div className="row">
+                        <div className="column12">
                             <TextField
                                 label={DisplayLabel.AttachFile}
                                 value={fileData.ActualName}
@@ -278,8 +278,8 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
                         </div>
                     </div>
 
-                    <div className={styles.row}>
-                        <div className={styles.col12}>
+                    <div className="row">
+                        <div className="column12">
                             <TextField
                                 label={DisplayLabel.Comments}
                                 value={comment}

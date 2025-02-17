@@ -649,6 +649,10 @@ div:focus-visible,
     color: white;
 }
 
+label {
+    margin-bottom: 10px !important;
+}
+
 /*Responsive column*/
 
 .container {
@@ -747,6 +751,7 @@ div:focus-visible,
     .column12 {
         flex: 1 1 100%;
         /* Stack columns on smaller screens */
+        margin-bottom: 20px !important;
     }
 }
 

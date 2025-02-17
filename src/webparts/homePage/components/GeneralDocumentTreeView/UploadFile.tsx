@@ -123,7 +123,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                 case "Dropdown":
                 case "Multiple Select":
                     return (
-                        <div className={styles.col6} key={index}>
+                        <div className="column6" key={index}>
                             <label className={styles.Headerlabel}>{item.Title}{item.IsRequired ? <span style={{ color: "red" }}>*</span> : <></>}</label>
                             <Select
                                 options={options[item.InternalTitleName]}
@@ -140,7 +140,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
 
                 case "Person or Group":
                     return (
-                        <div className={styles.col6} key={index}>
+                        <div className="column6" key={index}>
                             <PeoplePicker
                                 titleText={item.Title}
                                 context={peoplePickerContext}
@@ -177,7 +177,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                         text: ele,
                     }));
                     return (
-                        <div className={styles.col6} key={index}>
+                        <div className="column6" key={index}>
                             <ChoiceGroup
                                 options={radioOptions}
                                 onChange={(ev, option) => handleInputChange(item.InternalTitleName, option?.key)}
@@ -190,7 +190,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
 
                 default:
                     return (
-                        <div className={styles.col6} key={index}>
+                        <div className="column6" key={index}>
                             <TextField
                                 type={item.ColumnType === "Date and Time" ? "date" : "text"}
                                 label={item.Title}
@@ -344,30 +344,30 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                 isFooterAtBottom={true}
             >
                 <div className={styles.grid}>
-                    <div className={styles.row}>
-                        <div className={styles.col12}>
+                    <div className="row">
+                        <div className="column12">
                             <label>{DisplayLabel.Path}: <b>{folderPath}</b></label>
                         </div>
                     </div>
-                    <div className={styles.row}>
-                        <div className={styles.col6}>
+                    <div className="row">
+                        <div className="column6">
                             <TextField label={DisplayLabel.TileName} value={libName} />
                         </div>
-                        <div className={styles.col6}>
+                        <div className="column6">
                             <TextField label={DisplayLabel.FolderName} value={folderName} />
                         </div>
                     </div>
-                    <div className={styles.row}>
+                    <div className="row">
                         {renderDynamicControls()}
                     </div>
-                    <div className={styles.row}>
-                        <div className={styles.col10}>
+                    <div className="row">
+                        <div className="column10">
                             <TextField type="file" label={DisplayLabel.ChooseFile} required onChange={(event: React.ChangeEvent<HTMLInputElement>) => { if (event.target.files) setAttachment(event.target.files[0]); }}
                                 errorMessage={attachmentErr}
                                 key={fileKey}
                             />
                         </div>
-                        <div className={styles.col2}>
+                        <div className="column2">
                             <IconButton
                                 iconProps={{ iconName: 'Add' }}
                                 style={{ background: "#009ef7", color: "#fff", border: "#009ef7", marginTop: "34px" }}
@@ -376,8 +376,8 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                             />
                         </div>
                     </div>
-                    <div className={styles.row}>
-                        <div className={styles.col12}>
+                    <div className="row">
+                        <div className="column12">
                             {attachmentsFiles.length ? <table className={styles.table}>
                                 <thead>
                                     <tr>

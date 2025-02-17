@@ -1,4 +1,4 @@
-import { DefaultButton, FontIcon, IconButton, IStackItemStyles, IStackStyles, IStackTokens, Panel, PanelType, Stack, TextField, Toggle } from "office-ui-fabric-react";
+import { DefaultButton, FontIcon, IStackItemStyles, IStackStyles, IStackTokens, Panel, PanelType, Stack, TextField, Toggle } from "office-ui-fabric-react";
 import { ILabel } from '../Interface/ILabel';
 import * as React from "react";
 import styles from "./Master.module.scss";
@@ -611,7 +611,6 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                             </div>
                         </div>
                     </div>
-                    <br /><br />
                     <div className="row">
                         {isToggleVisible && (
                             <div className="column6">
@@ -635,7 +634,6 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                     </div>
 
 
-                    <br /><br />
                     <div className="row">
                         {isDropdownVisible && (
                             <div className="column6">
@@ -675,7 +673,6 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                                 </div>
                             </div>)}
                     </div>
-                    <br /><br />
                     <div className="row">
                         {isTableVisible && (
                             <table className="addoption" style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -706,13 +703,15 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                                             </div>
                                         </td>
                                         <td style={{ textAlign: 'center', width: '20%' }}>
-                                            <IconButton
+                                            {/* <IconButton
                                                 iconProps={{ iconName: 'Add' }}
                                                 title="Add Option"
                                                 ariaLabel="Add Option"
                                                 onClick={addOption}
                                                 styles={{ root: { marginTop: '8px', backgroundColor: '#009ef7 ', borderRadius: '50px !important', padding: '0px !important' }, icon: { color: '#fff' } }}
-                                            />
+                                            /> */}
+                                            <FontIcon aria-label="Add" onClick={() => addOption()} iconName="Add" style={{ color: '#fff', cursor: 'pointer', backgroundColor: '#009ef7', padding: '4px 8px', borderRadius: '50%' }}></FontIcon>
+
                                         </td>
                                     </tr>
 
@@ -723,13 +722,15 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                                             <td style={{ padding: '8px' }}>{index + 1}</td>
                                             <td style={{ padding: '8px' }}>{option}</td>
                                             <td style={{ textAlign: 'center' }}>
-                                                <IconButton
+                                                {/* <IconButton
                                                     iconProps={{ iconName: 'Delete' }}
                                                     title="Remove Option"
                                                     ariaLabel="Remove Option"
                                                     onClick={() => removeOption(index)}
                                                     styles={{ icon: { color: '#e81123' } }}
-                                                />
+                                                /> */}
+                                                <FontIcon aria-label="Delete" onClick={() => removeOption(index)} iconName="Delete" style={{ color: '#f1416c', cursor: 'pointer', backgroundColor: '#f5f8fa', padding: '6px 9px', borderRadius: '4px' }}></FontIcon>
+
                                             </td>
                                         </tr>
                                     ))}

@@ -580,8 +580,8 @@ export default function TreeView({ props }: any) {
             </div>
 
 
-            <Stack enableScopedSelectors horizontal styles={stackStyles} tokens={stackTokens} className="ms-Grid">
-                <Stack.Item grow styles={stackItemStyles} className='styles.column3'>
+            <Stack enableScopedSelectors horizontal styles={stackStyles} tokens={stackTokens} className="row">
+                <Stack.Item grow styles={stackItemStyles} className='column3'>
                     <div className={styles.grid}>
                         <div className={styles.row}>
                             <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "EmptyRecycleBin", style: { color: "#f1416c" } }} text={DisplayLabel.RecycleBin} onClick={getRecycleData} /></div>
@@ -667,13 +667,13 @@ export default function TreeView({ props }: any) {
                 isFooterAtBottom={true}
             >
                 <div className={styles.grid}>
-                    <div className={styles.row}>
-                        <div className={styles.col12}>
+                    <div className="row">
+                        <div className="column12">
                             <label>{DisplayLabel.Path}: <b>{folderPath}</b></label>
                         </div>
                     </div>
                     <div className={styles.row}>
-                        <div className={styles.col12}>
+                        <div className="column12">
                             <TextField label={DisplayLabel.FolderName} required value={folderName} onChange={(el: React.ChangeEvent<HTMLInputElement>) => setFolderName(el.target.value)} errorMessage={folderNameErr} />
                         </div>
                     </div>

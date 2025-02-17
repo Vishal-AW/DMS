@@ -176,8 +176,8 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
             >
                 <div className={styles.grid}>
                     {/* Stop Inheriting Permissions */}
-                    <div className={styles.row}>
-                        <div className={styles.col6}>
+                    <div className="row">
+                        <div className="column6">
                             <PrimaryButton
                                 text={DisplayLabel.StopInheritingPermission}
                                 disabled={hasUniquePermission}
@@ -187,7 +187,7 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
                                 }}
                             />
                         </div>
-                        <div className={styles.col6}>
+                        <div className="column6">
                             <PrimaryButton
                                 text={DisplayLabel.RemoveUserPermission}
                                 disabled={isCheckedUser.length === 0}
@@ -197,8 +197,8 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
                     </div>
 
                     {/* People Picker and Dropdown */}
-                    <div className={styles.row}>
-                        <div className={styles.col6}>
+                    <div className="row">
+                        <div className="column6">
                             <PeoplePicker
                                 titleText={DisplayLabel.EnterName}
                                 context={peoplePickerContext}
@@ -211,7 +211,7 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
                                 principalTypes={[PrincipalType.User, PrincipalType.SharePointGroup, PrincipalType.SecurityGroup]}
                             />
                         </div>
-                        <div className={styles.col6}>
+                        <div className="column6">
 
                             <label className={styles.Headerlabel}>{DisplayLabel?.SelectPermissionLevel}<span style={{ color: "red" }}>*</span></label>
                             <Select
@@ -227,17 +227,17 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
                     </div>
 
                     {/* Permission Details */}
-                    <div className={styles.row}>
-                        <div className={styles.col12}>
+                    <div className="row">
+                        <div className="column12">
                             {option && <span style={{ color: "red" }}>Note: {permissionDetails[option]}</span>}
                         </div>
                     </div>
-                    <div className={styles.row}>
-                        <div className={styles.col6}><DefaultButton text={DisplayLabel.GrantPermissions} onClick={grantPermission} className={styles['primary-btn']} /></div>
+                    <div className="row">
+                        <div className="column6"><DefaultButton text={DisplayLabel.GrantPermissions} onClick={grantPermission} className={styles['primary-btn']} /></div>
                     </div>
                     {/* User Permissions Table */}
-                    <div className={styles.row}>
-                        <div className={styles.col12}>
+                    <div className="row">
+                        <div className="column12">
                             <table className={styles.table}>
                                 <thead>
                                     <tr>

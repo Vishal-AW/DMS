@@ -1292,7 +1292,6 @@ export default function Master({ props }: any): JSX.Element {
                     </div>
 
                   </div>
-                  <br /><br />
                   <div className="row">
                     <div className="column3">
                       <div className="form-group">
@@ -1330,12 +1329,11 @@ export default function Master({ props }: any): JSX.Element {
                     </div>
 
                   </div>
-                  <br /><br />
-                  <div className="row">
 
-                    <div className="column3">
-                      <div className="form-group">
-                        {isDropdownVisible && (
+                  {isDropdownVisible && (
+                    <div className="row">
+                      <div className="column3">
+                        <div className="form-group">
                           <>
                             <label className={styles.Headerlabel}>{DisplayLabel?.Selectorder}<span style={{ color: "red" }}>*</span></label>
                             <Select
@@ -1347,11 +1345,12 @@ export default function Master({ props }: any): JSX.Element {
                             />
                             {TileSelectorderErr && <p style={{ color: "rgb(164, 38, 44)" }}>{TileSelectorderErr}</p>}
                           </>
-                        )}
+                        </div>
                       </div>
-                    </div>
 
-                  </div>
+                    </div>
+                  )}
+
 
                 </Form>
               </Accordion.Body>
@@ -1463,6 +1462,7 @@ export default function Master({ props }: any): JSX.Element {
                                 // <IconButton
                                 //   iconProps={deleteIcon}
                                 //   title="Delete"
+
                                 //   ariaLabel="Delete"
                                 //   onClick={() => handleDelete(index)}
                                 //   style={{ color: 'red', font: 'bold', cursor: 'pointer', backgroundColor: '#f5f8fa', borderRadius: '4px' }}
@@ -1632,7 +1632,7 @@ export default function Master({ props }: any): JSX.Element {
                           />
                         </div>
                       </div>
-                    )}<br />
+                    )}
 
                     {DynamicDataReference && (
                       <div>

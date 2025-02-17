@@ -1,5 +1,3 @@
-@import '~@fluentui/react/dist/sass/References.scss';
-
 .tree-view {
     list-style: none;
     margin: 0;
@@ -67,16 +65,16 @@
     @include ms-Grid;
 }
 
-.col2 {
-    @include ms-Grid-col;
-    @include ms-md2;
-}
-
 .row {
     @include ms-Grid-row;
     margin-bottom: 10px;
     display: flex;
     flex-wrap: wrap;
+}
+
+.col2 {
+    @include ms-Grid-col;
+    @include ms-md2;
 }
 
 .col3 {
