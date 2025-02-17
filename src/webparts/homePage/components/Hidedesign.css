@@ -281,6 +281,36 @@ label {
     margin-bottom: 4px !important;
 }
 
+.css-13cymwt-control,
+.css-b62m3t-container,
+Select {
+    width: 100% !important;
+    background-color: #f5f8fa !important;
+    border-color: #f5f8fa !important;
+    color: #5e6278 !important;
+    transition: color .2s ease, background-color .2s ease !important;
+    height: 40px !important;
+    font-weight: 500 !important;
+    border-radius: .475rem !important;
+    /* border: 1px solid #e4e6ef !important; */
+    padding: 0px !important;
+}
+
+select:active {
+    width: 100%;
+    background-color: #f5f8fa !important;
+    border-color: #f5f8fa !important;
+    color: #5e6278 !important;
+    transition: color .2s ease, background-color .2s ease !important;
+    height: 35px !important;
+    /*padding: .75rem 1rem !important;
+    font-size: 1.1rem !important;*/
+    font-weight: 500 !important;
+    border-radius: .475rem !important;
+    border: 1px solid #e4e6ef !important;
+    padding: 7px !important;
+}
+
 .ms-BasePicker-text {
     border: 1px solid #e4e6ef !important;
     border-radius: .475rem !important;
@@ -524,10 +554,11 @@ div:focus-visible,
 
 }
 
-.addoption .ms-Button--icon {
+/* .addoption .ms-Button--icon {
     border-radius: 50% !important;
     padding: 0px !important;
-}
+} */
+
 
 @media screen and (min-width: 1024px) {
     .a_b_50a7110f:not(.b_b_50a7110f) .m_b_50a7110f {
@@ -717,4 +748,9 @@ div:focus-visible,
         flex: 1 1 100%;
         /* Stack columns on smaller screens */
     }
+}
+
+.ms-ChoiceField {
+    flex: 0 0 calc(16.66% - 20px) !important;
+    margin-right: 10px !important;
 }
