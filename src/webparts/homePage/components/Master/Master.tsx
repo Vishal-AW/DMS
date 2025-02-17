@@ -321,8 +321,6 @@ export default function Master({ props }: any): JSX.Element {
     let icheckbox;
     if (obj.ColumnType === 'Dropdown' && !obj.IsStaticValue && obj.IsRequired === true && obj.IsFieldAllowInFile != true && obj.IsActiveControl === true) {
       icheckbox = <Checkbox label={obj.Title} checked={refFormatData.includes(obj.Title)} onChange={(e, checked) => handleCheckboxToggle(obj.Title, checked!)} />;
-
-
     }
     return icheckbox;
   };

@@ -133,7 +133,7 @@ export default function TreeView({ props }: any) {
         }
     };
     const getAdmin = async () => {
-        const data = await getListData(`${props.SiteURL}/_api/web/lists/getbytitle('DMS_GroupName')/items`, props.context);
+        const data = await getListData(`${props.SiteURL}/_api/web/lists/getbytitle('DMS_GroupName')/items?`, props.context);
         setAdmin(data.value.map((el: any) => (el.GroupNameId)));
         const isMembers = await isMember(props.context, "ProjectAdmin");
         setIsValidUser(isMembers.value.length > 0);
@@ -235,6 +235,13 @@ export default function TreeView({ props }: any) {
                 key: 'DiscardCheckOut',
                 text: DisplayLabel.DiscardCheckOut,
                 onClick: () => commonFunction("DiscardCheckOut", item),
+            });
+        }
+        if (isValidUser || libDetails.TileAdminId === props.userID) {
+            menuItems.push({
+                key: 'advancePermission',
+                text: DisplayLabel.AdvancePermission,
+                onClick: () => { setItemId(item._original.ListItemAllFields.Id); setIsPanelOpen(true); },
             });
         }
         return {
