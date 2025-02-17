@@ -30,6 +30,8 @@ export default function HomePage(props: IHomePageProps): JSX.Element {
   const [collapsed, setCollapsed] = useState(false); // State to toggle collapse
 
   useEffect(() => {
+    document.body.style.visibility = "visible";
+    document.documentElement.style.setProperty("--loader-url", `url(${props.SiteURL}/SiteAssets/Loader.gif)`);
     getAllData();
   }, []);
 
