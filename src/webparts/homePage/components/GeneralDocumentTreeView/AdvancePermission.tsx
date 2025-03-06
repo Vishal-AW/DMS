@@ -29,6 +29,7 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
     const [selectedUserError, setSelectedUserError] = useState("");
     const [selectedPermissionError, setSelectedPermissionError] = useState("");
     const DisplayLabel: ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}');
+    const [alertMsg, setAlertMsg] = useState("");
 
     const peoplePickerContext: IPeoplePickerContext = {
         absoluteUrl: context.pageContext.web.absoluteUrl,
@@ -96,6 +97,7 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
                 const requestUri = `${context.pageContext.web.absoluteUrl}/_api/web/lists/getbytitle('${LibraryName}')/items(${folderId})/breakroleinheritance(true)`;
                 try {
                     await commonPostMethod(requestUri, context);
+                    setAlertMsg(DisplayLabel.StopInheritingSuccessMsg);
                     setIsPopupBoxVisible(true);
                     bindPermission();
                 } catch (error) {
@@ -113,6 +115,7 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
         for (const userId of isCheckedUser) {
             const requestUri = `${context.pageContext.web.absoluteUrl}/_api/web/lists/getbytitle('${LibraryName}')/items(${folderId})/roleassignments/removeroleassignment(principalid=${userId})`;
             try {
+                setAlertMsg(DisplayLabel.AccessHasRemoved);
                 await commonPostMethod(requestUri, context);
                 count++;
                 if (count === isCheckedUser.length) setIsPopupBoxVisible(true);
@@ -131,6 +134,7 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
         else {
             let count = 0;
             selectedUser.map((el: any) => {
+                setAlertMsg(DisplayLabel.AccessHasGranted);
                 var requestUri = `${context.pageContext.web.absoluteUrl}/_api/web/lists/getbytitle('${LibraryName}')/items(${folderId})/roleassignments/addroleassignment(principalid=${el},roledefid=${option})`;
                 commonPostMethod(requestUri, context).then(function () {
                     count++;
@@ -278,7 +282,7 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
                 </div>
             </Panel>
             <ConfirmationDialog hideDialog={hideDialog} closeDialog={closeDialog} handleConfirm={handleConfirm} msg={message} />
-            <PopupBox isPopupBoxVisible={isPopupBoxVisible} hidePopup={hidePopup} />
+            <PopupBox isPopupBoxVisible={isPopupBoxVisible} hidePopup={hidePopup} msg={alertMsg} />
         </div>
     );
 };

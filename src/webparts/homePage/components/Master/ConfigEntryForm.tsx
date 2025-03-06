@@ -2,13 +2,14 @@ import { DefaultButton, FontIcon, IStackItemStyles, IStackStyles, IStackTokens, 
 import { ILabel } from '../Interface/ILabel';
 import * as React from "react";
 import styles from "./Master.module.scss";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SPHttpClient } from "@microsoft/sp-http-base";
 import cls from '../HomePage.module.scss';
 import PopupBox from "../ResuableComponents/PopupBox";
 import { getConfidDataByID, getConfig, SaveconfigMaster, UpdateconfigMaster } from "../../../../Services/ConfigService";
 import ReactTableComponent from '../ResuableComponents/ReusableDataTable';
 import Select from "react-select";
+import { Link } from "react-router-dom";
 
 
 
@@ -43,9 +44,11 @@ export default function ConfigMaster({ props }: any): JSX.Element {
     const [ColumnTypeIDErr, setColumnTypeIDErr] = useState("");
     const [ListNameIDErr, setListNameIDErr] = useState("");
     const [DisplayColumnIDErr, setDisplayColumnIDErr] = useState("");
+    const [alertMsg, setAlertMsg] = useState("");
     // const [SiteListData, setSiteListData] = useState([]);
     //const [ColumnTypeText, setColumnTypeText] = useState('');
     const [selectedListOption, setSelectedListOption] = React.useState<any>(null);
+    const inputRefs = useRef<{ [key: string]: HTMLInputElement | null; }>({});
 
 
 
@@ -93,11 +96,11 @@ export default function ConfigMaster({ props }: any): JSX.Element {
         { Header: DisplayLabel?.FieldName, accessor: "Title" },
         { Header: DisplayLabel?.ColumnType, accessor: "ColumnType", },
         { Header: DisplayLabel?.ListName, accessor: "InternalListName" },
-        {
-            Header: DisplayLabel?.IsActive,
-            accessor: "IsActive",
-            Cell: ({ row }: { row: any; }) => (row.IsActive === true ? "Yes" : "No")
-        },
+        // {
+        //     Header: DisplayLabel?.IsActive,
+        //     accessor: "IsActive",
+        //     Cell: ({ row }: { row: any; }) => (row.IsActive === true ? "Yes" : "No")
+        // },
         {
             Header: DisplayLabel?.IsStaticValue,
             accessor: "IsStaticValue",
@@ -456,11 +459,13 @@ export default function ConfigMaster({ props }: any): JSX.Element {
         let isValidForm = true;
         if (FieldName === "" || FieldName === undefined || FieldName === null) {
             setFieldNameErr(DisplayLabel?.ThisFieldisRequired as string);
+            inputRefs.current["FieldName"]?.focus();
             isValidForm = false;
         }
         else if (isColumnTypeDisabled === false) {
             if (ColumnTypeID === "" || ColumnTypeID === undefined || ColumnTypeID === null) {
                 setColumnTypeIDErr(DisplayLabel?.ThisFieldisRequired as string);
+                inputRefs.current["ColumnType"]?.focus();
                 isValidForm = false;
             }
         }
@@ -472,10 +477,12 @@ export default function ConfigMaster({ props }: any): JSX.Element {
         else if (IsStaticValue === false && ColumnTypeID.value === "Dropdown") {
             if (ListNameID === "" || ListNameID === undefined || ListNameID === null) {
                 setListNameIDErr(DisplayLabel?.ThisFieldisRequired as string);
+                inputRefs.current["ListName"]?.focus();
                 isValidForm = false;
             }
             if (DisplayColumnID === "" || DisplayColumnID === undefined || DisplayColumnID === null) {
                 setDisplayColumnIDErr(DisplayLabel?.ThisFieldisRequired as string);
+                inputRefs.current["DisplayColumn"]?.focus();
                 isValidForm = false;
             }
         }
@@ -502,7 +509,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                 ddlColumn = null;
             } else {
                 ddlListName = ListNameID;
-                ddlColumn = DisplayColumnID.value;
+                ddlColumn = DisplayColumnID?.value || "";
             }
             let FieldNameNew = FieldName.split(" ").join("");
             let Name = FieldName;
@@ -531,6 +538,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
 
             setShowLoader({ display: "none" });
             setIsPanelOpen(false);
+            setAlertMsg(DisplayLabel?.SubmitMsg || "");
             setisPopupVisible(true);
             fetchData();
 
@@ -543,6 +551,14 @@ export default function ConfigMaster({ props }: any): JSX.Element {
 
     return (
         <div>
+            <nav aria-label="breadcrumb">
+                <ol className="breadcrumb breadcrumb-style2">
+                    <li className="breadcrumb-item">
+                        <Link to="/" style={{ textDecoration: "none" }}>Dashboard</Link>
+                    </li>
+                    <li className="breadcrumb-item active">Configuration Master</li>
+                </ol>
+            </nav>
             <div className={styles.alignbutton} style={{ paddingRight: '0px' }}>
                 <DefaultButton id="requestButton" className={styles['primary-btn']} text={DisplayLabel?.Add} onClick={openAddPanel}  ></DefaultButton>
             </div>
@@ -556,7 +572,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                         PagedefaultSize={10}
                         TableRows={1}
                         TableshowPagination={MainTableSetdata.length > 10}
-                    //TableshowFilter={true}
+                        TableshowFilter={true}
                     />
                 </Stack.Item>
             </Stack>
@@ -591,9 +607,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                                     errorMessage={FieldNameErr}
                                     value={FieldName}
                                     onChange={(el: React.ChangeEvent<HTMLInputElement>) => setFieldName(el.target.value)}
-
-
-
+                                    componentRef={(input: any) => (inputRefs.current["FieldName"] = input)}
                                 />
                             </div>
                         </div>
@@ -606,6 +620,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                                     onChange={handleColumnTypeonChange}
                                     isSearchable
                                     placeholder={DisplayLabel?.Selectanoption}
+                                    ref={(input: any) => (inputRefs.current["ColumnType"] = input)}
                                 />
                                 {ColumnTypeIDErr && <p style={{ color: "rgb(164, 38, 44)" }}>{ColumnTypeIDErr}</p>}
                             </div>
@@ -646,6 +661,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                                         isSearchable
                                         placeholder={DisplayLabel?.Selectanoption}
                                         errorMessage={ListNameIDErr}
+                                        ref={(input: any) => (inputRefs.current["ListName"] = input)}
                                     />
                                     {ListNameIDErr && <p style={{ color: "rgb(164, 38, 44)" }}>{ListNameIDErr}</p>}
                                 </div>
@@ -668,6 +684,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                                         isSearchable
                                         placeholder={DisplayLabel?.Selectanoption}
                                         errorMessage={DisplayColumnIDErr}
+                                        ref={(input: any) => (inputRefs.current["DisplayColumn"] = input)}
                                     />
                                     {DisplayColumnIDErr && <p style={{ color: "rgb(164, 38, 44)" }}>{DisplayColumnIDErr}</p>}
                                 </div>
@@ -743,7 +760,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
 
 
             </Panel>
-            <PopupBox isPopupBoxVisible={isPopupVisible} hidePopup={hidePopup} />
+            <PopupBox isPopupBoxVisible={isPopupVisible} hidePopup={hidePopup} msg={alertMsg} />
 
         </div>
 

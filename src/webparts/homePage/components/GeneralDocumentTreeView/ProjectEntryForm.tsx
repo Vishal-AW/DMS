@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useState } from "react";
+import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 import {
     ChoiceGroup,
     DefaultButton,
@@ -67,6 +67,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
     const [publisher, setPublisher] = useState<any[]>([]);
     const [approver, setApprover] = useState<any[]>([]);
     const [isPopupBoxVisible, setIsPopupBoxVisible] = useState(false);
+    const [alertMsg, setAlertMsg] = useState("");
     const [isApprovalRequired, setIsApprovalRequired] = useState<boolean>(false);
     const [allUsers, setAllUsers] = useState<any>([]);
 
@@ -86,6 +87,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
     const [allFolderTemplate, setAllFolderTemplate] = useState<any>([]);
     const [folderTemplate, setFolderTemplate] = useState<any>("");
     const [folderStructure, setFolderStructure] = useState<any>([]);
+    const inputRefs = useRef<{ [key: string]: HTMLInputElement | null; }>({});
 
     const handleInputChange = (fieldName: string, value: any) => {
         setDynamicValues((prevValues) => ({
@@ -122,6 +124,8 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
             setPanelTitle(DisplayLabel.ViewForm);
         else if (FormType === "EditForm")
             setPanelTitle(DisplayLabel.EditForm);
+        else
+            setPanelTitle(DisplayLabel.EntryForm);
 
     }, [isOpen]);
 
@@ -222,7 +226,8 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                                 isSearchable
                                 placeholder={DisplayLabel?.Selectanoption}
                                 isMulti={item.ColumnType === "Multiple Select"}
-                                disabled={isDisabled}
+                                isDisabled={isDisabled}
+                                ref={(input: any) => (inputRefs.current[item.InternalTitleName] = input)}
                             />
                             {dynamicValuesErr[item.InternalTitleName] && <p style={{ color: "rgb(164, 38, 44)" }}>{dynamicValuesErr[item.InternalTitleName]}</p>}
                         </div>
@@ -262,6 +267,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                                     .map((user: any) => user.Email)}
                                 disabled={isDisabled}
                                 errorMessage={dynamicValuesErr[item.InternalTitleName]}
+                                ref={(input: any) => (inputRefs.current[item.InternalTitleName] = input)}
                             />
                         </div>
                     );
@@ -296,6 +302,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                                 required={item.IsRequired}
                                 errorMessage={dynamicValuesErr[item.InternalTitleName]}
                                 disabled={isDisabled}
+                                componentRef={(input: any) => (inputRefs.current[item.InternalTitleName] = input)}
                             />
                         </div>
                     );
@@ -325,22 +332,25 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
         setIsSuffixRequired(false);
     };
 
-    const submit = () => {
+    const submit = async () => {
         // e.preventDefault();
         clearErr();
         let isValid = true;
         if (folderName.trim() === "") {
             setFolderNameErr(DisplayLabel.ThisFieldisRequired);
+            inputRefs.current["FolderName"]?.focus();
             isValid = false;
             return;
         }
         if (isSuffixRequired && Suffix === "") {
             setSuffixErr(DisplayLabel.ThisFieldisRequired);
+            inputRefs.current["Suffix"]?.focus();
             isValid = false;
             return;
         }
         if (Suffix === "Other" && OtherSuffix.trim() === "") {
             setOtherSuffixErr(DisplayLabel.ThisFieldisRequired);
+            inputRefs.current["OtherSuffix"]?.focus();
             isValid = false;
             return;
         }
@@ -352,6 +362,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                         ...prev,
                         [item.InternalTitleName]: DisplayLabel.ThisFieldisRequired,
                     }));
+                    inputRefs.current[item.InternalTitleName]?.focus();
                     isValid = false;
                     return;
                 }
@@ -360,18 +371,29 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
 
         if (FormType === "EntryForm" && folderAccess.length === 0) {
             setFolderAccessErr(DisplayLabel.ThisFieldisRequired);
-            isValid = false;
+            inputRefs.current["FolderAccess"]?.focus();
             return;
         }
         if (isApprovalRequired && approver.length === 0) {
             setApproverErr(DisplayLabel.ThisFieldisRequired);
+            inputRefs.current["Approver"]?.focus();
             isValid = false;
             return;
         }
         if (isApprovalRequired && publisher.length === 0) {
             setPublisherErr(DisplayLabel.ThisFieldisRequired);
+            inputRefs.current["Publisher"]?.focus();
             isValid = false;
             return;
+        }
+        if (FormType === "EntryForm") {
+            const data = await getAllFolder(context.pageContext.web.absoluteUrl, context, LibraryDetails.LibraryName);
+            if (data && data.Folders.filter((el: any) => el.Name === folderName).length > 0) {
+                setFolderNameErr(DisplayLabel.FolderAlreadyExist);
+                inputRefs.current["FolderName"]?.focus();
+                isValid = false;
+                return;
+            }
         }
         if (isValid)
             createFolder();
@@ -380,11 +402,12 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
     const createFolder = async () => {
         setShowLoader({ display: "block" });
         if (FormType === "EntryForm") {
-            const users = [...folderAccess, ...usersIds, ...publisher, ...approver, ...admin];
+            const users = [...folderAccess, ...usersIds, ...publisher, ...approver, ...admin, LibraryDetails.TileAdminId];
             FolderStructure(context, `${LibraryDetails.LibraryName}/${folderName}`, users, LibraryDetails.LibraryName).then(async (response) => {
+                console.log(response);
                 await updateFolderMetaData(response);
                 if (createStructure) {
-                    createFolderStructure();
+                    createFolderStructure(users);
                 }
             });
         }
@@ -421,39 +444,41 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
             if (!createStructure) {
                 dismissPanel(false);
                 setShowLoader({ display: "none" });
+                setAlertMsg(DisplayLabel.FolderUpdatedMsg);
                 setIsPopupBoxVisible(true);
             }
         });
     };
 
-    const createFolderStructure = async () => {
+    const createFolderStructure = async (users: any) => {
         const filterFolders = folderStructure.filter((el: any) => el.TemplateName.Name === folderTemplate);
         const firstlevel = getFirstLevel(filterFolders);
         let count = 0;
         firstlevel.map(async (folder: any) => {
-            const response = await FolderStructure(context, `${LibraryDetails.LibraryName}/${folderName}/${folder.FolderName}`, folderAccess, LibraryDetails.LibraryName);
+            const response = await FolderStructure(context, `${LibraryDetails.LibraryName}/${folderName}/${folder.FolderName}`, users, LibraryDetails.LibraryName);
             await updateFolderMetaData(response);
             const ChildLevel = getEqualToData(filterFolders, folder.Id);
-            await createChildFolder(ChildLevel, folder.FolderName);
+            await createChildFolder(ChildLevel, folder.FolderName, users);
             count++;
             if (firstlevel.length === count) {
                 dismissPanel(false);
                 setShowLoader({ display: "none" });
+                setAlertMsg(DisplayLabel.SubmitMsg);
                 setIsPopupBoxVisible(true);
             }
         });
     };
 
-    const createChildFolder = async (folder: any, Name: any) => {
+    const createChildFolder = async (folder: any, Name: any, users: any) => {
         folder.map(async (folder: any) => {
             const ChildLevel = getEqualToData(folderStructure, folder.Id);
             if (ChildLevel.length > 0) {
-                const response = await FolderStructure(context, `${LibraryDetails.LibraryName}/${folderName}/${Name}/${folder.FolderName}`, folderAccess, LibraryDetails.LibraryName);
+                const response = await FolderStructure(context, `${LibraryDetails.LibraryName}/${folderName}/${Name}/${folder.FolderName}`, users, LibraryDetails.LibraryName);
                 await updateFolderMetaData(response);
-                await createChildFolder(ChildLevel, `${Name}/${folder.FolderName}`);
+                await createChildFolder(ChildLevel, `${Name}/${folder.FolderName}`, users);
             }
             else {
-                const response = await FolderStructure(context, `${LibraryDetails.LibraryName}/${folderName}/${Name}/${folder.FolderName}`, folderAccess, LibraryDetails.LibraryName);
+                const response = await FolderStructure(context, `${LibraryDetails.LibraryName}/${folderName}/${Name}/${folder.FolderName}`, users, LibraryDetails.LibraryName);
                 await updateFolderMetaData(response);
             }
         });
@@ -538,6 +563,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                                 }}
                                 errorMessage={folderNameErr}
                                 disabled={isDisabled || FormType === "EditForm"}
+                                componentRef={(input: any) => (inputRefs.current["FolderName"] = input)}
                             />
                         </div>
                     </div>
@@ -564,7 +590,8 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                                         onChange={(option: any) => setSuffix(option.value as string)}
                                         isSearchable
                                         placeholder={DisplayLabel?.Selectanoption}
-                                        disabled={isDisabled}
+                                        isDisabled={isDisabled}
+                                        ref={(input: any) => (inputRefs.current["Suffix"] = input)}
                                     />
                                     {SuffixErr && <p style={{ color: "rgb(164, 38, 44)" }}>{SuffixErr}</p>}
                                 </div>
@@ -582,6 +609,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                                             errorMessage={OtherSuffixErr}
                                             required
                                             disabled={isDisabled}
+                                            componentRef={(input: any) => (inputRefs.current["OtherSuffix"] = input)}
                                         />
                                     </div>
                                 </div>
@@ -627,6 +655,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                                     defaultSelectedUsers={[projectManagerEmail]}
                                     errorMessage={approverErr}
                                     disabled={isDisabled}
+                                    ref={(input: any) => (inputRefs.current["Approver"] = input)}
                                 />
                             </div>
                                 <div className="column6">
@@ -655,6 +684,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                                         }}
                                         errorMessage={publisherErr}
                                         disabled={isDisabled}
+                                        ref={(input: any) => (inputRefs.current["Publisher"] = input)}
                                     />
 
                                 </div>
@@ -685,6 +715,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                                     }
                                 }}
                                 errorMessage={folderAccessErr}
+                                ref={(input: any) => (inputRefs.current["FolderAccess"] = input)}
                             />
                                 : <></>
                             }
@@ -708,8 +739,9 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                                     onChange={(option: any) => setFolderTemplate(option.value as string)}
                                     isSearchable
                                     placeholder={DisplayLabel?.Selectanoption}
+                                    ref={(input: any) => (inputRefs.current["CreateStructure"] = input)}
                                 />
-                                {SuffixErr && <p style={{ color: "rgb(164, 38, 44)" }}>{SuffixErr}</p>}
+                                {/* {SuffixErr && <p style={{ color: "rgb(164, 38, 44)" }}>{SuffixErr}</p>} */}
                             </div> : <></>
                         }
                     </div>
@@ -717,7 +749,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
 
             </Panel>
             <div className={cls["modal"]} style={showLoader}></div>
-            <PopupBox isPopupBoxVisible={isPopupBoxVisible} hidePopup={hidePopup} />
+            <PopupBox isPopupBoxVisible={isPopupBoxVisible} hidePopup={hidePopup} msg={alertMsg} />
         </>
     );
 };

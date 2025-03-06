@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import * as moment from "moment";
 import styles from '../Master/Master.module.scss';
 import cls from '../HomePage.module.scss';
@@ -73,10 +73,12 @@ export default function Master({ props }: any): JSX.Element {
   const [IsArchiveAllowed, setArchiveAllowed] = React.useState<boolean>(false);
   const [selectedcheckboxActions, setSelectedcheckboxActions] = useState<string[]>([]);
   const actions = ["Preview", "Download", "Rename", "Versions"];
+  const inputRefs = useRef<{ [key: string]: HTMLInputElement | null; }>({});
   //const addIcon: IIconProps = { iconName: 'Add' };
   //const saveIcon: IIconProps = { iconName: 'Save' };
   // const editIcon: IIconProps = { iconName: 'Edit' };
   // const deleteIcon: IIconProps = { iconName: 'Delete' };
+  const [alertMsg, setAlertMsg] = useState("");
 
   const [refFormatData, setRefFormatData] = useState<string[]>([]);
   const [prefix, setPrefix] = useState<string>("");
@@ -113,6 +115,7 @@ export default function Master({ props }: any): JSX.Element {
 
   const hidePopup = React.useCallback(() => {
     setisPopupVisible(false);
+    isEditMode ? "" : breakRoleInheritanceForLib(props.context, TileName.replace(/[^a-zA-Z0-9]/g, ''), permission);
     closePanel();
     setShowLoader({ display: "none" });
   }, [isPopupVisible]);
@@ -197,9 +200,6 @@ export default function Master({ props }: any): JSX.Element {
 
   const openEditPanel = async (rowData: any) => {
 
-    setIsEditMode(true);
-    setIsPanelOpen(true);
-
     let GetEditData = await getDataById(props.SiteURL, props.spHttpClient, rowData);
     const EditSettingData = GetEditData.value;
 
@@ -210,27 +210,27 @@ export default function Master({ props }: any): JSX.Element {
     setCurrentEditID(CurrentItemId);
     await setTileName(EditSettingData[0].TileName);
 
-    if (!isEditMode) {
-      const AccessTileData: string[] = EditSettingData[0].Permission
-        ? EditSettingData[0].Permission.map((person: any) => {
-          const email = person.Name.split('|');
-          return email.includes("membership") ? email.pop() : person.Name;
-        })
-        : [];
-      const accessEmail = EditSettingData[0].Permission.map((person: any) => person.Name);
-      setAssignID(accessEmail);
-      setAssignEmail(AccessTileData);
-    } else {
-      setAssignID([]);
-      setAssignEmail([]);
-    }
+    // if (!isEditMode) {
+    const AccessTileData: string[] = EditSettingData[0].Permission
+      ? EditSettingData[0].Permission.map((person: any) => {
+        const email = person.Name.split('|');
+        return email.includes("membership") ? email.pop() : person.Name;
+      })
+      : [];
+    const accessEmail = EditSettingData[0].Permission.map((person: any) => person.Name);
+    setAssignID(accessEmail);
+    setAssignEmail(AccessTileData);
+    // } else {
+    //   setAssignID([]);
+    //   setAssignEmail([]);
+    // }
 
-    if (!isEditMode) {
-      const TileAdminData: any = EditSettingData[0].TileAdmin ? ([EditSettingData[0].TileAdmin.EMail]) : [];
-      await setTileAdminID(TileAdminData);
-    } else {
-      setTileAdminID([]);
-    }
+    // if (!isEditMode) {
+    const TileAdminData: any = EditSettingData[0].TileAdmin ? ([EditSettingData[0].TileAdmin.EMail]) : [];
+    await setTileAdminID(TileAdminData);
+    // } else {
+    //   setTileAdminID([]);
+    // }
 
     await setIsTileStatus(EditSettingData[0].Active);
     await setIsAllowApprover(EditSettingData[0].AllowApprover);
@@ -312,7 +312,8 @@ export default function Master({ props }: any): JSX.Element {
     } else {
       setSelectedFile(null);
     }
-
+    setIsEditMode(true);
+    setIsPanelOpen(true);
   };
 
 
@@ -785,24 +786,34 @@ export default function Master({ props }: any): JSX.Element {
     const isDuplicate = MainTableSetdata.filter((item: any) => item.LibraryName === internalName);
     if (TileName === "" || TileName === undefined || TileName === null) {
       setTileErr(DisplayLabel?.ThisFieldisRequired as string);
+      inputRefs.current["TileName"]?.focus();
       isValidForm = false;
     }
     else if (isDuplicate.length > 0 && !isEditMode) {
       setTileErr(DisplayLabel?.TileNameAlreadyExist as string);
+      inputRefs.current["TileName"]?.focus();
       isValidForm = false;
     }
     else if (selectedFile === null) {
       setAttachmentErr(DisplayLabel?.ThisFieldisRequired as string);
+      inputRefs.current["Attachment"]?.focus();
       isValidForm = false;
     }
 
     else if (assignID.length === 0) {
       setAccessTileUserErr(DisplayLabel?.ThisFieldisRequired as string);
+      if (inputRefs.current["AccessTileUser"]) {
+        const inputElement = inputRefs.current["AccessTileUser"].querySelector("input");
+        if (inputElement) {
+          inputElement.focus(); // Focus on the PeoplePicker input field
+        }
+      }
       isValidForm = false;
     }
 
     else if (TileAdminID.length === 0) {
       setTileAdminUserErr(DisplayLabel?.ThisFieldisRequired as string);
+      inputRefs.current["TileAdminUser"]?.focus();
       isValidForm = false;
     }
 
@@ -823,10 +834,12 @@ export default function Master({ props }: any): JSX.Element {
     else if (IsArchiveAllowed === true) {
       if (RedundancyDataID === "" || RedundancyDataID === undefined || RedundancyDataID === null) {
         setTileRedundancyDaysErr(DisplayLabel?.ThisFieldisRequired as string);
+        inputRefs.current["Redundancy"]?.focus();
         isValidForm = false;
       }
       if (ArchiveVersions === "" || ArchiveVersions === undefined || ArchiveVersions === null) {
         setTileArchiveVersionErr(DisplayLabel?.ThisFieldisRequired as string);
+        inputRefs.current["Archive"]?.focus();
         isValidForm = false;
       }
     }
@@ -1002,6 +1015,7 @@ export default function Master({ props }: any): JSX.Element {
     for (let i = 0; i < NewSequencedata.length; i++) {
       let obj = { Order0: NewSequencedata[i].Order0 };
       await UpdateTileSetting(props.SiteURL, props.spHttpClient, obj, NewSequencedata[i].Id);
+      setAlertMsg(DisplayLabel?.SubmitMsg || "");
       setisPopupVisible(true);
     }
   };
@@ -1023,6 +1037,7 @@ export default function Master({ props }: any): JSX.Element {
         var NewColType = colType.toString();
         createColumn(Internal, tableData[i].InternalTitleName, NewColType).then(function (response) {
           closePanel();
+          setAlertMsg(DisplayLabel?.SubmitMsg || "");
           setisPopupVisible(true);
 
         });
@@ -1043,6 +1058,7 @@ export default function Master({ props }: any): JSX.Element {
           //_spService.CreateList(props.context, props.SiteURL, Columns, TileLID, false)
           createColumn(TileValue.ArchiveLibraryName, tableData[i].InternalTitleName, NewColType).then(function (response) {
             closePanel();
+            setAlertMsg(DisplayLabel?.SubmitMsg || "");
             setisPopupVisible(true);
 
           });
@@ -1151,7 +1167,7 @@ export default function Master({ props }: any): JSX.Element {
           saveAttachment(UpdateTileID[0].ID, uniqueid);
         }
 
-        if (Sequencedata[0].Order0 != TileSequence) {
+        if (Sequencedata[0].Order0 !== TileSequence) {
           if (NewSequencedata.length > 0) {
             await UpdateTileSequence(NewSequencedata);
           }
@@ -1190,6 +1206,7 @@ export default function Master({ props }: any): JSX.Element {
       setShowLoader({ display: "none" });
       fetchData();
       closePanel();
+      setAlertMsg(DisplayLabel?.SubmitMsg || "");
       setisPopupVisible(true);
 
     }
@@ -1254,6 +1271,7 @@ export default function Master({ props }: any): JSX.Element {
                           errorMessage={TileError}
                           value={TileName}
                           onChange={(el: React.ChangeEvent<HTMLInputElement>) => setTileName(el.target.value)}
+                          componentRef={(input: any) => (inputRefs.current["TileName"] = input)}
                         />
                       </div>
                     </div>
@@ -1266,6 +1284,7 @@ export default function Master({ props }: any): JSX.Element {
                           type="file"
                           errorMessage={attachmentErr}
                           accept=".png, .jpg, .jpeg"
+                          componentRef={(input: any) => (inputRefs.current["Attachment"] = input)}
                         />
                         {/* {attachments} */}
                         {selectedFile && <p>Selected File:{selectedFile.name}</p>}
@@ -1284,6 +1303,7 @@ export default function Master({ props }: any): JSX.Element {
                           showHiddenInUI={false}
                           principalTypes={[PrincipalType.User, PrincipalType.SharePointGroup, PrincipalType.SecurityGroup]}
                           defaultSelectedUsers={isEditMode ? assignEmail : undefined}
+                          ref={(input: any) => (inputRefs.current["AccessTileUser"] = input)}
                         />
 
                       </div>
@@ -1322,6 +1342,7 @@ export default function Master({ props }: any): JSX.Element {
                           showHiddenInUI={false}
                           principalTypes={[PrincipalType.User, PrincipalType.SharePointGroup, PrincipalType.SecurityGroup]}
                           defaultSelectedUsers={isEditMode ? TileAdminID : undefined}
+                          ref={(input: any) => (inputRefs.current["TileAdminUser"] = input)}
                         />
                       </div>
                     </div>
@@ -1340,6 +1361,7 @@ export default function Master({ props }: any): JSX.Element {
                               onChange={handleorder0DataDropdownChange}
                               isSearchable
                               placeholder={DisplayLabel?.Selectanoption}
+                              ref={(input: any) => (inputRefs.current["Order"] = input)}
                             />
                             {TileSelectorderErr && <p style={{ color: "rgb(164, 38, 44)" }}>{TileSelectorderErr}</p>}
                           </>
@@ -1743,6 +1765,7 @@ export default function Master({ props }: any): JSX.Element {
                               isSearchable
                               placeholder={DisplayLabel?.Selectanoption}
                               errorMessage={TileRedundancyDaysErr}
+                              ref={(input: any) => (inputRefs.current["Redundancy"] = input)}
                             />
                             {TileRedundancyDaysErr && <p style={{ color: "rgb(164, 38, 44)" }}>{TileRedundancyDaysErr}</p>}
                           </div>
@@ -1764,6 +1787,7 @@ export default function Master({ props }: any): JSX.Element {
                               value={ArchiveVersions}
                               errorMessage={TileArchiveVersionErr}
                               onChange={(el: React.ChangeEvent<HTMLInputElement>) => setArchiveVersions(el.target.value)}
+                              componentRef={(input: any) => (inputRefs.current["Archive"] = input)}
                             />
                           </div>
                         </div>
@@ -1789,7 +1813,7 @@ export default function Master({ props }: any): JSX.Element {
           </div>
 
         </Panel>
-        <PopupBox isPopupBoxVisible={isPopupVisible} hidePopup={hidePopup} />
+        <PopupBox isPopupBoxVisible={isPopupVisible} hidePopup={hidePopup} msg={alertMsg} />
       </div>
     </div >
   );
@@ -1822,7 +1846,6 @@ export default function Master({ props }: any): JSX.Element {
             count++;
             if (count === IListItem.length) {
               createAllColumns(IListItem);
-              isEditMode ? "" : breakRoleInheritanceForLib(props.context, TileName.replace(/[^a-zA-Z0-9]/g, ''), permission);
               console.log("GUID", ListGuid);
             }
           });
@@ -1999,6 +2022,7 @@ export default function Master({ props }: any): JSX.Element {
           if (columnCount === ColumnsObj.length && listCount === IListItem.length) {
 
             fetchData();
+            setAlertMsg(DisplayLabel?.SubmitMsg || "");
             setisPopupVisible(true);
           }
         });

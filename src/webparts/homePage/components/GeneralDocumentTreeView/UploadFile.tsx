@@ -26,6 +26,7 @@ interface IUploadFileProps {
 }
 function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPath, libName, folderName, files, folderObject, LibraryDetails }: IUploadFileProps) {
     // const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const inValidExtensions = ["exe", "mp4", "mp3"];
     const DisplayLabel: ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}');
     const [configData, setConfigData] = useState<any[]>([]);
     const [dynamicControl, setDynamicControl] = useState<any[]>([]);
@@ -43,6 +44,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
     const [isPopupBoxVisible, setIsPopupBoxVisible] = useState<boolean>(false);
     const [showLoader, setShowLoader] = useState({ display: "none" });
     const [fileKey, setFileKey] = useState<number>(Date.now());
+    const [alertMsg, setAlertMsg] = useState("");
 
     const peoplePickerContext: IPeoplePickerContext = {
         absoluteUrl: context.pageContext.web.absoluteUrl,
@@ -211,6 +213,10 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
             setAttachmentErr(DisplayLabel.ThisFieldisRequired);
             return false;
         }
+        if (inValidExtensions.includes(attachment.name.split('.').pop())) {
+            setAttachmentErr(DisplayLabel.InvalidFileFormat);
+            return false;
+        }
         setAttachmentErr('');
         const newAttachment = {
             attachment: attachment,
@@ -321,6 +327,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
             if (count === attachmentsFiles.length) {
                 dismissUploadPanel();
                 setShowLoader({ display: "none" });
+                setAlertMsg(DisplayLabel.SubmitMsg);
                 setIsPopupBoxVisible(true);
             }
 
@@ -469,7 +476,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                     </div>
                 </div>
             </Panel>
-            <PopupBox isPopupBoxVisible={isPopupBoxVisible} hidePopup={hidePopup} />
+            <PopupBox isPopupBoxVisible={isPopupBoxVisible} hidePopup={hidePopup} msg={alertMsg} />
             <div className={cls["modal"]} style={showLoader}></div>
         </div>
     );

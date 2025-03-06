@@ -159,4 +159,23 @@ export interface ILabel {
     CheckIn: string;
     CheckoutConfirm: string;
     CheckedOutThisItem: string;
+    InvalidFileFormat: string;
+
+    SubmitMsg: string;
+    ApprovedMsg: string;
+    DeletedMsg: string;
+    RejectedMsg: string;
+    FolderUpdatedMsg: string;
+    RestoreDoc: string;
+    StopInheritingSuccessMsg: string;
+    AccessHasGranted: string;
+    AccessHasRemoved: string;
+    CheckedOutSuccessfully: string;
+    CheckedInSuccessfully: string;
+    DiscardedCheckOut: string;
+
+    ParentFolder: string;
+    FolderTemplateCombination: string;
+    History: string;
+    ActionBy: string;
 }

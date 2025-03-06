@@ -7,6 +7,7 @@ import ReactTableComponent from '../ResuableComponents/ReusableDataTable';
 import { getTemplate, getTemplateDataByID, SaveTemplateMaster, UpdateTemplateMaster } from "../../../../Services/TemplateService";
 import PopupBox from "../ResuableComponents/PopupBox";
 import cls from '../HomePage.module.scss';
+import { Link } from "react-router-dom";
 
 
 export default function TemplateMaster({ props }: any): JSX.Element {
@@ -22,6 +23,7 @@ export default function TemplateMaster({ props }: any): JSX.Element {
     const [MainTableSetdata, setData] = useState<any[]>([]);
     const [TemplateCurrentEditID, setTemplateCurrentEditID] = useState<number>(0);
     const [isPopupVisible, setisPopupVisible] = useState(false);
+    const [alertMsg, setAlertMsg] = useState("");
 
     useEffect(() => {
         let DisplayLabel: ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}');
@@ -144,7 +146,14 @@ export default function TemplateMaster({ props }: any): JSX.Element {
             isValidForm = false;
         }
 
-
+        if (isDuplicate && isTemplateEditMode) {
+            MainTableSetdata.map((Data) => {
+                if (Data.Name.toLowerCase() === Template.toLowerCase() && Data.ID !== TemplateCurrentEditID) {
+                    setTemplateErr(DisplayLabel?.TemplateNameIsAlreadyExist as string);
+                    isValidForm = false;
+                }
+            });
+        }
         return isValidForm;
     };
 
@@ -161,7 +170,7 @@ export default function TemplateMaster({ props }: any): JSX.Element {
 
             let option = {
                 __metadata: { type: "SP.Data.DMS_x005f_TemplateListItem" },
-                Name: Template,
+                Name: Template.trim(),
                 Active: isActiveTemplateStatus
 
             };
@@ -174,6 +183,7 @@ export default function TemplateMaster({ props }: any): JSX.Element {
 
             setShowLoader({ display: "none" });
             setisTemplatePanelOpen(false);
+            setAlertMsg(DisplayLabel?.SubmitMsg as string);
             setisPopupVisible(true);
             fetchData();
 
@@ -189,6 +199,14 @@ export default function TemplateMaster({ props }: any): JSX.Element {
 
     return (
         <div>
+            <nav aria-label="breadcrumb">
+                <ol className="breadcrumb breadcrumb-style2">
+                    <li className="breadcrumb-item">
+                        <Link to="/" style={{ textDecoration: "none" }}>Dashboard</Link>
+                    </li>
+                    <li className="breadcrumb-item active">Template Master</li>
+                </ol>
+            </nav>
             <div className={styles.alignbutton} style={{ paddingRight: '0px' }}>
                 <DefaultButton id="requestButton" className={styles['primary-btn']} text={DisplayLabel?.Add} onClick={openTemplatePanel}  ></DefaultButton>
             </div>
@@ -202,7 +220,7 @@ export default function TemplateMaster({ props }: any): JSX.Element {
                         PagedefaultSize={10}
                         TableRows={1}
                         TableshowPagination={MainTableSetdata.length > 10}
-                    //TableshowFilter={true}
+                        TableshowFilter={true}
                     />
                 </Stack.Item>
             </Stack>
@@ -252,7 +270,7 @@ export default function TemplateMaster({ props }: any): JSX.Element {
 
 
             </Panel>
-            <PopupBox isPopupBoxVisible={isPopupVisible} hidePopup={hidePopup} />
+            <PopupBox isPopupBoxVisible={isPopupVisible} hidePopup={hidePopup} msg={alertMsg} />
         </div>
     );
 }

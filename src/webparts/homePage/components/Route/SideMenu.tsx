@@ -32,7 +32,7 @@ const SideMenu: React.FC<ISideMenu> = ({ onclickbutton, props }) => {
 
     console.log(userData);
 
-  }
+  };
 
   async function setLogo(WebUrl: string, spHttpClient: any,): Promise<any> {
 
@@ -58,7 +58,7 @@ const SideMenu: React.FC<ISideMenu> = ({ onclickbutton, props }) => {
         console.log(new Error(errorMessage));
       }
 
-    })
+    });
 
   }
 
@@ -113,10 +113,10 @@ const SideMenu: React.FC<ISideMenu> = ({ onclickbutton, props }) => {
         const errorMessage: string = `Error loading current user: ${response.status} - ${responseText}`;
         console.log(new Error(errorMessage));
       }
-    })
+    });
 
   }
-  const [allMenu, setAllMenu] = useState([])
+  const [allMenu, setAllMenu] = useState([]);
   async function _loadCurrentUserDisplayName(WebUrl: string, spHttpClient: any, option: string) {
 
     let URL = `${WebUrl}/_api/web/lists/getByTitle('GEN_Navigation')/items?$select=*,ParentMenuId/Id,ParentMenuId/MenuName,Permission/ID&$expand=ParentMenuId,Permission&$orderby=OrderNo&$filter=Active eq '1' and (${option})&$top=500`;
@@ -139,7 +139,7 @@ const SideMenu: React.FC<ISideMenu> = ({ onclickbutton, props }) => {
         const errorMessage: string = `Error loading current user: ${response.status} - ${responseText}`;
         console.log(new Error(errorMessage));
       }
-    })
+    });
   }
 
 
@@ -153,15 +153,15 @@ const SideMenu: React.FC<ISideMenu> = ({ onclickbutton, props }) => {
 
 
       if (el.External_Url) {
-        finalMenuHtml = <>{childData.length > 0 ? getChildDataFinal(childData, el) : <MenuItem component={<Link to={el.URL} />} icon={<Icon iconName={el.IconClass} style={{ color: '#3f4254', fontSize: '18px' }} />}>{CheckNextTab(el.Next_Tab)}{el.MenuName}</MenuItem>}</>
+        finalMenuHtml = <>{childData.length > 0 ? getChildDataFinal(childData, el) : <MenuItem component={<Link to={el.URL} />} icon={<Icon iconName={el.IconClass} style={{ color: '#3f4254', fontSize: '18px' }} />}>{CheckNextTab(el.Next_Tab)}{el.MenuName}</MenuItem>}</>;
 
       } else {
-        finalMenuHtml = <>{childData.length > 0 ? getChildDataFinal(childData, el) : <MenuItem component={<Link to={el.URL} />} icon={<Icon iconName={el.IconClass} style={{ color: '#3f4254', fontSize: '18px' }} />}>{CheckNextTab(el.Next_Tab)}{el.MenuName}</MenuItem>}</>
+        finalMenuHtml = <>{childData.length > 0 ? getChildDataFinal(childData, el) : <MenuItem component={<Link to={el.URL} />} icon={<Icon iconName={el.IconClass} style={{ color: '#3f4254', fontSize: '18px' }} />}>{CheckNextTab(el.Next_Tab)}{el.MenuName}</MenuItem>}</>;
       }
       // }
       return finalMenuHtml;
-    })
-    console.log(links)
+    });
+    console.log(links);
     return links;
   }
   function getFirstLevel(item: any) {
@@ -190,13 +190,13 @@ const SideMenu: React.FC<ISideMenu> = ({ onclickbutton, props }) => {
 
           let childData = getEqualToHeaderData(el.Id, data);
           if (childData.length > 0) {
-            submenu = <MenuItem icon={<Icon iconName={el.IconClass} style={{ color: '#b5b5c3', fontSize: '11px' }} />}>{el.MenuName}</MenuItem>
+            submenu = <MenuItem icon={<Icon iconName={el.IconClass} style={{ color: '#b5b5c3', fontSize: '11px' }} />}>{el.MenuName}</MenuItem>;
           } else {
             if (el.External_Url) {
-              submenu = <MenuItem component={<Link to={el.URL} />} icon={<Icon iconName={el.IconClass} style={{ color: '#b5b5c3', fontSize: '11px' }} />}>{el.MenuName}</MenuItem>
+              submenu = <MenuItem component={<Link to={el.URL} />} icon={<Icon iconName={el.IconClass} style={{ color: '#b5b5c3', fontSize: '11px' }} />}>{el.MenuName}</MenuItem>;
 
             } else {
-              submenu = <MenuItem component={<Link to="/" />} icon={<Icon iconName={el.IconClass} style={{ color: '#b5b5c3', fontSize: '11px' }} />}>{el.MenuName}</MenuItem>
+              submenu = <MenuItem component={<Link to={el.URL} />} icon={<Icon iconName={el.IconClass} style={{ color: '#b5b5c3', fontSize: '11px' }} />}>{el.MenuName}</MenuItem>;
 
             }
           }
@@ -210,7 +210,7 @@ const SideMenu: React.FC<ISideMenu> = ({ onclickbutton, props }) => {
 
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
-    onclickbutton(collapsed)
+    onclickbutton(collapsed);
   };
 
   const handleMouseEnter = () => {
@@ -284,9 +284,9 @@ const SideMenu: React.FC<ISideMenu> = ({ onclickbutton, props }) => {
 
 
 
-  )
+  );
 
-}
+};
 
 
 export default SideMenu;

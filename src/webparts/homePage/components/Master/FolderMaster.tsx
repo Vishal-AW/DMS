@@ -9,6 +9,7 @@ import ReactTableComponent from '../ResuableComponents/ReusableDataTable';
 import Select from "react-select";
 import cls from '../HomePage.module.scss';
 import PopupBox from "../ResuableComponents/PopupBox";
+import { Link } from "react-router-dom";
 
 
 export default function FolderMaster({ props }: any): JSX.Element {
@@ -35,6 +36,8 @@ export default function FolderMaster({ props }: any): JSX.Element {
     const [FolderNameErr, setFolderNameErr] = useState("");
     const [TemplatedropdownErr, setTemplatedropdownErr] = useState("");
     const [ParentropdownErr, setParentropdownErr] = useState("");
+    const [alertMsg, setAlertMsg] = useState("");
+
 
 
 
@@ -81,10 +84,10 @@ export default function FolderMaster({ props }: any): JSX.Element {
             Cell: ({ row }: { row: any; }) => row._index + 1,
         },
         { Header: DisplayLabel?.FolderName, accessor: "FolderName" },
-        { Header: DisplayLabel?.FolderName, accessor: "ParentFolderId.FolderName" },
+        { Header: DisplayLabel?.ParentFolder, accessor: "ParentFolderId.FolderName" },
         { Header: DisplayLabel?.TemplateName, accessor: "TemplateName.Name" },
         {
-            Header: DisplayLabel?.ActiveStatus,
+            Header: DisplayLabel?.Active,
             accessor: "Active",
             Cell: ({ row }: { row: any; }) => (row.Active === true ? "Yes" : "No")
         },
@@ -218,13 +221,14 @@ export default function FolderMaster({ props }: any): JSX.Element {
         clearError();
     };
     const openFolderPanel = () => {
-        console.log(MainTableSetdata);
+        clearFolderField();
         setisFolderPanelOpen(true);
         setisFolderEditMode(false);
 
     };
 
     const closeFolderPanel = () => {
+        clearFolderField();
         setisFolderPanelOpen(false);
     };
 
@@ -260,6 +264,23 @@ export default function FolderMaster({ props }: any): JSX.Element {
                 isValidForm = false;
             }
         }
+        const isDuplicate = MainTableSetdata.some(
+            (Data) => Data.FolderName.toLowerCase() === FolderName.toLowerCase() && Data.TemplateNameId === TemplatedropdownID.value
+        );
+
+        if (isDuplicate && !isFolderEditMode) {
+            setFolderNameErr(DisplayLabel?.FolderTemplateCombination as string);
+            isValidForm = false;
+        }
+
+        if (isDuplicate && isFolderEditMode) {
+            MainTableSetdata.map((Data) => {
+                if (Data.FolderName.toLowerCase() === FolderName.toLowerCase() && Data.ID !== FolderCurrentEditID) {
+                    setFolderNameErr(DisplayLabel?.FolderTemplateCombination as string);
+                    isValidForm = false;
+                }
+            });
+        }
 
         return isValidForm;
     };
@@ -285,7 +306,7 @@ export default function FolderMaster({ props }: any): JSX.Element {
                 IsParentFolder: boolean;
             } = {
                 __metadata: { type: "SP.Data.DMS_x005f_Mas_x005f_FolderMasterListItem" },
-                FolderName: FolderName,
+                FolderName: FolderName.trim(),
                 TemplateNameId: TemplatedropdownID.value,
                 Active: isActiveFolderStatus,
                 IsParentFolder: isChildFolderStatus,
@@ -302,6 +323,7 @@ export default function FolderMaster({ props }: any): JSX.Element {
 
             setShowLoader({ display: "none" });
             setisFolderPanelOpen(false);
+            setAlertMsg(DisplayLabel?.SubmitMsg || "");
             setisPopupVisible(true);
             fetchData();
 
@@ -313,6 +335,14 @@ export default function FolderMaster({ props }: any): JSX.Element {
 
     return (
         <div>
+            <nav aria-label="breadcrumb">
+                <ol className="breadcrumb breadcrumb-style2">
+                    <li className="breadcrumb-item">
+                        <Link to="/" style={{ textDecoration: "none" }}>Dashboard</Link>
+                    </li>
+                    <li className="breadcrumb-item active">Folder Master</li>
+                </ol>
+            </nav>
             <div className={styles.alignbutton} style={{ paddingRight: '0px' }}>
                 <DefaultButton id="requestButton" className={styles['primary-btn']} text={DisplayLabel?.Add} onClick={openFolderPanel}  ></DefaultButton>
             </div>
@@ -326,7 +356,7 @@ export default function FolderMaster({ props }: any): JSX.Element {
                         PagedefaultSize={10}
                         TableRows={1}
                         TableshowPagination={MainTableSetdata.length > 10}
-                    //TableshowFilter={true}
+                        TableshowFilter={true}
                     />
                 </Stack.Item>
             </Stack>
@@ -423,7 +453,7 @@ export default function FolderMaster({ props }: any): JSX.Element {
 
                 <div className={cls["modal"]} style={showLoader}></div>
             </Panel>
-            <PopupBox isPopupBoxVisible={isPopupVisible} hidePopup={hidePopup} />
+            <PopupBox isPopupBoxVisible={isPopupVisible} hidePopup={hidePopup} msg={alertMsg} />
         </div>
     );
 

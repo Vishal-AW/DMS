@@ -95,11 +95,11 @@ export default function Dashboard({ props }: any): JSX.Element {
             dinamicurl = dinamicurl + " or  Permission/ID eq " + GroupData[i].Id + " ";
           }
         }
-        if (userRole == "ProjectAdmin") {
+        if (userRole === "ProjectAdmin") {
           query = WebUrl + "/_api/web/lists/getByTitle('DMS_Mas_Tile')/items?$select=*,ID,TileName,TileImageURL,Permission/ID,Documentpath,Active,Order0,AllowApprover,LibraryName,LibGuidName,AllowApprover,IsArchiveRequired&$expand=Permission&$filter=Active eq 1&$orderby=Order0";
         }
         else {
-          query = WebUrl + "/_api/web/lists/getByTitle('DMS_Mas_Tile')/items?$select=*,ID,TileName,TileImageURL,Permission/ID,Documentpath,Active,Order0,AllowApprover,LibraryName,LibGuidName,AllowApprover,IsArchiveRequired&$expand=Permission&$filter=Active eq 1&$orderby=Order0";
+          query = WebUrl + `/_api/web/lists/getByTitle('DMS_Mas_Tile')/items?$select=*,ID,TileName,TileImageURL,Permission/ID,Documentpath,Active,Order0,AllowApprover,LibraryName,LibGuidName,AllowApprover,IsArchiveRequired&$expand=Permission&$filter=Active eq 1 and ${dinamicurl}&$orderby=Order0`;
         }
 
         await GetListData(query).then(async (responseData: any) => {
