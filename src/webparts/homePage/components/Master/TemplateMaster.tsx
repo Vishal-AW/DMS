@@ -60,12 +60,31 @@ export default function TemplateMaster({ props }: any): JSX.Element {
             Header: DisplayLabel?.SrNo,
             accessor: "row._index",
             Cell: ({ row }: { row: any; }) => row._index + 1,
+            filterable: false,
         },
-        { Header: DisplayLabel?.TemplateName, accessor: "Name" },
+        {
+            Header: DisplayLabel?.TemplateName, accessor: "Name",
+            filterMethod: (filter: any, row: any) => row[filter.id]?.toLowerCase().includes(filter.value?.toLowerCase() || "")
+        },
         {
             Header: DisplayLabel?.ActiveStatus,
             accessor: "Active",
-            Cell: ({ row }: { row: any; }) => (row.Active === true ? "Yes" : "No")
+            Cell: ({ row }: { row: any; }) => (row.Active === true ? "Yes" : "No"),
+            Filter: ({ filter, onChange }: { filter: any; onChange: (value: any) => void; }) => (
+                <select
+                    value={filter ? filter.value : ""}
+                    onChange={(e) => onChange(e.target.value || undefined)}
+                    style={{ width: "100%", padding: "4px", borderRadius: "4px" }}
+                >
+                    <option value="">All</option>
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                </select>
+            ),
+            filterMethod: (filter: any, row: any) => {
+                if (!filter.value) return true;
+                return String(row[filter.id]) === filter.value;
+            }
         },
         {
             Header: DisplayLabel?.Action,
@@ -73,6 +92,7 @@ export default function TemplateMaster({ props }: any): JSX.Element {
             Cell: ({ row }: { row: any; }) => (
                 <FontIcon aria-label="Edit" onClick={() => openEditTemplatePanel(row._original.Id)} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer' }}></FontIcon>
             ),
+            filterable: false,
 
         },
     ];
@@ -96,7 +116,6 @@ export default function TemplateMaster({ props }: any): JSX.Element {
 
     const hidePopup = React.useCallback(() => {
         setisPopupVisible(false);
-        clearTemplatedField();
         closeTemplatePanel();
         setShowLoader({ display: "none" });
     }, [isPopupVisible]);
@@ -118,6 +137,7 @@ export default function TemplateMaster({ props }: any): JSX.Element {
     };
 
     const closeTemplatePanel = () => {
+        clearTemplatedField();
         setisTemplatePanelOpen(false);
     };
 
@@ -133,7 +153,7 @@ export default function TemplateMaster({ props }: any): JSX.Element {
         const isDuplicate = MainTableSetdata.some(
             (Data) => Data.Name.toLowerCase() === Template.toLowerCase()
         );
-        if (Template === "" || Template === undefined || Template === null) {
+        if (Template.trim() === "" || Template === undefined || Template === null) {
             setTemplateErr(DisplayLabel?.ThisFieldisRequired as string);
             isValidForm = false;
         }
@@ -183,7 +203,7 @@ export default function TemplateMaster({ props }: any): JSX.Element {
 
             setShowLoader({ display: "none" });
             setisTemplatePanelOpen(false);
-            setAlertMsg(DisplayLabel?.SubmitMsg as string);
+            setAlertMsg((isTemplateEditMode ? DisplayLabel?.UpdateAlertMsg : DisplayLabel?.SubmitMsg) || "");
             setisPopupVisible(true);
             fetchData();
 

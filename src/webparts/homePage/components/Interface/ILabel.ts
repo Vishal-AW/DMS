@@ -178,4 +178,7 @@ export interface ILabel {
     FolderTemplateCombination: string;
     History: string;
     ActionBy: string;
+    ColumnNameIsAlreadyExist: string;
+    ValueAlreadyExist: string;
+    UpdateAlertMsg: string;
 }

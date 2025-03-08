@@ -446,7 +446,13 @@ export default function Master({ props }: any): JSX.Element {
   };
 
   const handleInputChange1 = async (option: any) => {
-    setFormData({ ...formData, field: option.value });
+    setFormData({
+      ...formData, field: option.value,
+      IsRequired: false,
+      IsActiveControl: true,
+      IsFieldAllowInFile: false,
+      isShowAsFilter: false,
+    });
 
     const TileDataforDropdown = await getConfigActive(props.SiteURL, props.spHttpClient);
     const TileDataValueforDropdown = TileDataforDropdown.value;

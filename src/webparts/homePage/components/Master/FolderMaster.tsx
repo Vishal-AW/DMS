@@ -4,7 +4,7 @@ import styles from "./Master.module.scss";
 import { useEffect, useState } from "react";
 import { ILabel } from "../Interface/ILabel";
 import { getParent, SaveFolderMaster, UpdateFolderMaster, getTemplateDataByID, getChildDataByID } from "../../../../Services/FolderMasterService";
-import { getTemplate } from "../../../../Services/TemplateService";
+import { getTemplateActive } from "../../../../Services/TemplateService";
 import ReactTableComponent from '../ResuableComponents/ReusableDataTable';
 import Select from "react-select";
 import cls from '../HomePage.module.scss';
@@ -82,14 +82,37 @@ export default function FolderMaster({ props }: any): JSX.Element {
             Header: DisplayLabel?.SrNo,
             accessor: "row._index",
             Cell: ({ row }: { row: any; }) => row._index + 1,
+            filterable: false,
         },
-        { Header: DisplayLabel?.FolderName, accessor: "FolderName" },
-        { Header: DisplayLabel?.ParentFolder, accessor: "ParentFolderId.FolderName" },
+        {
+            Header: DisplayLabel?.FolderName, accessor: "FolderName",
+            filterMethod: (filter: any, row: any) => row[filter.id]?.toLowerCase().includes(filter.value?.toLowerCase() || "")
+
+        },
+        {
+            Header: DisplayLabel?.ParentFolder, accessor: "ParentFolderId.FolderName",
+            filterMethod: (filter: any, row: any) => row[filter.id]?.toLowerCase().includes(filter.value?.toLowerCase() || "")
+        },
         { Header: DisplayLabel?.TemplateName, accessor: "TemplateName.Name" },
         {
             Header: DisplayLabel?.Active,
             accessor: "Active",
-            Cell: ({ row }: { row: any; }) => (row.Active === true ? "Yes" : "No")
+            Cell: ({ row }: { row: any; }) => (row.Active === true ? "Yes" : "No"),
+            Filter: ({ filter, onChange }: { filter: any; onChange: (value: any) => void; }) => (
+                <select
+                    value={filter ? filter.value : ""}
+                    onChange={(e) => onChange(e.target.value || undefined)}
+                    style={{ width: "100%", padding: "4px", borderRadius: "4px" }}
+                >
+                    <option value="">All</option>
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                </select>
+            ),
+            filterMethod: (filter: any, row: any) => {
+                if (!filter.value) return true;
+                return String(row[filter.id]) === filter.value;
+            }
         },
         {
             Header: DisplayLabel?.Action,
@@ -97,7 +120,7 @@ export default function FolderMaster({ props }: any): JSX.Element {
             Cell: ({ row }: { row: any; }) => (
                 <FontIcon aria-label="Edit" onClick={() => openEditFolderPanel(row._original.Id)} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer' }}></FontIcon>
             ),
-
+            filterable: false,
         },
 
     ];
@@ -120,19 +143,7 @@ export default function FolderMaster({ props }: any): JSX.Element {
 
         //  await setTemplatedropdownID({ value: EditFolderData[0].ID, label: EditFolderData[0].TemplateName });
 
-        const fetchTemplateData = await getTemplate(props.SiteURL, props.spHttpClient);
-
-        let TemplateData = fetchTemplateData.value;
-
-        const TemplateOptions = TemplateData.map((items: any) => ({
-            value: items.ID,
-            label: items.Name
-        }));
-
-        setTemplateData(TemplateOptions);
-
-
-        const ApplyTo = TemplateOptions.filter((item: any) => item.value === EditFolderData[0].TemplateNameId);
+        const ApplyTo = TemplateData.filter((item: any) => item.value === EditFolderData[0].TemplateNameId);
         const optionsValues = ApplyTo.map((item: any) => ({
             label: item,
             value: item,
@@ -171,7 +182,7 @@ export default function FolderMaster({ props }: any): JSX.Element {
 
     const TemplateMasterData = async () => {
 
-        const fetchTemplateData = await getTemplate(props.SiteURL, props.spHttpClient);
+        const fetchTemplateData = await getTemplateActive(props.SiteURL, props.spHttpClient);
 
         let TemplateData = fetchTemplateData.value;
 
@@ -323,7 +334,7 @@ export default function FolderMaster({ props }: any): JSX.Element {
 
             setShowLoader({ display: "none" });
             setisFolderPanelOpen(false);
-            setAlertMsg(DisplayLabel?.SubmitMsg || "");
+            setAlertMsg((isFolderEditMode ? DisplayLabel?.UpdateAlertMsg : DisplayLabel?.SubmitMsg) || "");
             setisPopupVisible(true);
             fetchData();
 

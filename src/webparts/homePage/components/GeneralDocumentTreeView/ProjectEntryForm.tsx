@@ -289,12 +289,30 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                             />
                         </div>
                     );
+                case "Date and Time":
+                    return (
+                        <div className={dynamicControl.length > 5 ? styles.col6 : styles.col12} key={index}>
+                            <TextField
+                                type={"date"}
+                                label={item.Title}
+                                value={dynamicValues[item.InternalTitleName] || ""}
+                                onChange={(ev, value) => {
+                                    console.log(value);
+                                    handleInputChange(item.InternalTitleName, value);
+                                }}
+                                required={item.IsRequired}
+                                errorMessage={dynamicValuesErr[item.InternalTitleName]}
+                                disabled={isDisabled}
+                                componentRef={(input: any) => (inputRefs.current[item.InternalTitleName] = input)}
+                            />
+                        </div>
+                    );
 
                 default:
                     return (
                         <div className={dynamicControl.length > 5 ? styles.col6 : styles.col12} key={index}>
                             <TextField
-                                type={item.ColumnType === "Date and Time" ? "date" : "text"}
+                                type={"text"}
                                 label={item.Title}
                                 value={dynamicValues[item.InternalTitleName] || ""}
                                 onChange={(ev, value) => handleInputChange(item.InternalTitleName, removeSepcialCharacters(value))}

@@ -194,6 +194,9 @@ export async function GetAllLabel(WebUrl: string, spHttpClient: SPHttpClient, La
       FolderTemplateCombination: getValue("FolderTemplateCombination", data, Language),
       History: getValue("History", data, Language),
       ActionBy: getValue("ActionBy", data, Language),
+      ColumnNameIsAlreadyExist: getValue("ColumnNameIsAlreadyExist", data, Language),
+      ValueAlreadyExist: getValue("ValueAlreadyExist", data, Language),
+      UpdateAlertMsg: getValue("UpdateAlertMsg", data, Language),
 
     };
 
