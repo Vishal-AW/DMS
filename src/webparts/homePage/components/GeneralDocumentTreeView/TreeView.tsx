@@ -73,7 +73,7 @@ export default function TreeView({ props }: any) {
 
 
     if (tileObject === null) {
-        location.href = "#/Dashboard";
+        location.href = "#/";
         location.reload();
     }
 
@@ -219,15 +219,18 @@ export default function TreeView({ props }: any) {
         const button = libDetails.ShowMoreActions ? libDetails.ShowMoreActions.split(";") : [];
         const menuItems: any = [
             {
-                key: 'deleteDocument',
-                text: DisplayLabel.Delete,
-                onClick: () => commonFunction("Delete", item),
-            }, {
                 key: 'docDetails',
                 text: DisplayLabel.History,
                 onClick: () => commonFunction("History", item)
             }
         ];
+        if (libDetails.TileAdminId === props.userID || item._original.ListItemAllFields.AuthorId === props.userID) {
+            menuItems.push({
+                key: 'deleteDocument',
+                text: DisplayLabel.Delete,
+                onClick: () => commonFunction("Delete", item),
+            });
+        }
         button.map((el: string) => {
             menuItems.push({
                 key: el,
@@ -317,7 +320,7 @@ export default function TreeView({ props }: any) {
         }
         else if (action === "History") {
             const HistoryData = await getHistoryByID(props.SiteURL, props.spHttpClient, item._original.ListItemAllFields.Id);
-            const bindData = HistoryData.value.map((el: any, index: number) => <><td>{index + 1}</td><td>{el.Author.Title}</td><td>{el.Action}</td><td>{el.InternalComment}</td></>);
+            const bindData = HistoryData.value.map((el: any, index: number) => <tr><td>{index + 1}</td><td>{el.Author.Title}</td><td>{el.Action}</td><td>{el.InternalComment}</td></tr>);
             setPanelForm(<table className="addoption" style={{ width: '100%', marginTop: '20px', borderCollapse: 'collapse' }}>
                 <thead>
                     <tr>
@@ -329,7 +332,7 @@ export default function TreeView({ props }: any) {
                 </thead>
                 <tbody>{bindData}</tbody>
             </table>);
-            setPanelTitle(DisplayLabel.Versions);
+            setPanelTitle(DisplayLabel.History);
             setIsOpenCommonPanel(true);
         }
     };
@@ -502,12 +505,18 @@ export default function TreeView({ props }: any) {
     };
 
     const bindMenu = (node: any, afolderPath: string) => {
-        return [
-            {
+
+
+
+        const menuItems: any = [];
+        if (isValidUser || libDetails.TileAdminId === props.userID) {
+            menuItems.push({
                 key: 'advancePermission',
                 text: DisplayLabel.AdvancePermission,
                 onClick: () => { setItemId(node.ListItemAllFields.Id); setIsPanelOpen(true); },
-            },
+            });
+        }
+        menuItems.push(
             {
                 key: 'divider_1',
                 itemType: ContextualMenuItemType.Divider,
@@ -530,7 +539,8 @@ export default function TreeView({ props }: any) {
                 text: DisplayLabel.Edit,
                 onClick: () => { setActionFolderPath(afolderPath); setProjectUpdateData(node); setIsCreateProjectPopupOpen(true); setFormType("EditForm"); },
             },
-        ];
+        );
+        return menuItems;
     };
     const onShowContextualMenu = useCallback((ev: React.MouseEvent<HTMLElement>, nodeId: string) => {
         ev.preventDefault(); // don't navigate

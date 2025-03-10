@@ -517,6 +517,8 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
             setSuffix(folderObject.ListItemAllFields.DocumentSuffix);
             folderObject.ListItemAllFields.DocumentSuffix === "Other" ? setOtherSuffix(folderObject.ListItemAllFields.OtherSuffix) : "";
         }
+        setCreateStructure(folderObject.ListItemAllFields.CreateFolder);
+        setFolderTemplate(folderObject.ListItemAllFields.Template);
         if (libraryDetails.AllowApprover) {
             setIsApprovalRequired(folderObject.ListItemAllFields.DefineRole);
             if (folderObject.ListItemAllFields.DefineRole) {
@@ -744,7 +746,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                             <Toggle
                                 label={DisplayLabel.CreateStructure}
                                 onChange={() => { setCreateStructure((pre) => !pre); }}
-                                disabled={isDisabled}
+                                disabled={isDisabled || FormType === "EditForm"}
                                 checked={createStructure}
                             />
                         </div>
@@ -758,6 +760,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                                     isSearchable
                                     placeholder={DisplayLabel?.Selectanoption}
                                     ref={(input: any) => (inputRefs.current["CreateStructure"] = input)}
+                                    isDisabled={isDisabled || FormType === "EditForm"}
                                 />
                                 {/* {SuffixErr && <p style={{ color: "rgb(164, 38, 44)" }}>{SuffixErr}</p>} */}
                             </div> : <></>

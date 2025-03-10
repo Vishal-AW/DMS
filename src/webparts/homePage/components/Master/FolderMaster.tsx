@@ -276,7 +276,7 @@ export default function FolderMaster({ props }: any): JSX.Element {
             }
         }
         const isDuplicate = MainTableSetdata.some(
-            (Data) => Data.FolderName.toLowerCase() === FolderName.toLowerCase() && Data.TemplateNameId === TemplatedropdownID.value
+            (Data) => Data.FolderName.toLowerCase() === FolderName.toLowerCase().trim() && Data.TemplateNameId === TemplatedropdownID.value
         );
 
         if (isDuplicate && !isFolderEditMode) {
@@ -286,7 +286,7 @@ export default function FolderMaster({ props }: any): JSX.Element {
 
         if (isDuplicate && isFolderEditMode) {
             MainTableSetdata.map((Data) => {
-                if (Data.FolderName.toLowerCase() === FolderName.toLowerCase() && Data.ID !== FolderCurrentEditID) {
+                if (Data.FolderName.toLowerCase() === FolderName.toLowerCase().trim() && Data.ID !== FolderCurrentEditID) {
                     setFolderNameErr(DisplayLabel?.FolderTemplateCombination as string);
                     isValidForm = false;
                 }

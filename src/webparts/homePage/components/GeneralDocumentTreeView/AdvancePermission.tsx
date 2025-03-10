@@ -65,7 +65,7 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
                 setHasUniquePermission(uniquePermissionResponse.value);
 
                 const memberDataResponse = await getPermission(getMemberQuery, context);
-                setUserData(memberDataResponse.value);
+                setUserData(memberDataResponse?.value || []);
             } catch (error) {
                 console.error("Error binding permissions: ", error);
             }

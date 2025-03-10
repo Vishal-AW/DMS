@@ -485,7 +485,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
             return;
         }
         const isDuplicate = MainTableSetdata.some(
-            (Data) => Data.Title.toLowerCase() === FieldName.toLowerCase()
+            (Data) => Data.Title.toLowerCase() === FieldName.toLowerCase().trim()
         );
         if (/[*|\":<>[\]{}`\\()'!%;@#&$]/.test(FieldName)) {
             setFieldNameErr(DisplayLabel?.SpecialCharacterNotAllowed as string);
@@ -500,7 +500,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
 
         if (isDuplicate && isEditMode) {
             MainTableSetdata.map((Data) => {
-                if (Data.Title.toLowerCase() === FieldName.toLowerCase() && Data.ID !== CurrentEditID) {
+                if (Data.Title.toLowerCase() === FieldName.toLowerCase().trim() && Data.ID !== CurrentEditID) {
                     setFieldNameErr(DisplayLabel?.ColumnNameIsAlreadyExist as string);
                     isValidForm = false;
                     return;

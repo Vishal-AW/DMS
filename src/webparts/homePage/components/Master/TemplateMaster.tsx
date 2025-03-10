@@ -151,7 +151,7 @@ export default function TemplateMaster({ props }: any): JSX.Element {
     const validation = () => {
         let isValidForm = true;
         const isDuplicate = MainTableSetdata.some(
-            (Data) => Data.Name.toLowerCase() === Template.toLowerCase()
+            (Data) => Data.Name.toLowerCase() === Template.toLowerCase().trim()
         );
         if (Template.trim() === "" || Template === undefined || Template === null) {
             setTemplateErr(DisplayLabel?.ThisFieldisRequired as string);
@@ -168,7 +168,7 @@ export default function TemplateMaster({ props }: any): JSX.Element {
 
         if (isDuplicate && isTemplateEditMode) {
             MainTableSetdata.map((Data) => {
-                if (Data.Name.toLowerCase() === Template.toLowerCase() && Data.ID !== TemplateCurrentEditID) {
+                if (Data.Name.toLowerCase() === Template.toLowerCase().trim() && Data.ID !== TemplateCurrentEditID) {
                     setTemplateErr(DisplayLabel?.TemplateNameIsAlreadyExist as string);
                     isValidForm = false;
                 }
@@ -196,7 +196,6 @@ export default function TemplateMaster({ props }: any): JSX.Element {
             };
             if (!isTemplateEditMode)
                 await SaveTemplateMaster(props.SiteURL, props.spHttpClient, option);
-
             else
                 await UpdateTemplateMaster(props.SiteURL, props.spHttpClient, option, TemplateCurrentEditID);
 
