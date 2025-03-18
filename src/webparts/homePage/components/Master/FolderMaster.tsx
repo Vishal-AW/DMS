@@ -93,7 +93,27 @@ export default function FolderMaster({ props }: any): JSX.Element {
             Header: DisplayLabel?.ParentFolder, accessor: "ParentFolderId.FolderName",
             filterMethod: (filter: any, row: any) => row[filter.id]?.toLowerCase().includes(filter.value?.toLowerCase() || "")
         },
-        { Header: DisplayLabel?.TemplateName, accessor: "TemplateName.Name" },
+        {
+            Header: DisplayLabel?.TemplateName, accessor: "TemplateName.Name",
+            Filter: ({ filter, onChange }: { filter: any; onChange: (value: any) => void; }) => (
+                <select
+                    value={filter ? filter.value : ""}
+                    onChange={(e) => onChange(e.target.value || undefined)}
+                    style={{ width: "100%", padding: "4px", borderRadius: "4px" }}
+                >
+                    <option value="">All</option>
+                    {TemplateData?.map((item: any) => (
+                        <option key={item.value} value={item.label}>
+                            {item.label}
+                        </option>
+                    ))}
+                </select>
+            ),
+            filterMethod: (filter: any, row: any) => {
+                if (!filter.value) return true;
+                return row[filter.id] === filter.value;
+            }
+        },
         {
             Header: DisplayLabel?.Active,
             accessor: "Active",
@@ -380,7 +400,7 @@ export default function FolderMaster({ props }: any): JSX.Element {
 
                 onRenderFooterContent={() => (
                     <>
-                        <DefaultButton onClick={SaveItemData} text={isFolderEditMode ? (DisplayLabel?.Update) : DisplayLabel?.Submit} className={styles['primary-btn']} />
+                        <DefaultButton onClick={SaveItemData} text={isFolderEditMode ? (DisplayLabel?.Update) : DisplayLabel?.Submit} className={styles['primary-btn']} style={{ marginRight: "10px" }} />
                         <DefaultButton text={DisplayLabel?.Cancel} onClick={closeFolderPanel} className={styles['light-btn']} allowDisabledFocus />
                     </>
                 )}

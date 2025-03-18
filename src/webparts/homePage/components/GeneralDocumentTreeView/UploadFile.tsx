@@ -1,4 +1,4 @@
-import { ChoiceGroup, DefaultButton, Dropdown, IconButton, Panel, PanelType, PrimaryButton, TextField } from "@fluentui/react";
+import { ChoiceGroup, DatePicker, DefaultButton, Dropdown, IconButton, mergeStyleSets, Panel, PanelType, PrimaryButton, TextField } from "@fluentui/react";
 import React, { useCallback, useEffect, useState } from 'react';
 import styles from "./TreeView.module.scss";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
@@ -12,6 +12,7 @@ import { getStatusByInternalStatus } from "../../../../Services/StatusSerivce";
 import cls from '../HomePage.module.scss';
 import { ILabel } from "../Interface/ILabel";
 import Select from "react-select";
+import moment from "moment";
 
 interface IUploadFileProps {
     isOpenUploadPanel: boolean;
@@ -51,7 +52,10 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
         msGraphClientFactory: context.msGraphClientFactory,
         spHttpClient: context.spHttpClient
     };
-
+    const meargestyles = mergeStyleSets({
+        root: { selectors: { '> *': { marginBottom: 15 } } },
+        control: { maxWidth: "100%", marginBottom: 15 },
+    });
 
 
 
@@ -190,11 +194,26 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                         </div>
                     );
 
+                case "Date and Time":
+                    return (
+                        <div className={dynamicControl.length > 5 ? styles.col6 : styles.col12} key={index}>
+
+                            <label className={styles.Headerlabel}>{item.Title}{item.IsRequired ? <span style={{ color: "red" }}>*</span> : <></>}</label>
+                            <DatePicker
+                                onSelectDate={(date: Date | null | undefined) => handleInputChange(item.InternalTitleName, date)}
+                                className={meargestyles.control}
+                                value={dynamicValues[item.InternalTitleName] || ""}
+                                formatDate={(date) => date ? moment(new Date(date)).format("DD/MM/YYYY") : ''}
+                            />
+                            {dynamicValuesErr[item.InternalTitleName] && <p style={{ color: "rgb(164, 38, 44)" }}>{dynamicValuesErr[item.InternalTitleName]}</p>}
+                        </div>
+                    );
+
                 default:
                     return (
-                        <div className="column6" key={index}>
+                        <div className={dynamicControl.length > 5 ? styles.col6 : styles.col12} key={index}>
                             <TextField
-                                type={item.ColumnType === "Date and Time" ? "date" : "text"}
+                                type={"text"}
                                 label={item.Title}
                                 value={dynamicValues[item.InternalTitleName] || ""}
                                 onChange={(ev, value) => handleInputChange(item.InternalTitleName, removeSepcialCharacters(value))}
@@ -377,9 +396,9 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                         <div className="column2">
                             <IconButton
                                 iconProps={{ iconName: 'Add' }}
-                                style={{ background: "#009ef7", color: "#fff", border: "#009ef7", marginTop: "34px" }}
+                                style={{ background: "#009ef7", color: "#fff", border: "#009ef7", marginTop: "40px" }}
                                 onClick={addAttachment}
-                                label=""
+                                label="Add"
                             />
                         </div>
                     </div>
@@ -392,7 +411,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                                         <th>{DisplayLabel.FileName}</th>
                                         <th>{DisplayLabel.IsthisAnUpdateToExistingFile}</th>
                                         {isUpdateExistingFile ? <th>{DisplayLabel.FileName}</th> : <></>}
-                                        <th>{DisplayLabel.FieldName}</th>
+                                        <th>{DisplayLabel.Versions}</th>
                                         <th>{DisplayLabel.Action}</th>
                                     </tr>
                                 </thead>

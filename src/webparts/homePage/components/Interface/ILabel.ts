@@ -181,4 +181,15 @@ export interface ILabel {
     ColumnNameIsAlreadyExist: string;
     ValueAlreadyExist: string;
     UpdateAlertMsg: string;
+
+    MenuName: string;
+    URL: string;
+    OrderNo: string;
+    NextTab: string;
+    ExternalUrl: string;
+    Permission: string;
+    isParentMenu: string;
+    Testcol: string;
+    IconClass: string;
+    ParentMenuId: string;
 }

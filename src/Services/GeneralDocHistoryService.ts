@@ -1,6 +1,6 @@
 import { CreateItem, GetListItem } from "../DAL/Commonfile";
-export function getHistoryByID(WebUrl: string, spHttpClient: any, ID: number) {
-    let filter = "DocumetLID eq " + ID;
+export function getHistoryByID(WebUrl: string, spHttpClient: any, ID: number, libName: string) {
+    let filter = "DocumetLID eq " + ID + " and LibName eq '" + libName + "'";
 
     return getMethod(WebUrl, spHttpClient, filter);
 }

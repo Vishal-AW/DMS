@@ -7,6 +7,7 @@ import {
     PrimaryButton,
     TextField,
     Toggle,
+    DatePicker, mergeStyleSets
 } from "@fluentui/react";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import {
@@ -27,6 +28,7 @@ import { ILabel } from "../Interface/ILabel";
 import Select from 'react-select';
 import { getTemplateActive } from "../../../../Services/TemplateService";
 import { getActiveFolder } from "../../../../Services/FolderMasterService";
+import moment from "moment";
 
 export interface IProjectEntryProps {
     isOpen: boolean;
@@ -38,6 +40,7 @@ export interface IProjectEntryProps {
     folderObject: any;
     folderPath: string;
 }
+
 
 const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
     isOpen,
@@ -86,8 +89,13 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
     const [createStructure, setCreateStructure] = useState<boolean>(false);
     const [allFolderTemplate, setAllFolderTemplate] = useState<any>([]);
     const [folderTemplate, setFolderTemplate] = useState<any>("");
+    const [folderTemplateErr, setFolderTemplateErr] = useState<any>("");
     const [folderStructure, setFolderStructure] = useState<any>([]);
     const inputRefs = useRef<{ [key: string]: HTMLInputElement | null; }>({});
+    const meargestyles = mergeStyleSets({
+        root: { selectors: { '> *': { marginBottom: 15 } } },
+        control: { maxWidth: "100%", marginBottom: 15 },
+    });
 
     const handleInputChange = (fieldName: string, value: any) => {
         setDynamicValues((prevValues) => ({
@@ -292,19 +300,16 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                 case "Date and Time":
                     return (
                         <div className={dynamicControl.length > 5 ? styles.col6 : styles.col12} key={index}>
-                            <TextField
-                                type={"date"}
-                                label={item.Title}
-                                value={dynamicValues[item.InternalTitleName] || ""}
-                                onChange={(ev, value) => {
-                                    console.log(value);
-                                    handleInputChange(item.InternalTitleName, value);
-                                }}
-                                required={item.IsRequired}
-                                errorMessage={dynamicValuesErr[item.InternalTitleName]}
-                                disabled={isDisabled}
+                            <label className={styles.Headerlabel}>{item.Title}{item.IsRequired ? <span style={{ color: "red" }}>*</span> : <></>}</label>
+                            <DatePicker
                                 componentRef={(input: any) => (inputRefs.current[item.InternalTitleName] = input)}
+                                onSelectDate={(date: Date | null | undefined) => handleInputChange(item.InternalTitleName, date)}
+                                className={meargestyles.control}
+                                value={dynamicValues[item.InternalTitleName] || ""}
+                                disabled={isDisabled}
+                                formatDate={(date) => date ? moment(new Date(date)).format("DD/MM/YYYY") : ''}
                             />
+                            {dynamicValuesErr[item.InternalTitleName] && <p style={{ color: "rgb(164, 38, 44)" }}>{dynamicValuesErr[item.InternalTitleName]}</p>}
                         </div>
                     );
 
@@ -336,6 +341,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
         setDynamicValuesErr({});
         setSuffixErr("");
         setOtherSuffixErr("");
+        setFolderTemplateErr("");
     };
 
     const clearFeilds = () => {
@@ -401,6 +407,12 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
         if (isApprovalRequired && publisher.length === 0) {
             setPublisherErr(DisplayLabel.ThisFieldisRequired);
             inputRefs.current["Publisher"]?.focus();
+            isValid = false;
+            return;
+        }
+        if (createStructure && folderTemplate === "") {
+            setFolderTemplateErr(DisplayLabel.ThisFieldisRequired);
+            inputRefs.current["FolderTemplate"]?.focus();
             isValid = false;
             return;
         }
@@ -535,6 +547,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
 
             setDynamicValues((prevValues) => {
                 let value = folderObject.ListItemAllFields[item.InternalTitleName];
+                filterObj.ColumnType === "Date and Time" ? value = new Date(value) : "";
                 return {
                     ...prevValues,
                     [item.InternalTitleName]: value,
@@ -545,7 +558,9 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
     };
 
     const hidePopup = useCallback(() => { setIsPopupBoxVisible(false); }, [isPopupBoxVisible]);
-
+    const isValidNumberString = (value: string): boolean => {
+        return !isNaN(Number(value)) && value.trim() !== "";
+    };
     const removeSepcialCharacters = (newValue?: string) => newValue?.replace(/[^a-zA-Z0-9\s]/g, '') || '';
     return (
         <>
@@ -721,12 +736,18 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                                 required
                                 showHiddenInUI={false}
                                 principalTypes={[PrincipalType.User, PrincipalType.SharePointGroup, PrincipalType.SecurityGroup]}
-                                onChange={async (items) => {
+                                onChange={async (items: any[]) => {
                                     try {
                                         const userIds = await Promise.all(
                                             items.map(async (item: any) => {
-                                                const data = await getUserIdFromLoginName(context, item.id);
-                                                return data.Id;
+                                                let userid: number = 0;
+                                                if (isValidNumberString(item.id)) {
+                                                    userid = Number(item.id);
+                                                } else {
+                                                    const data = await getUserIdFromLoginName(context, item.id);
+                                                    userid = data.Id;
+                                                };
+                                                return userid;
                                             })
                                         );
                                         setFolderAccess(userIds);
@@ -762,7 +783,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                                     ref={(input: any) => (inputRefs.current["CreateStructure"] = input)}
                                     isDisabled={isDisabled || FormType === "EditForm"}
                                 />
-                                {/* {SuffixErr && <p style={{ color: "rgb(164, 38, 44)" }}>{SuffixErr}</p>} */}
+                                {folderTemplateErr && <p style={{ color: "rgb(164, 38, 44)" }}>{folderTemplateErr}</p>}
                             </div> : <></>
                         }
                     </div>

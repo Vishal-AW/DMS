@@ -20,6 +20,7 @@ import SearchFilter from './GeneralDocumentTreeView/SearchFilter';
 import SearchComponent from './GeneralDocumentTreeView/Search';
 import TemplateMaster from './Master/TemplateMaster';
 import FolderMaster from './Master/FolderMaster';
+// import Navigation from "./Master/Navigation";
 
 
 
@@ -81,6 +82,7 @@ export default function HomePage(props: IHomePageProps): JSX.Element {
               <Route path='/FolderMaster' element={<FolderMaster props={props}></FolderMaster>}></Route>
               <Route path='/SearchFilter' element={<SearchFilter props={props}></SearchFilter>}></Route>
               <Route path='/SearchComponent' element={<SearchComponent context={props.context}></SearchComponent>}></Route>
+              {/* <Route path='/Navigation' element={<Navigation props={props}></Navigation>}></Route> */}
 
             </Routes>
 

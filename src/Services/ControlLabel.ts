@@ -198,6 +198,17 @@ export async function GetAllLabel(WebUrl: string, spHttpClient: SPHttpClient, La
       ValueAlreadyExist: getValue("ValueAlreadyExist", data, Language),
       UpdateAlertMsg: getValue("UpdateAlertMsg", data, Language),
 
+      MenuName: getValue("MenuName", data, Language),
+      URL: getValue("URL", data, Language),
+      OrderNo: getValue("OrderNo", data, Language),
+      NextTab: getValue("NextTab", data, Language),
+      ExternalUrl: getValue("ExternalUrl", data, Language),
+      Permission: getValue("Permission", data, Language),
+      isParentMenu: getValue("isParentMenu", data, Language),
+      Testcol: getValue("Testcol", data, Language),
+      IconClass: getValue("IconClass", data, Language),
+      ParentMenuId: getValue("ParentMenuId", data, Language),
+
     };
 
     // 

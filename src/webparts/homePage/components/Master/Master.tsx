@@ -161,20 +161,39 @@ export default function Master({ props }: any): JSX.Element {
       Header: DisplayLabel?.SrNo,
       accessor: "row._index",
       Cell: ({ row }: { row: any; }) => row._index + 1,
+      filterable: false,
     },
-    { Header: DisplayLabel?.Tiles, accessor: "TileName" },
+    {
+      Header: DisplayLabel?.Tiles, accessor: "TileName",
+      filterMethod: (filter: any, row: any) => row[filter.id]?.toLowerCase().includes(filter.value?.toLowerCase() || "")
+    },
     {
       Header: DisplayLabel?.AllowApprover,
       accessor: "AllowApprover",
-      Cell: ({ row }: { row: any; }) => (row.AllowApprover === true ? "Yes" : "No")
+      Cell: ({ row }: { row: any; }) => (row.AllowApprover === true ? "Yes" : "No"),
+      Filter: ({ filter, onChange }: { filter: any; onChange: (value: any) => void; }) => (
+        <select
+          value={filter ? filter.value : ""}
+          onChange={(e) => onChange(e.target.value || undefined)}
+          style={{ width: "100%", padding: "4px", borderRadius: "4px" }}
+        >
+          <option value="">All</option>
+          <option value="true">Yes</option>
+          <option value="false">No</option>
+        </select>
+      ),
+      filterMethod: (filter: any, row: any) => {
+        if (!filter.value) return true;
+        return String(row[filter.id]) === filter.value;
+      }
     },
     {
       Header: DisplayLabel?.LastModified,
       Cell: ({ row }: { row: any; }) => {
         const rowData = row._original;
         const formattedDate = new Date(rowData.Modified).toLocaleDateString("en-US", {
-          month: "2-digit",
           day: "2-digit",
+          month: "2-digit",
           year: "numeric"
         });
         const formattedTime = new Date(rowData.Modified).toLocaleTimeString("en-US", {
@@ -183,18 +202,35 @@ export default function Master({ props }: any): JSX.Element {
           hour12: true
         });
         return `${rowData.Editor?.Title || "Unknown"} ${formattedDate} at ${formattedTime}`;
-      }
+      },
+      filterMethod: (filter: any, row: any) => row[filter.id]?.toLowerCase().includes(filter.value?.toLowerCase() || "")
     },
     {
       Header: DisplayLabel?.Active,
       accessor: "Active",
-      Cell: ({ row }: { row: any; }) => (row.Active === true ? "Yes" : "No")
+      Cell: ({ row }: { row: any; }) => (row.Active === true ? "Yes" : "No"),
+      Filter: ({ filter, onChange }: { filter: any; onChange: (value: any) => void; }) => (
+        <select
+          value={filter ? filter.value : ""}
+          onChange={(e) => onChange(e.target.value || undefined)}
+          style={{ width: "100%", padding: "4px", borderRadius: "4px" }}
+        >
+          <option value="">All</option>
+          <option value="true">Yes</option>
+          <option value="false">No</option>
+        </select>
+      ),
+      filterMethod: (filter: any, row: any) => {
+        if (!filter.value) return true;
+        return String(row[filter.id]) === filter.value;
+      }
     },
     {
       Header: DisplayLabel?.Action,
       Cell: ({ row }: { row: any; }) => (
         <FontIcon aria-label="Edit" onClick={() => openEditPanel(row._original.Id)} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer', backgroundColor: '#f5f8fa', padding: '6px 9px', borderRadius: '4px' }}></FontIcon>
-      )
+      ),
+      filterMethod: false
     }
   ];
 
@@ -751,7 +787,7 @@ export default function Master({ props }: any): JSX.Element {
     setSelectedFile(null);
     setTileAdminName("");
     setorder0DataDataID(null);
-    setIsTileStatus(false);
+    setIsTileStatus(true);
     setIsAllowApprover(false);
     setIsDropdownVisible(false);
     setDynamicDataReference(false);
@@ -762,6 +798,9 @@ export default function Master({ props }: any): JSX.Element {
     setArchiveAllowed(false);
     setSelectedcheckboxActions([]);
     setTableData([]);
+    setAssignID([]);
+    setAssignEmail([]);
+    setTileAdminID([]);
     clearError();
 
   };
@@ -1021,7 +1060,7 @@ export default function Master({ props }: any): JSX.Element {
     for (let i = 0; i < NewSequencedata.length; i++) {
       let obj = { Order0: NewSequencedata[i].Order0 };
       await UpdateTileSetting(props.SiteURL, props.spHttpClient, obj, NewSequencedata[i].Id);
-      setAlertMsg(DisplayLabel?.SubmitMsg || "");
+      setAlertMsg(DisplayLabel?.UpdateAlertMsg || "");
       setisPopupVisible(true);
     }
   };
@@ -1212,7 +1251,7 @@ export default function Master({ props }: any): JSX.Element {
       setShowLoader({ display: "none" });
       fetchData();
       closePanel();
-      setAlertMsg(DisplayLabel?.SubmitMsg || "");
+      setAlertMsg(DisplayLabel?.UpdateAlertMsg || "");
       setisPopupVisible(true);
 
     }
@@ -1248,6 +1287,7 @@ export default function Master({ props }: any): JSX.Element {
               PagedefaultSize={10}
               TableRows={1}
               TableshowPagination={MainTableSetdata.length > 10}
+              TableshowFilter
             />
           </Stack.Item>
         </Stack>
