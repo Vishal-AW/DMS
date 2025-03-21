@@ -22,6 +22,9 @@ import { isMember } from "../../../../DAL/Commonfile";
 import { TooltipHost } from '@fluentui/react';
 import { Link } from "react-router-dom";
 import { getHistoryByID } from "../../../../Services/GeneralDocHistoryService";
+import { getConfigActive } from "../../../../Services/ConfigService";
+import { getDataByLibraryName } from "../../../../Services/MasTileService";
+import moment from "moment";
 
 
 interface Folder {
@@ -228,6 +231,11 @@ export default function TreeView({ props }: any) {
                 key: 'docDetails',
                 text: DisplayLabel.History,
                 onClick: () => commonFunction("History", item)
+            },
+            {
+                key: 'view',
+                text: DisplayLabel.View,
+                onClick: () => commonFunction("View", item)
             }
         ];
         if (libDetails.TileAdminId === props.userID || item._original.ListItemAllFields.AuthorId === props.userID) {
@@ -343,6 +351,80 @@ export default function TreeView({ props }: any) {
             </table>);
             setPanelTitle(DisplayLabel.History);
             setIsOpenCommonPanel(true);
+        }
+        else if (action === "View") {
+            setActionButton(null);
+            const dataConfig = await getConfigActive(props.context.pageContext.web.absoluteUrl, props.context.spHttpClient);
+            const libraryData = await getDataByLibraryName(props.context.pageContext.web.absoluteUrl, props.context.spHttpClient, libName);
+            let jsonData = JSON.parse(libraryData.value[0].DynamicControl);
+            jsonData = jsonData.filter((ele: any) => ele.IsActiveControl);
+            setPanelSize(PanelType.large);
+            const htm = <>
+                <div className={styles.grid}>
+                    <div className={styles.row}>
+                        <div className={styles.col12}>
+                            <label>{DisplayLabel.Path}: <b>{folderPath}</b></label>
+                        </div>
+                    </div>
+                    <div className={styles.row}>
+                        <div className={styles.col6}>
+                            <label className={styles.Headerlabel}>{DisplayLabel.TileName}</label>
+                            <TextField
+                                value={libDetails.TileName}
+                                disabled={true}
+                            />
+                        </div>
+                        <div className={styles.col6}>
+                            <label className={styles.Headerlabel}>{DisplayLabel.FolderName}</label>
+                            <TextField
+                                value={item._original.ListItemAllFields.DocumentSuffix}
+                                disabled={true}
+                            />
+                        </div>
+                        {item._original.ListItemAllFields.IsSuffixRequired ? <>
+                            <div className={styles.col6}>
+                                <label className={styles.Headerlabel}>{DisplayLabel.DocumentSuffix}</label>
+                                <TextField
+                                    value={item._original.ListItemAllFields.DocumentSuffix}
+                                    disabled={true}
+                                />
+                            </div>
+
+
+                            {item._original.ListItemAllFields.DocumentSuffix === "Other" && (
+                                <div className={styles.col6}>
+                                    <label className={styles.Headerlabel}>{DisplayLabel.OtherSuffixName}</label>
+                                    <TextField
+                                        value={item._original.ListItemAllFields.OtherSuffix}
+                                        disabled={true}
+                                    />
+                                </div>
+                            )}</> : <></>
+                        }
+                        {
+                            jsonData.map((el: any, index: number) => {
+                                const filterObj = dataConfig?.value.find((ele: any) => ele.Id === el.Id);
+                                if (!filterObj) return null;
+                                return <div className={styles.col6}>
+                                    <label className={styles.Headerlabel}>{el.Title}</label>
+                                    {filterObj.ColumnType === "Date and Time" ? <TextField
+                                        value={item._original.ListItemAllFields.hasOwnProperty(el.InternalTitleName) ? moment(item._original.ListItemAllFields[el.InternalTitleName]).format("DD/MM/YYYY") : ""}
+                                        disabled={true}
+                                    /> : <TextField
+                                        value={item._original.ListItemAllFields.hasOwnProperty(el.InternalTitleName) ? (el.ColumnType === "Person or Group" ? item._original.ListItemAllFields[el.InternalTitleName].Title : item._original.ListItemAllFields[el.InternalTitleName]) : ""}
+                                        disabled={true}
+                                    />}
+                                </div>;
+
+                            })
+                        }
+                    </div>
+                </div>
+            </>;
+            setPanelForm(htm);
+            setPanelTitle(DisplayLabel.View);
+            setIsOpenCommonPanel(true);
+
         }
     };
     useEffect(() => {

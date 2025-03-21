@@ -249,3 +249,20 @@
     font-size: 14px;
     font-weight: 500
 }
+
+
+.btnDanger {
+    text-align: center;
+    color: #fff;
+    background: #f1416c;
+    text-decoration: none;
+    border: 0px;
+    display: inline-block;
+    font-weight: 500;
+    outline: 0 !important;
+}
+
+.btnDanger:hover {
+    color: #fff;
+    background: #f1416c;
+}

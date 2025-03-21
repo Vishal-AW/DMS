@@ -253,7 +253,7 @@ export default function TemplateMaster({ props }: any): JSX.Element {
 
                 onRenderFooterContent={() => (
                     <>
-                        <DefaultButton onClick={SaveItemData} text={isTemplateEditMode ? (DisplayLabel?.Update) : DisplayLabel?.Submit} className={styles['primary-btn']} />
+                        <DefaultButton onClick={SaveItemData} text={isTemplateEditMode ? (DisplayLabel?.Update) : DisplayLabel?.Submit} className={styles['primary-btn']} style={{ marginRight: "10px" }} />
                         <DefaultButton text={DisplayLabel?.Cancel} onClick={closeTemplatePanel} className={styles['light-btn']} allowDisabledFocus />
                     </>
                 )}

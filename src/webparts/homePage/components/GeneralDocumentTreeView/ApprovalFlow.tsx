@@ -9,6 +9,7 @@ import { createHistoryItem } from "../../../../Services/GeneralDocHistoryService
 import { TileSendMail } from "../../../../Services/SendEmail";
 import PopupBox, { ConfirmationDialog } from "../ResuableComponents/PopupBox";
 import { ILabel } from "../Interface/ILabel";
+import moment from "moment";
 
 interface IApproval {
     context: WebPartContext;
@@ -60,11 +61,12 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
         {
             Header: 'Submitted By', accessor: 'Created', Cell: ({ row }: { row: any; }) => {
                 const rowData = row._original;
-                const formattedDate = new Date(rowData.Created).toLocaleDateString("en-US", {
-                    month: "2-digit",
-                    day: "2-digit",
-                    year: "numeric"
-                });
+                const formattedDate = moment(rowData.Created).format("DD/MM/YYYY");
+                // new Date(rowData.Created).toLocaleDateString("en-US", {
+                //     month: "2-digit",
+                //     day: "2-digit",
+                //     year: "numeric"
+                // });
                 const formattedTime = new Date(rowData.Created).toLocaleTimeString("en-US", {
                     hour: "2-digit",
                     minute: "2-digit",
@@ -250,10 +252,10 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
                 onDismiss={dismissPanel}
                 closeButtonAriaLabel="Close"
                 type={PanelType.medium}
-                onRenderFooterContent={() => (<>
+                onRenderFooterContent={() => (<div style={{ marginBottom: "10px" }}>
                     <PrimaryButton onClick={ApproveFile} styles={buttonStyles} className={styles["primary-btn"]}>{DisplayLabel.ApproveButton}</PrimaryButton>
-                    <DefaultButton className={styles["info-btn"]} onClick={RejectFile}>{DisplayLabel.RejectButton}</DefaultButton>
-                </>)}
+                    <DefaultButton className={styles["btnDanger"]} onClick={RejectFile}>{DisplayLabel.RejectButton}</DefaultButton>
+                </div>)}
                 isFooterAtBottom={true}
             >
                 <div className={styles.grid}>

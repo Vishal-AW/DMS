@@ -28,7 +28,7 @@ body {
     display: none;
 }
 
-#spSiteHeader {
+#spSiteHeader,#CommentsWrapper {
     display: none !important;
 }
 

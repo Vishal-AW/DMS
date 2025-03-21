@@ -11,6 +11,7 @@ import { getConfigActive } from "../../../../Services/ConfigService";
 import { getDataByLibraryName } from "../../../../Services/MasTileService";
 //import { useNavigate } from "react-router-dom";
 import Select from 'react-select';
+import moment from "moment";
 export default function SearchFilter({ props }: any): JSX.Element {
 
     const libraryName: any = sessionStorage.getItem("LibName");
@@ -306,7 +307,12 @@ export default function SearchFilter({ props }: any): JSX.Element {
                                                 )}
                                             </td>
                                             <td style={{ padding: '10px' }}>{el.FolderDocumentPath}</td>
-                                            {dynamicControl?.map((field: any, index: number) => ((field.IsShowAsFilter) ? <td style={{ padding: '10px' }} key={index}>{el[field.InternalTitleName]}</td> : null))}
+                                            {dynamicControl?.map((field: any, index: number) => ((field.IsShowAsFilter) ? <td style={{ padding: '10px' }} key={index}>
+                                                {field.ColumnType === "Date and Time" ? moment(el[field.InternalTitleName]).format("DD/MM/YYYY") :
+                                                    field.ColumnType === "Person or Group" ? el[field.InternalTitleName].map((item: any) => item.Title).join(", ") :
+                                                        el[field.InternalTitleName]}
+
+                                            </td> : null))}
                                         </tr>
                                     );
                                 }

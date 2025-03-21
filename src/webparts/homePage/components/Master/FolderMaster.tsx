@@ -170,6 +170,7 @@ export default function FolderMaster({ props }: any): JSX.Element {
         }));
         setTemplatedropdownID(optionsValues[0].value);
 
+        ParentFolderData(optionsValues[0].value.value);
 
         if (EditFolderData[0].IsParentFolder === true) {
             const fetchParentFolderData = await getTemplateDataByID(props.SiteURL, props.spHttpClient, EditFolderData[0].TemplateNameId);
