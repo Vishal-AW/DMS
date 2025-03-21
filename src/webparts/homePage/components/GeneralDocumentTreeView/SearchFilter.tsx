@@ -75,7 +75,7 @@ export default function SearchFilter({ props }: any): JSX.Element {
                 case "Dropdown":
                 case "Multiple Select":
                     return (
-                        <div className={dynamicControl.length > 5 ? styles.col6 : styles.col6} key={index}>
+                        <div className={styles.col6} key={index}>
                             {/* <Dropdown
                                 placeholder="Select an option"
                                 label={item.Title}
@@ -86,6 +86,7 @@ export default function SearchFilter({ props }: any): JSX.Element {
                                 selectedKey={dynamicValues[item.InternalTitleName] || ""}
                             //errorMessage={dynamicValuesErr[item.InternalTitleName]}
                             /> */}
+                            <label>{item.Title}</label>
                             <Select
                                 options={options[item.InternalTitleName] || []}
                                 value={(options[item.InternalTitleName] || []).find((option: any) => option.value === dynamicValues[item.InternalTitleName])}
@@ -98,7 +99,7 @@ export default function SearchFilter({ props }: any): JSX.Element {
 
                 case "Person or Group":
                     return (
-                        <div className={dynamicControl.length > 5 ? styles.col6 : styles.col12} key={index}>
+                        <div className={styles.col6} key={index}>
                             <PeoplePicker
                                 titleText={item.Title}
                                 context={peoplePickerContext}
@@ -136,7 +137,7 @@ export default function SearchFilter({ props }: any): JSX.Element {
                         text: ele,
                     }));
                     return (
-                        <div className={dynamicControl.length > 5 ? styles.col6 : styles.col12} key={index}>
+                        <div className={styles.col6} key={index}>
                             <ChoiceGroup
                                 options={radioOptions}
                                 onChange={(ev, option) => handleInputChange(item.InternalTitleName, option?.key)}
@@ -149,7 +150,7 @@ export default function SearchFilter({ props }: any): JSX.Element {
 
                 default:
                     return (
-                        <div className={dynamicControl.length > 5 ? styles.col6 : styles.col12} key={index}>
+                        <div className={styles.col6} key={index}>
                             <TextField
                                 type={item.ColumnType === "Date and Time" ? "date" : "text"}
                                 label={item.Title}
@@ -198,7 +199,7 @@ export default function SearchFilter({ props }: any): JSX.Element {
         else {
             let query = ContentSearchinput == undefined ? "*" : ContentSearchinput;
             let GetLibraryName = libraryName;
-            const routePath = `${props.SiteURL}/SitePages/Search.aspx?query='${query}'&Library='${GetLibraryName}'`;
+            const routePath = `${props.SiteURL}/SitePages/Search.aspx?env=Embedded&query='${query}'&Library='${GetLibraryName}'`;
             window.open(routePath, "_blank");
         }
     };

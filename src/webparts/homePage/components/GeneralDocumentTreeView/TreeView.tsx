@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { commonPostMethod, getAllFolder, getListData, updateLibrary } from "../../../../Services/GeneralDocument";
+import { checkPermissions, commonPostMethod, getAllFolder, getApprovalData, getListData, updateLibrary } from "../../../../Services/GeneralDocument";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./TreeView.module.scss";
 import { CommandBarButton, DefaultButton, DialogType, Icon, IStackItemStyles, IStackStyles, IStackTokens, Panel, PanelType, PrimaryButton, Stack, DirectionalHint } from "@fluentui/react";
@@ -20,6 +20,8 @@ import { useConst } from '@fluentui/react-hooks';
 // import { ILabel } from "../Interface/ILabel";
 import { isMember } from "../../../../DAL/Commonfile";
 import { TooltipHost } from '@fluentui/react';
+import { Link } from "react-router-dom";
+import { getHistoryByID } from "../../../../Services/GeneralDocHistoryService";
 
 
 interface Folder {
@@ -63,13 +65,15 @@ export default function TreeView({ props }: any) {
     const [hideDialogCheckOut, setHideDialogCheckOut] = useState<boolean>(false);
     const [ServerRelativeUrl, setServerRelativeUrl] = useState("");
     const [comment, setComment] = useState("");
+    const [alertMsg, setAlertMsg] = useState("");
+
     // const [itemIds, setItemIds] = useState<number | null>(null);
     // const [isHovering, setIsHovering] = useState(false);
     // const hoverRef = React.useRef<Record<string, HTMLDivElement | null>>({});
 
 
     if (tileObject === null) {
-        location.href = "#/Dashboard";
+        location.href = "#/";
         location.reload();
     }
 
@@ -92,10 +96,16 @@ export default function TreeView({ props }: any) {
     const [fileName, setFileName] = useState("");
     const [folderPath, setFolderPath] = useState(libName);
     const [isValidUser, setIsValidUser] = useState<boolean>(false);
+    const [hasPermission, setHasPermission] = useState<boolean>(false);
+    const [breadcrumb, setBreadcrumb] = useState<any>([{ name: libName, path: libName }]);
+    const [deletedData, setDeletedData] = useState<any>([]);
+    const [approvalData, setApprovalData] = useState<any>([]);
 
     useEffect(() => {
         fetchFolders(libName, "");
         getAdmin();
+        getDeletedData();
+        getPendingApprovalData();
     }, [isCreateProjectPopupOpen]);
 
     useEffect(() => {
@@ -105,6 +115,8 @@ export default function TreeView({ props }: any) {
     const fetchFolders = async (folderPath: string, nodeName: string) => {
         try {
             setFolderPath(folderPath);
+            const bread = folderPath.split("/").map((el, index) => ({ name: el, path: folderPath.split("/").slice(0, index + 1).join("/") }));
+            setBreadcrumb(bread);
             const data: any = await getAllFolder(props.SiteURL, props.context, folderPath);
             if (data && data.Folders) {
                 const updatedFolders = data.Folders.map((folder: any) => {
@@ -121,8 +133,7 @@ export default function TreeView({ props }: any) {
                         ...prev,
                         [folderPath]: data.Folders,
                     }));
-                    setFiles(data.Files.filter((el: any) => el.ListItemAllFields.Active) || []);
-
+                    setFiles(data.Files.filter((el: any) => (el.ListItemAllFields.Active && (el.ListItemAllFields.InternalStatus === "Published" || el.ListItemAllFields.AuthorId === props.userID))) || []);
                 }
                 data.Folders.length === 0 ? setExpandedNodes(expandedNodes.filter((name) => name !== nodeName)) : "";
             } else {
@@ -146,6 +157,7 @@ export default function TreeView({ props }: any) {
         setFolderName(nodeName);
         setFolderPath(folderPath);
         setFolderObject(obj);
+        hasRequiredPermissions(folderPath);
         if (expandedNodes.includes(nodeName))
             setExpandedNodes(expandedNodes.filter((name) => name !== nodeName));
         else
@@ -195,7 +207,13 @@ export default function TreeView({ props }: any) {
 
                 return (
                     <div style={{ display: "flex", alignItems: "center" }} >
-                        {item?.ActualName}{" "}
+                        <a href="javascript:void('0')" onClick={() => {
+                            if (row._original.LinkingUrl === "")
+                                window.open(row._original.ServerRelativeUrl, "_blank");
+                            else
+                                window.open(row._original.LinkingUrl, "_blank");
+                        }}>{item?.ActualName}</a>
+                        {" "}
                         {isCheckedOut && (
                             <TooltipHost
                                 content={`${checkedOutUser?.Title} ${DisplayLabel.CheckedOutThisItem}`}
@@ -259,14 +277,21 @@ export default function TreeView({ props }: any) {
         }
     ];
     const createMenuProps = (item: any): IContextualMenuProps => {
-        const button = libDetails.ShowMoreActions.split(";");
+        const button = libDetails.ShowMoreActions ? libDetails.ShowMoreActions.split(";") : [];
         const menuItems: any = [
             {
+                key: 'docDetails',
+                text: DisplayLabel.History,
+                onClick: () => commonFunction("History", item)
+            }
+        ];
+        if (libDetails.TileAdminId === props.userID || item._original.ListItemAllFields.AuthorId === props.userID) {
+            menuItems.push({
                 key: 'deleteDocument',
                 text: DisplayLabel.Delete,
                 onClick: () => commonFunction("Delete", item),
-            },
-        ];
+            });
+        }
         button.map((el: string) => {
             menuItems.push({
                 key: el,
@@ -299,6 +324,7 @@ export default function TreeView({ props }: any) {
                 onClick: () => { setItemId(item._original.ListItemAllFields.Id); setIsPanelOpen(true); },
             });
         }
+
         return {
             shouldFocusOnMount: true,
             items: menuItems
@@ -311,6 +337,7 @@ export default function TreeView({ props }: any) {
             setHideDialog(true);
         }
         else if (action === "Versions") {
+            setActionButton(null);
             const url = `${props.SiteURL}/_layouts/15/Versions.aspx?list=${libName}&FileName=${item._original.ServerRelativeUrl}&IsDlg=${item._original.ListItemAllFields.Id}`;
             setPanelForm(<iframe id="frame" src={url} style={{ width: "100%", height: "80vh" }}></iframe>);
             setPanelTitle(DisplayLabel.Versions);
@@ -318,15 +345,16 @@ export default function TreeView({ props }: any) {
         }
         else if (action === "Rename") {
             setFileNameErr("");
+            setItemId(item._original.ListItemAllFields.Id);
             setPanelTitle(DisplayLabel.Rename);
             const fileDetails = item._original.ListItemAllFields.ActualName.split(".");
             setExtension(fileDetails[1]);
             setFileName(fileDetails[0]);
-            setActionButton(<PrimaryButton text={DisplayLabel.Rename} style={{ marginRight: "10px" }} onClick={() => renameTheFile(item._original.ListItemAllFields.Id)} />);
             setIsOpenCommonPanel(true);
         }
         else if (action === "Download") { location.href = `${props.SiteURL}/_layouts/15/download.aspx?SourceUrl=${item._original.ServerRelativeUrl}`; }
         else if (action === "Preview") {
+            setActionButton(null);
             setPanelSize(PanelType.smallFluid);
             setPanelTitle(DisplayLabel.Preview);
             const previewData = getPreviewUrl(item._original.ServerRelativeUrl);
@@ -335,12 +363,14 @@ export default function TreeView({ props }: any) {
         }
         else if (action === "Checkout") {
             await commonPostMethod(`${props.SiteURL}/_api/web/GetFileByServerRelativeUrl('${item._original.ServerRelativeUrl}')/checkout`, props.context);
+            setAlertMsg(DisplayLabel.CheckoutSuccess);
             setIsPopupBoxVisible(true);
             fetchFolders(folderPath, folderName);
         }
         else if (action === "CheckIn") {
-            setActionButton(<PrimaryButton text={DisplayLabel.Rename} style={{ marginRight: "10px" }} onClick={async () => {
+            setActionButton(<PrimaryButton text={DisplayLabel.CheckIn} style={{ marginRight: "10px" }} onClick={async () => {
                 await commonPostMethod(`${props.SiteURL}/_api/web/GetFileByServerRelativeUrl('${item._original.ServerRelativeUrl}')/checkin(comment='${comment}',checkintype=0)`, props.context);
+                setAlertMsg(DisplayLabel.CheckInSuccess);
                 setIsPopupBoxVisible(true);
                 fetchFolders(folderPath, folderName);
             }} />);
@@ -350,6 +380,24 @@ export default function TreeView({ props }: any) {
             setMessage(DisplayLabel.CheckoutConfirm);
             setServerRelativeUrl(item._original.ServerRelativeUrl);
             setHideDialogCheckOut(true);
+        }
+        else if (action === "History") {
+            setActionButton(null);
+            const HistoryData = await getHistoryByID(props.SiteURL, props.spHttpClient, item._original.ListItemAllFields.Id, libName);
+            const bindData = HistoryData?.value.length > 0 ? HistoryData.value.map((el: any, index: number) => <tr><td>{index + 1}</td><td>{el.Author.Title}</td><td>{el.Action}</td><td>{el.InternalComment}</td></tr>) : <tr><td>No Data</td></tr>;
+            setPanelForm(<table className="addoption" style={{ width: '100%', marginTop: '20px', borderCollapse: 'collapse' }}>
+                <thead>
+                    <tr>
+                        <th>{DisplayLabel?.SrNo}</th>
+                        <th>{DisplayLabel?.Action}</th>
+                        <th>{DisplayLabel?.ActionBy}</th>
+                        <th>{DisplayLabel?.Comments}</th>
+                    </tr>
+                </thead>
+                <tbody>{bindData}</tbody>
+            </table>);
+            setPanelTitle(DisplayLabel.History);
+            setIsOpenCommonPanel(true);
         }
     };
     useEffect(() => {
@@ -361,7 +409,7 @@ export default function TreeView({ props }: any) {
             </div>
             <div className={styles.col2}><TextField readOnly value={extension} /></div>
         </>);
-
+        setActionButton(<PrimaryButton text={DisplayLabel.Rename} style={{ marginRight: "10px" }} onClick={() => renameTheFile(itemId)} />);
     }, [fileName, extension, fileNameErr]);
 
 
@@ -407,6 +455,7 @@ export default function TreeView({ props }: any) {
             updateLibrary(props.SiteURL, props.spHttpClient, obj, id, libName).then((response) => {
                 dismissFolderPanel();
                 setShowLoader({ display: "none" });
+                setAlertMsg(DisplayLabel.SubmitMsg);
                 setIsPopupBoxVisible(true);
                 fetchFolders(folderPath, folderName);
             });
@@ -427,6 +476,7 @@ export default function TreeView({ props }: any) {
     const handleConfirmCheckOut = useCallback(async (value: boolean) => {
         if (value) {
             await commonPostMethod(`${props.SiteURL}/_api/web/GetFileByServerRelativeUrl('${ServerRelativeUrl}')/undocheckout()`, props.context);
+            setAlertMsg(DisplayLabel.DiscardedCheckOut);
             setIsPopupBoxVisible(true);
             fetchFolders(folderPath, folderName);
         }
@@ -439,6 +489,7 @@ export default function TreeView({ props }: any) {
             DeleteFlag: "Deleted",
         };
         await updateLibrary(props.SiteURL, props.spHttpClient, obj, itemId, libName);
+        setAlertMsg(DisplayLabel.DeletedMsg);
         setIsPopupBoxVisible(true);
         fetchFolders(folderPath, folderName);
     };
@@ -518,12 +569,18 @@ export default function TreeView({ props }: any) {
     };
 
     const bindMenu = (node: any, afolderPath: string) => {
-        return [
-            {
+
+
+
+        const menuItems: any = [];
+        if (isValidUser || libDetails.TileAdminId === props.userID) {
+            menuItems.push({
                 key: 'advancePermission',
                 text: DisplayLabel.AdvancePermission,
                 onClick: () => { setItemId(node.ListItemAllFields.Id); setIsPanelOpen(true); },
-            },
+            });
+        }
+        menuItems.push(
             {
                 key: 'divider_1',
                 itemType: ContextualMenuItemType.Divider,
@@ -546,7 +603,8 @@ export default function TreeView({ props }: any) {
                 text: DisplayLabel.Edit,
                 onClick: () => { setActionFolderPath(afolderPath); setProjectUpdateData(node); setIsCreateProjectPopupOpen(true); setFormType("EditForm"); },
             },
-        ];
+        );
+        return menuItems;
     };
     const onShowContextualMenu = useCallback((ev: React.MouseEvent<HTMLElement>, nodeId: string) => {
         ev.preventDefault(); // don't navigate
@@ -565,7 +623,7 @@ export default function TreeView({ props }: any) {
 
     const dismissFolderPanel = () => { setIsOpenFolderPanel(false); };
 
-    const dismissUploadPanel = useCallback(() => { setIsOpenUploadPanel(false); setFolderName(""); }, []);
+    const dismissUploadPanel = useCallback(() => { setIsOpenUploadPanel(false); }, []);
 
     const dismissCommanPanel = () => { setIsOpenCommonPanel(false); setActionButton(null); setPanelForm(null); setPanelSize(PanelType.medium); };
 
@@ -590,6 +648,7 @@ export default function TreeView({ props }: any) {
 
             updateLibrary(props.SiteURL, props.spHttpClient, obj, response, libName).then((response) => {
                 dismissFolderPanel(); setShowLoader({ display: "none" });
+                setAlertMsg(DisplayLabel.SubmitMsg);
                 setIsPopupBoxVisible(true);
                 toggleNode(folderName, `${folderPath}`, folderObject);
                 fetchFolders(folderPath, `${folderName}`);
@@ -631,8 +690,28 @@ export default function TreeView({ props }: any) {
         sessionStorage.setItem("LibName", libName);
         location.href = "#/SearchFilter";
     };
+    const getDeletedData = async () => {
+        const deletedData = await getListData(`${props.SiteURL}/_api/web/lists/getbytitle('${libName}')/items?$filter=DeleteFlag eq 'Deleted' and Active eq 0`, props.context);
+        setDeletedData(deletedData.value);
+    };
+    const getPendingApprovalData = async () => {
+        const pendingApprovalData = await getApprovalData(props.context, libName, props.UserEmailID);
+        setApprovalData(pendingApprovalData.value);
+    };
+    const hasRequiredPermissions = (uri: string) => {
+        checkPermissions(props.context, uri).then((permission: boolean) => setHasPermission(permission));
+    };
+
     return (
         <div>
+            <nav aria-label="breadcrumb">
+                <ol className="breadcrumb breadcrumb-style2">
+                    <li className="breadcrumb-item">
+                        <Link to="/" style={{ textDecoration: "none" }}>Dashboard</Link>
+                    </li>
+                    <li className="breadcrumb-item active">{libName}</li>
+                </ol>
+            </nav>
             <div className={styles.grid}>
                 <div className={styles.row}>
                     <div className={styles.col12}>
@@ -646,8 +725,8 @@ export default function TreeView({ props }: any) {
                 <Stack.Item grow styles={stackItemStyles} className='column3'>
                     <div className={styles.grid}>
                         <div className={styles.row}>
-                            <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "EmptyRecycleBin", style: { color: "#f1416c" } }} text={DisplayLabel.RecycleBin} onClick={getRecycleData} /></div>
-                            <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "DocumentApproval", style: { color: "#50cd89" } }} text={DisplayLabel.Approval} onClick={() => setTables("Approver")} /></div>
+                            <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "EmptyRecycleBin", style: { color: "#f1416c" } }} text={`${DisplayLabel.RecycleBin} (${deletedData.length || 0})`} onClick={getRecycleData} /></div>
+                            <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "DocumentApproval", style: { color: "#50cd89" } }} text={`${DisplayLabel.Approval} (${approvalData.length || 0})`} onClick={() => setTables("Approver")} /></div>
                             <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "Search", style: { color: "#7239ea" } }} text={DisplayLabel.AdvancedSearch} onClick={advancedSearch} /></div>
                         </div>
                     </div>
@@ -680,13 +759,23 @@ export default function TreeView({ props }: any) {
                 <Stack.Item grow styles={stackItemStyles} className='column9'>
                     <div className={styles.grid}>
                         <div className={styles.row}>
-                            <div className={styles.col12}>Dashboard/{folderPath}</div>
+                            <nav aria-label="breadcrumb">
+                                <ol className="breadcrumb breadcrumb-style2">
+                                    {
+                                        breadcrumb.map((el: any, index: number) => {
+                                            return <li key={index} className="breadcrumb-item">
+                                                <a href="javascript:void(0)" onClick={() => fetchFolders(el.path, el.name)}>{el.name}</a>
+                                            </li>;
+                                        })
+                                    }
+                                </ol>
+                            </nav>
                         </div>
                         <div className={styles.row}>
                             <div className={styles.col12}>
                                 {folderPath === libName ? <></> :
                                     <div style={{ float: "right" }}>
-                                        {rightFolders.length === 0 && (isValidUser || libDetails.TileAdminId === props.userID) ? <DefaultButton text={DisplayLabel.Upload} onClick={() => setIsOpenUploadPanel(true)} className={styles['secondary-btn']} styles={{ root: { marginRight: 8 } }} /> : <></>}
+                                        {rightFolders.length === 0 && (isValidUser || libDetails.TileAdminId === props.userID || hasPermission) ? <DefaultButton text={DisplayLabel.Upload} onClick={() => setIsOpenUploadPanel(true)} className={styles['secondary-btn']} styles={{ root: { marginRight: 8 } }} /> : <></>}
                                         {files.length === 0 ? <DefaultButton className={styles['info-btn']} text={DisplayLabel.NewFolder} onClick={() => { setIsOpenFolderPanel(true); setFolderName(""); }} /> : <></>}
                                     </div>
                                 }
@@ -741,7 +830,7 @@ export default function TreeView({ props }: any) {
                     </div>
                 </div>
             </Panel>
-            <PopupBox isPopupBoxVisible={isPopupBoxVisible} hidePopup={hidePopup} />
+            <PopupBox isPopupBoxVisible={isPopupBoxVisible} hidePopup={hidePopup} msg={alertMsg} />
             <div className={cls["modal"]} style={showLoader}></div>
             <Panel
                 headerText={panelTitle}
@@ -765,6 +854,5 @@ export default function TreeView({ props }: any) {
         </div>
     );
 }
-
 
 

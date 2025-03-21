@@ -4,6 +4,7 @@ import { WebPartContext } from "@microsoft/sp-webpart-base";
 import { GetListItem, UpdateItem } from "../DAL/Commonfile";
 
 
+
 export async function getAllFolder(WebUrl: string, context: WebPartContext, FolderName: string) {
     const url = WebUrl + "/_api/Web/GetFolderByServerRelativeUrl('" + FolderName + "')?$select=*&$orderby=Id desc&$expand=Files/CheckedOutByUser,Folders,Files,Files/ModifiedBy,Folders/ListItemAllFields,Files/ListItemAllFields,ListItemAllFields,Files/Status,FileLeafRef,FileRef,FileDirRef";
 
@@ -226,3 +227,37 @@ function getFinancialYear(date: any) {
 function padLeft(value: string, length: number, char: string = "0"): string {
     return char.repeat(Math.max(0, length - value.length)) + value;
 }
+
+
+export async function checkPermissions(context: any, folderPath: string): Promise<boolean> {
+    try {
+        const url = `${context.pageContext.web.absoluteUrl}/_api/web/GetFolderByServerRelativeUrl('${folderPath}')/ListItemAllFields/RoleAssignments?$expand=RoleDefinitionBindings`;
+
+        const response: SPHttpClientResponse = await context.spHttpClient.get(
+            url,
+            SPHttpClient.configurations.v1,
+            {
+                headers: {
+                    Accept: "application/json;odata=nometadata"
+                }
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(`Error fetching permissions: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const roleAssignments = data.value || [];
+        const hasRequiredPermissions = roleAssignments.some((assignment: any) => {
+            return assignment.RoleDefinitionBindings.some((role: any) =>
+                ["Edit", "Contribute", "Full Control"].includes(role.Name)
+            );
+        });
+
+        return hasRequiredPermissions;
+    } catch (error) {
+        console.error("Error checking permissions:", error);
+        return false;
+    }
+};

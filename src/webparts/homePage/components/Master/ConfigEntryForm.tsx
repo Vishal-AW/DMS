@@ -2,13 +2,14 @@ import { DefaultButton, FontIcon, IStackItemStyles, IStackStyles, IStackTokens, 
 import { ILabel } from '../Interface/ILabel';
 import * as React from "react";
 import styles from "./Master.module.scss";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SPHttpClient } from "@microsoft/sp-http-base";
 import cls from '../HomePage.module.scss';
 import PopupBox from "../ResuableComponents/PopupBox";
 import { getConfidDataByID, getConfig, SaveconfigMaster, UpdateconfigMaster } from "../../../../Services/ConfigService";
 import ReactTableComponent from '../ResuableComponents/ReusableDataTable';
 import Select from "react-select";
+import { Link } from "react-router-dom";
 
 
 
@@ -28,7 +29,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
     const [ListData, setListData] = useState([]);
     const [DisplaycolumnListData, setDisplaycolumnListData] = useState([]);
     const [isToggleDisabled, setIsToggleDisabled] = useState(false);
-    const [isColumnTypeDisabled, setisColumnTypeDisabled] = useState(false);
+    // const [isColumnTypeDisabled, setisColumnTypeDisabled] = useState(false);
 
     const [isToggleVisible, setToggleVisible] = React.useState<boolean>(false);
     const [isToggleVisible1, setToggleVisible1] = React.useState<boolean>(false);
@@ -43,9 +44,11 @@ export default function ConfigMaster({ props }: any): JSX.Element {
     const [ColumnTypeIDErr, setColumnTypeIDErr] = useState("");
     const [ListNameIDErr, setListNameIDErr] = useState("");
     const [DisplayColumnIDErr, setDisplayColumnIDErr] = useState("");
+    const [alertMsg, setAlertMsg] = useState("");
     // const [SiteListData, setSiteListData] = useState([]);
     //const [ColumnTypeText, setColumnTypeText] = useState('');
     const [selectedListOption, setSelectedListOption] = React.useState<any>(null);
+    const inputRefs = useRef<{ [key: string]: HTMLInputElement | null; }>({});
 
 
 
@@ -89,25 +92,47 @@ export default function ConfigMaster({ props }: any): JSX.Element {
             Header: DisplayLabel?.SrNo,
             accessor: "row._index",
             Cell: ({ row }: { row: any; }) => row._index + 1,
+            filterable: false,
         },
-        { Header: DisplayLabel?.FieldName, accessor: "Title" },
-        { Header: DisplayLabel?.ColumnType, accessor: "ColumnType", },
-        { Header: DisplayLabel?.ListName, accessor: "InternalListName" },
         {
-            Header: DisplayLabel?.IsActive,
-            accessor: "IsActive",
-            Cell: ({ row }: { row: any; }) => (row.IsActive === true ? "Yes" : "No")
+            Header: DisplayLabel?.FieldName, accessor: "Title",
+            filterMethod: (filter: any, row: any) => row[filter.id]?.toLowerCase().includes(filter.value.toLowerCase()),
+        },
+        {
+            Header: DisplayLabel?.ColumnType, accessor: "ColumnType",
+            filterMethod: (filter: any, row: any) => row[filter.id]?.toLowerCase().includes(filter.value.toLowerCase()),
+        },
+        {
+            Header: DisplayLabel?.ListName,
+            accessor: "InternalListName",
+            filterMethod: (filter: any, row: any) => row[filter.id]?.toLowerCase().includes(filter.value?.toLowerCase() || ""),
         },
         {
             Header: DisplayLabel?.IsStaticValue,
             accessor: "IsStaticValue",
-            Cell: ({ row }: { row: any; }) => (row.IsStaticValue === true ? "Yes" : "No")
+            Cell: ({ value }: { value: boolean; }) => (value ? "Yes" : "No"),
+            Filter: ({ filter, onChange }: { filter: any; onChange: (value: any) => void; }) => (
+                <select
+                    value={filter ? filter.value : ""}
+                    onChange={(e) => onChange(e.target.value || undefined)}
+                    style={{ width: "100%", padding: "4px", borderRadius: "4px" }}
+                >
+                    <option value="">All</option>
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                </select>
+            ),
+            filterMethod: (filter: any, row: any) => {
+                if (!filter.value) return true;
+                return String(row[filter.id]) === filter.value;
+            }
         },
         {
             Header: DisplayLabel?.Action,
             Cell: ({ row }: { row: any; }) => (
                 <FontIcon aria-label="Edit" onClick={() => openEditPanel(row._original.Id)} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer', backgroundColor: '#f5f8fa', padding: '6px 9px', borderRadius: '4px' }}></FontIcon>
-            )
+            ),
+            filterable: false,
         }
     ];
     const openEditPanel = async (rowData: any) => {
@@ -155,7 +180,6 @@ export default function ConfigMaster({ props }: any): JSX.Element {
             setSecondaryDropdownVisible(false);
             setTableVisible(false);
             setIsToggleDisabled(false);
-            setisColumnTypeDisabled(true);
         } else if (EditConfigData[0].ColumnType === "Multiple lines of Text") {
             setToggleVisible(false);
             setToggleVisible1(false);
@@ -163,7 +187,6 @@ export default function ConfigMaster({ props }: any): JSX.Element {
             setSecondaryDropdownVisible(false);
             setTableVisible(false);
             setIsToggleDisabled(false);
-            setisColumnTypeDisabled(true);
         }
         else if (EditConfigData[0].ColumnType === "Dropdown") {
             setToggleVisible(true);
@@ -172,7 +195,6 @@ export default function ConfigMaster({ props }: any): JSX.Element {
             setSecondaryDropdownVisible(true);
             setTableVisible(false);
             setIsToggleDisabled(false);
-            setisColumnTypeDisabled(true);
         }
         else if (EditConfigData[0].ColumnType === "Multiple Select") {
             setToggleVisible(true);
@@ -181,7 +203,6 @@ export default function ConfigMaster({ props }: any): JSX.Element {
             setSecondaryDropdownVisible(true);
             setTableVisible(false);
             setIsToggleDisabled(false);
-            setisColumnTypeDisabled(true);
         }
         else if (EditConfigData[0].ColumnType === "Radio") {
             setToggleVisible(true);
@@ -191,7 +212,6 @@ export default function ConfigMaster({ props }: any): JSX.Element {
             setTableVisible(true);
             setIsStaticValues(true);
             setIsToggleDisabled(true);
-            setisColumnTypeDisabled(true);
 
         }
         else if (EditConfigData[0].ColumnType === "Date and Time") {
@@ -201,7 +221,6 @@ export default function ConfigMaster({ props }: any): JSX.Element {
             setSecondaryDropdownVisible(false);
             setTableVisible(false);
             setIsToggleDisabled(false);
-            setisColumnTypeDisabled(true);
         }
         else if (EditConfigData[0].ColumnType === "Person or Group") {
             setToggleVisible(true);
@@ -210,7 +229,6 @@ export default function ConfigMaster({ props }: any): JSX.Element {
             setSecondaryDropdownVisible(false);
             setTableVisible(false);
             setIsToggleDisabled(false);
-            setisColumnTypeDisabled(true);
         }
         else {
             setToggleVisible(false);
@@ -220,7 +238,6 @@ export default function ConfigMaster({ props }: any): JSX.Element {
             setSecondaryDropdownVisible(false);
             setTableVisible(false);
             setIsToggleDisabled(false);
-            setisColumnTypeDisabled(true);
         }
 
         await setIsShowasFilter(EditConfigData[0].IsShowAsFilter);
@@ -235,9 +252,25 @@ export default function ConfigMaster({ props }: any): JSX.Element {
 
     };
 
-
+    const [newOptionError, setNewOptionErr] = useState("");
     const addOption = () => {
-        if (newOption.trim() !== '') {
+        setNewOptionErr("");
+        let isValid = true;
+        if (newOption.trim() === '') {
+            setNewOptionErr(DisplayLabel?.ThisFieldisRequired || "");
+            isValid = false;
+            return;
+        }
+        const isDuplicate = options.some(
+            (Data) => Data.toLowerCase() === newOption.toLowerCase()
+        );
+        if (isDuplicate) {
+            setNewOptionErr(DisplayLabel?.ValueAlreadyExist || "");
+            isValid = false;
+            return;
+        }
+
+        if (isValid) {
             setOptions([...options, newOption.trim()]);
             setNewOption('');
         }
@@ -327,7 +360,6 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                 setSecondaryDropdownVisible(false);
                 setTableVisible(false);
                 setIsToggleDisabled(false);
-                setisColumnTypeDisabled(false);
             } else if (option.value === "Multiple lines of Text") {
                 setToggleVisible(false);
                 setToggleVisible1(false);
@@ -335,7 +367,6 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                 setSecondaryDropdownVisible(false);
                 setTableVisible(false);
                 setIsToggleDisabled(false);
-                setisColumnTypeDisabled(false);
             }
             else if (option.value === "Dropdown") {
                 setToggleVisible(true);
@@ -344,7 +375,6 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                 setSecondaryDropdownVisible(true);
                 setTableVisible(false);
                 setIsToggleDisabled(false);
-                setisColumnTypeDisabled(false);
             }
             else if (option.value === "Multiple Select") {
                 setToggleVisible(true);
@@ -353,7 +383,6 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                 setSecondaryDropdownVisible(true);
                 setTableVisible(false);
                 setIsToggleDisabled(false);
-                setisColumnTypeDisabled(false);
             }
             else if (option.value === "Radio") {
                 setToggleVisible(true);
@@ -363,7 +392,6 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                 setTableVisible(true);
                 setIsStaticValues(true);
                 setIsToggleDisabled(true);
-                setisColumnTypeDisabled(false);
 
             }
             else if (option.value === "Date and Time") {
@@ -373,7 +401,6 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                 setSecondaryDropdownVisible(false);
                 setTableVisible(false);
                 setIsToggleDisabled(false);
-                setisColumnTypeDisabled(false);
             }
             else if (option.value === "Person or Group") {
                 setToggleVisible(true);
@@ -382,7 +409,6 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                 setSecondaryDropdownVisible(false);
                 setTableVisible(false);
                 setIsToggleDisabled(false);
-                setisColumnTypeDisabled(false);
             }
             else {
                 setToggleVisible(false);
@@ -391,7 +417,6 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                 setSecondaryDropdownVisible(false);
                 setTableVisible(false);
                 setIsToggleDisabled(false);
-                setisColumnTypeDisabled(false);
             }
         }
     };
@@ -432,7 +457,6 @@ export default function ConfigMaster({ props }: any): JSX.Element {
         setIsShowasFilter(false);
         setIsStaticValues(false);
         setOptions([]);
-        setisColumnTypeDisabled(false);
         clearError();
 
         setToggleVisible(false);
@@ -441,7 +465,6 @@ export default function ConfigMaster({ props }: any): JSX.Element {
         setSecondaryDropdownVisible(false);
         setTableVisible(false);
         setIsToggleDisabled(false);
-        setisColumnTypeDisabled(false);
 
     };
     const clearError = () => {
@@ -453,30 +476,64 @@ export default function ConfigMaster({ props }: any): JSX.Element {
     };
 
     const validation = () => {
+
         let isValidForm = true;
         if (FieldName === "" || FieldName === undefined || FieldName === null) {
             setFieldNameErr(DisplayLabel?.ThisFieldisRequired as string);
+            inputRefs.current["FieldName"]?.focus();
             isValidForm = false;
+            return;
         }
-        else if (isColumnTypeDisabled === false) {
-            if (ColumnTypeID === "" || ColumnTypeID === undefined || ColumnTypeID === null) {
-                setColumnTypeIDErr(DisplayLabel?.ThisFieldisRequired as string);
-                isValidForm = false;
-            }
+        const isDuplicate = MainTableSetdata.some(
+            (Data) => Data.Title.toLowerCase() === FieldName.toLowerCase().trim()
+        );
+        if (/[*|\":<>[\]{}`\\()'!%;@#&$]/.test(FieldName)) {
+            setFieldNameErr(DisplayLabel?.SpecialCharacterNotAllowed as string);
+            isValidForm = false;
+            return;
         }
-        else if (IsStaticValue === true) {
+        if (isDuplicate && !isEditMode) {
+            setFieldNameErr(DisplayLabel?.ColumnNameIsAlreadyExist as string);
+            isValidForm = false;
+            return;
+        }
+
+        if (isDuplicate && isEditMode) {
+            MainTableSetdata.map((Data) => {
+                if (Data.Title.toLowerCase() === FieldName.toLowerCase().trim() && Data.ID !== CurrentEditID) {
+                    setFieldNameErr(DisplayLabel?.ColumnNameIsAlreadyExist as string);
+                    isValidForm = false;
+                    return;
+                }
+            });
+        }
+
+        if (ColumnTypeID.value === "" || ColumnTypeID.value === undefined || ColumnTypeID.value === null) {
+            setColumnTypeIDErr(DisplayLabel?.ThisFieldisRequired as string);
+            inputRefs.current["ColumnType"]?.focus();
+            isValidForm = false;
+            return;
+        }
+
+        if (IsStaticValue === true) {
             if (options.length === 0) {
                 alert(DisplayLabel?.Atleasttwooptionrecordrequired);
+                isValidForm = false;
+                return;
             }
         }
-        else if (IsStaticValue === false && ColumnTypeID.value === "Dropdown") {
+        if (IsStaticValue === false && ColumnTypeID.value === "Dropdown") {
             if (ListNameID === "" || ListNameID === undefined || ListNameID === null) {
                 setListNameIDErr(DisplayLabel?.ThisFieldisRequired as string);
+                inputRefs.current["ListName"]?.focus();
                 isValidForm = false;
+                return;
             }
             if (DisplayColumnID === "" || DisplayColumnID === undefined || DisplayColumnID === null) {
                 setDisplayColumnIDErr(DisplayLabel?.ThisFieldisRequired as string);
+                inputRefs.current["DisplayColumn"]?.focus();
                 isValidForm = false;
+                return;
             }
         }
 
@@ -502,7 +559,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                 ddlColumn = null;
             } else {
                 ddlListName = ListNameID;
-                ddlColumn = DisplayColumnID.value;
+                ddlColumn = DisplayColumnID?.value || "";
             }
             let FieldNameNew = FieldName.split(" ").join("");
             let Name = FieldName;
@@ -531,6 +588,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
 
             setShowLoader({ display: "none" });
             setIsPanelOpen(false);
+            setAlertMsg((isEditMode ? DisplayLabel?.UpdateAlertMsg : DisplayLabel?.SubmitMsg) || "");
             setisPopupVisible(true);
             fetchData();
 
@@ -543,6 +601,14 @@ export default function ConfigMaster({ props }: any): JSX.Element {
 
     return (
         <div>
+            <nav aria-label="breadcrumb">
+                <ol className="breadcrumb breadcrumb-style2">
+                    <li className="breadcrumb-item">
+                        <Link to="/" style={{ textDecoration: "none" }}>Dashboard</Link>
+                    </li>
+                    <li className="breadcrumb-item active">Configuration Master</li>
+                </ol>
+            </nav>
             <div className={styles.alignbutton} style={{ paddingRight: '0px' }}>
                 <DefaultButton id="requestButton" className={styles['primary-btn']} text={DisplayLabel?.Add} onClick={openAddPanel}  ></DefaultButton>
             </div>
@@ -556,7 +622,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                         PagedefaultSize={10}
                         TableRows={1}
                         TableshowPagination={MainTableSetdata.length > 10}
-                    //TableshowFilter={true}
+                        TableshowFilter={true}
                     />
                 </Stack.Item>
             </Stack>
@@ -591,9 +657,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                                     errorMessage={FieldNameErr}
                                     value={FieldName}
                                     onChange={(el: React.ChangeEvent<HTMLInputElement>) => setFieldName(el.target.value)}
-
-
-
+                                    componentRef={(input: any) => (inputRefs.current["FieldName"] = input)}
                                 />
                             </div>
                         </div>
@@ -606,6 +670,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                                     onChange={handleColumnTypeonChange}
                                     isSearchable
                                     placeholder={DisplayLabel?.Selectanoption}
+                                    ref={(input: any) => (inputRefs.current["ColumnType"] = input)}
                                 />
                                 {ColumnTypeIDErr && <p style={{ color: "rgb(164, 38, 44)" }}>{ColumnTypeIDErr}</p>}
                             </div>
@@ -615,7 +680,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                         {isToggleVisible && (
                             <div className="column6">
                                 <div className="form-group">
-                                    <label className={styles.Headerlabel}>{DisplayLabel?.IsShowasFilter}<span style={{ color: "red" }}>*</span></label>
+                                    <label className={styles.Headerlabel}>{DisplayLabel?.IsShowasFilter}</label>
 
                                     <Toggle checked={IsShowasFilter} onChange={(_, checked) => handleIsShowasFilterToggleChange(checked!)} />
 
@@ -625,7 +690,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                         {isToggleVisible1 && (
                             <div className="column6">
                                 <div className="form-group">
-                                    <label className={styles.Headerlabel}>{DisplayLabel?.IsStaticValue}<span style={{ color: "red" }}>*</span></label>
+                                    <label className={styles.Headerlabel}>{DisplayLabel?.IsStaticValue}</label>
                                     <Toggle checked={IsStaticValue} onChange={(_, checked) => handleIsStaticValueToggleChange(checked!)} disabled={isToggleDisabled} />
 
                                 </div>
@@ -646,6 +711,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                                         isSearchable
                                         placeholder={DisplayLabel?.Selectanoption}
                                         errorMessage={ListNameIDErr}
+                                        ref={(input: any) => (inputRefs.current["ListName"] = input)}
                                     />
                                     {ListNameIDErr && <p style={{ color: "rgb(164, 38, 44)" }}>{ListNameIDErr}</p>}
                                 </div>
@@ -668,6 +734,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                                         isSearchable
                                         placeholder={DisplayLabel?.Selectanoption}
                                         errorMessage={DisplayColumnIDErr}
+                                        ref={(input: any) => (inputRefs.current["DisplayColumn"] = input)}
                                     />
                                     {DisplayColumnIDErr && <p style={{ color: "rgb(164, 38, 44)" }}>{DisplayColumnIDErr}</p>}
                                 </div>
@@ -699,6 +766,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                                                     value={newOption}
                                                     onChange={(_, value) => setNewOption(value || '')}
                                                     styles={{ root: { width: '100%' } }}
+                                                    errorMessage={newOptionError}
                                                 />
                                             </div>
                                         </td>
@@ -743,7 +811,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
 
 
             </Panel>
-            <PopupBox isPopupBoxVisible={isPopupVisible} hidePopup={hidePopup} />
+            <PopupBox isPopupBoxVisible={isPopupVisible} hidePopup={hidePopup} msg={alertMsg} />
 
         </div>
 

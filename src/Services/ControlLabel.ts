@@ -175,6 +175,40 @@ export async function GetAllLabel(WebUrl: string, spHttpClient: SPHttpClient, La
       CheckIn: getValue("CheckIn", data, Language),
       CheckoutConfirm: getValue("CheckoutConfirm", data, Language),
       CheckedOutThisItem: getValue("CheckedOutThisItem", data, Language),
+      InvalidFileFormat: getValue("InvalidFileFormat", data, Language),
+
+      SubmitMsg: getValue("SubmitMsg", data, Language),
+      ApprovedMsg: getValue("ApprovedMsg", data, Language),
+      DeletedMsg: getValue("DeletedMsg", data, Language),
+      RejectedMsg: getValue("RejectedMsg", data, Language),
+      FolderUpdatedMsg: getValue("FolderUpdatedMsg", data, Language),
+      RestoreDoc: getValue("RestoreDoc", data, Language),
+      StopInheritingSuccessMsg: getValue("StopInheritingSuccessMsg", data, Language),
+      AccessHasGranted: getValue("AccessHasGranted", data, Language),
+      AccessHasRemoved: getValue("AccessHasRemoved", data, Language),
+      CheckedOutSuccessfully: getValue("CheckedOutSuccessfully", data, Language),
+      CheckedInSuccessfully: getValue("CheckedInSuccessfully", data, Language),
+      DiscardedCheckOut: getValue("DiscardedCheckOut", data, Language),
+
+      ParentFolder: getValue("ParentFolder", data, Language),
+      FolderTemplateCombination: getValue("FolderTemplateCombination", data, Language),
+      History: getValue("History", data, Language),
+      ActionBy: getValue("ActionBy", data, Language),
+      ColumnNameIsAlreadyExist: getValue("ColumnNameIsAlreadyExist", data, Language),
+      ValueAlreadyExist: getValue("ValueAlreadyExist", data, Language),
+      UpdateAlertMsg: getValue("UpdateAlertMsg", data, Language),
+
+      MenuName: getValue("MenuName", data, Language),
+      URL: getValue("URL", data, Language),
+      OrderNo: getValue("OrderNo", data, Language),
+      NextTab: getValue("NextTab", data, Language),
+      ExternalUrl: getValue("ExternalUrl", data, Language),
+      Permission: getValue("Permission", data, Language),
+      isParentMenu: getValue("isParentMenu", data, Language),
+      Testcol: getValue("Testcol", data, Language),
+      IconClass: getValue("IconClass", data, Language),
+      ParentMenuId: getValue("ParentMenuId", data, Language),
+
     };
 
     // 

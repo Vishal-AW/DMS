@@ -20,7 +20,7 @@ export const FolderStructure = async (context: WebPartContext, FolderPath: strin
     ).then(async (response: SPHttpClientResponse) => {
         if (response.ok) {
             const data = await response.json();
-            await breakRoleInheritance(context, FolderPath, uid);
+            await breakRoleInheritance(context, FolderPath, uid, LibraryName, data.ListItemAllFields.ID);
             return data.ListItemAllFields.ID;
         }
     }).catch((error) => {
@@ -28,7 +28,7 @@ export const FolderStructure = async (context: WebPartContext, FolderPath: strin
     });
 };
 
-const breakRoleInheritance = async (context: WebPartContext, folderUrl: string, userIds: number[]) => {
+const breakRoleInheritance = async (context: WebPartContext, folderUrl: string, userIds: number[], LibraryName: string, Id: number) => {
 
     const breakInheritanceUrl = `${context.pageContext.web.absoluteUrl}/_api/web/GetFolderByServerRelativeUrl('${folderUrl}')/ListItemAllFields/breakroleinheritance(true)`;
     return await context.spHttpClient.post(
@@ -42,8 +42,9 @@ const breakRoleInheritance = async (context: WebPartContext, folderUrl: string, 
         }
     ).then(async (response: SPHttpClientResponse) => {
         if (response.ok) {
-            await removeAllPermissions(context, folderUrl);
-            return await grantPermissions(context, folderUrl, [...userIds]);
+            await grantPermissions(context, folderUrl, [...userIds]);
+            return await removeAllPermissions(context, folderUrl, [...userIds]);
+
         }
     });
 
@@ -74,7 +75,7 @@ const grantPermissions = async (context: WebPartContext, folderUrl: string, user
 };
 
 
-const removeAllPermissions = async (context: WebPartContext, folderUrl: string) => {
+const removeAllPermissions = async (context: WebPartContext, folderUrl: string, userIds: number[]) => {
     const roleAssignmentsUrl = `${context.pageContext.web.absoluteUrl}/_api/web/GetFolderByServerRelativeUrl('${folderUrl}')/ListItemAllFields/roleassignments`;
 
     try {
@@ -89,21 +90,23 @@ const removeAllPermissions = async (context: WebPartContext, folderUrl: string) 
                 if (response.ok) {
                     const data = await response.json();
                     for (const assignment of data.value) {
-                        const deleteUrl = `${roleAssignmentsUrl}/removeroleassignment(principalid=${assignment.PrincipalId})`;
+                        if (!userIds.includes(assignment.PrincipalId)) {
+                            const deleteUrl = `${roleAssignmentsUrl}/removeroleassignment(principalid=${assignment.PrincipalId})`;
 
-                        const deleteResponse = await context.spHttpClient.post(
-                            deleteUrl,
-                            SPHttpClient.configurations.v1,
-                            {
-                                headers: {
-                                    Accept: "application/json;odata=nometadata", // Consistent header value
-                                    "Content-Type": "application/json;odata=nometadata",
-                                },
+                            const deleteResponse = await context.spHttpClient.post(
+                                deleteUrl,
+                                SPHttpClient.configurations.v1,
+                                {
+                                    headers: {
+                                        Accept: "application/json;odata=nometadata", // Consistent header value
+                                        "Content-Type": "application/json;odata=nometadata",
+                                    },
+                                }
+                            );
+
+                            if (!deleteResponse.ok) {
+                                console.error('Failed to remove role assignment:', assignment.PrincipalId);
                             }
-                        );
-
-                        if (!deleteResponse.ok) {
-                            console.error('Failed to remove role assignment:', assignment.PrincipalId);
                         }
                     }
                 } else {
@@ -133,15 +136,15 @@ export const breakRoleInheritanceForLib = async (context: WebPartContext, libNam
         }
     ).then(async (response: SPHttpClientResponse) => {
         if (response.ok) {
-            await removeAllPermissionsForLib(context, libName);
-            return await grantPermissionsForLib(context, libName, [...userIds]);
+            await grantPermissionsForLib(context, libName, [...userIds]);
+            return await removeAllPermissionsForLib(context, libName, [...userIds]);
         }
     });
 
 };
 
 
-const removeAllPermissionsForLib = async (context: WebPartContext, libName: string) => {
+const removeAllPermissionsForLib = async (context: WebPartContext, libName: string, userIds: number[]) => {
     const roleAssignmentsUrl = `${context.pageContext.web.absoluteUrl}/_api/web/lists/getByTitle('${libName}')/roleassignments`;
 
     try {
@@ -156,21 +159,23 @@ const removeAllPermissionsForLib = async (context: WebPartContext, libName: stri
                 if (response.ok) {
                     const data = await response.json();
                     for (const assignment of data.value) {
-                        const deleteUrl = `${roleAssignmentsUrl}/removeroleassignment(principalid=${assignment.PrincipalId})`;
+                        if (!userIds.includes(assignment.PrincipalId)) {
+                            const deleteUrl = `${roleAssignmentsUrl}/removeroleassignment(principalid=${assignment.PrincipalId})`;
 
-                        const deleteResponse = await context.spHttpClient.post(
-                            deleteUrl,
-                            SPHttpClient.configurations.v1,
-                            {
-                                headers: {
-                                    Accept: "application/json;odata=nometadata", // Consistent header value
-                                    "Content-Type": "application/json;odata=nometadata",
-                                },
+                            const deleteResponse = await context.spHttpClient.post(
+                                deleteUrl,
+                                SPHttpClient.configurations.v1,
+                                {
+                                    headers: {
+                                        Accept: "application/json;odata=nometadata", // Consistent header value
+                                        "Content-Type": "application/json;odata=nometadata",
+                                    },
+                                }
+                            );
+
+                            if (!deleteResponse.ok) {
+                                console.error('Failed to remove role assignment:', assignment.PrincipalId);
                             }
-                        );
-
-                        if (!deleteResponse.ok) {
-                            console.error('Failed to remove role assignment:', assignment.PrincipalId);
                         }
                     }
                 } else {

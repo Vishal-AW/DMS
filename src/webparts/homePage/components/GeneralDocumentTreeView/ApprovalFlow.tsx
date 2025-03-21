@@ -29,6 +29,7 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
     const [itemId, setItemId] = useState(0);
     const [hideDialog, setHideDialog] = useState(false);
     const DisplayLabel: ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}');
+    const [alertMsg, setAlertMsg] = useState("");
 
     useEffect(() => {
         if (action === "Approver")
@@ -47,7 +48,14 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
         setFiles(data.value || []);
     };
     const columns: any = [
-        { Header: DisplayLabel.FileName, accessor: "Name", Cell: (row: any) => <a href={row.original.File.ServerRelativeUrl}>{row.original.ActualName}</a> },
+        {
+            Header: DisplayLabel.FileName, accessor: "Name", Cell: ({ row }: { row: any; }) => <a href="javascript:void('0')" onClick={() => {
+                if (row._original.File.LinkingUrl === "")
+                    window.open(row._original.File.ServerRelativeUrl, "_blank");
+                else
+                    window.open(row._original.File.LinkingUrl, "_blank");
+            }}>{row._original?.ActualName}</a>
+        },
         { Header: DisplayLabel.FolderPath, accessor: 'FolderDocumentPath' },
         {
             Header: 'Submitted By', accessor: 'Created', Cell: ({ row }: { row: any; }) => {
@@ -77,7 +85,7 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
             )
         }
     ];
-    const closeDialog = useCallback(() => setHideDialog(false), []);
+    const closeDialog = useCallback(() => { setHideDialog(false); setcomment(""); }, []);
 
     const handleConfirm = useCallback(
         async (value: boolean) => {
@@ -94,10 +102,12 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
             DeleteFlag: null
         };
         await updateLibrary(context.pageContext.web.absoluteUrl, context.spHttpClient, obj, itemId, libraryName);
+        setAlertMsg(DisplayLabel.RestoreDoc);
         setIsPopupBoxVisible(true);
     };
 
     const openEditPanel = async (rowData: any) => {
+        setcomment("");
         setIsPanelOpen(true);
         const fData = files.find((el: any) => el.Id === rowData);
         setFileData(fData);
@@ -158,6 +168,7 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
                     emailObj.Msg = DisplayLabel.PublishedEmailMsg;
                 }
                 await TileSendMail(context, emailObj);
+                setAlertMsg(DisplayLabel.ApprovedMsg);
                 setIsPopupBoxVisible(true);
 
             } catch (error) {
@@ -217,6 +228,7 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
             };
 
             await TileSendMail(context, emailObj);
+            setAlertMsg(DisplayLabel.RejectedMsg);
             setIsPopupBoxVisible(true);
         }
     };
@@ -240,7 +252,7 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
                 type={PanelType.medium}
                 onRenderFooterContent={() => (<>
                     <PrimaryButton onClick={ApproveFile} styles={buttonStyles} className={styles["primary-btn"]}>{DisplayLabel.ApproveButton}</PrimaryButton>
-                    <DefaultButton className={styles["primary-btn"]} onClick={RejectFile}>{DisplayLabel.RejectButton}</DefaultButton>
+                    <DefaultButton className={styles["info-btn"]} onClick={RejectFile}>{DisplayLabel.RejectButton}</DefaultButton>
                 </>)}
                 isFooterAtBottom={true}
             >
@@ -293,7 +305,7 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
                 </div>
 
             </Panel>
-            <PopupBox isPopupBoxVisible={isPopupBoxVisible} hidePopup={hidePopup} />
+            <PopupBox isPopupBoxVisible={isPopupBoxVisible} hidePopup={hidePopup} msg={alertMsg} />
             <ConfirmationDialog hideDialog={hideDialog} closeDialog={closeDialog} handleConfirm={handleConfirm} msg={DisplayLabel.RestoreConfirmMsg} />
         </>
     );
