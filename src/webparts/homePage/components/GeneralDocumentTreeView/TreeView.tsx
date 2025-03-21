@@ -170,7 +170,31 @@ export default function TreeView({ props }: any) {
     };
 
 
+    // const getStatusColor = (status: any) => {
+    //     switch (status) {
+    //         case "Pending With Publisher":
+    //             return { backgroundColor: "green", color: "white" };
+    //         case "Inactive":
+    //             return { backgroundColor: "red", color: "white" };
+    //         case "Pending":
+    //             return { backgroundColor: "red", color: "white" };
+    //         default:
+    //             return { backgroundColor: "red", color: "white" };
+    //     }
+    // };
 
+    const getStatusStyles = (status: any) => {
+        switch (status) {
+            case "Pending With Approver":
+                return { backgroundColor: "#f1faff", color: "#009ef7" };
+            case "Published":
+                return { backgroundColor: "#e8fff3", color: "#50cd89" };
+            case "Pending With Publisher":
+                return { backgroundColor: "#fff8dd", color: "#ffc700" };
+            case "Rejected":
+                return { backgroundColor: "#fff5f8", color: "#ed1c24" };
+        }
+    };
 
 
     const columns = [
@@ -215,7 +239,38 @@ export default function TreeView({ props }: any) {
         },
         { Header: DisplayLabel.ReferenceNo, accessor: 'ListItemAllFields.ReferenceNo' },
         { Header: DisplayLabel.Versions, accessor: 'ListItemAllFields.Level' },
-        { Header: DisplayLabel.Status, accessor: 'ListItemAllFields.DisplayStatus' },
+        {
+            Header: DisplayLabel.Status, accessor: 'ListItemAllFields.DisplayStatus',
+            // Cell: ({ row }: { row: any }) => (
+            //     <span
+            //         style={{
+            //             backgroundColor: getStatusColor(row._original.ListItemAllFields.DisplayStatus),
+            //             color: "white",
+            //             padding: "5px 10px",
+            //             borderRadius: "5px",
+            //         }}
+            //     >
+            //         {row._original.ListItemAllFields.DisplayStatus}
+            //     </span>
+            // ),
+
+            Cell: ({ row }: { row: any }) => {
+                const styles = getStatusStyles(row._original.ListItemAllFields.DisplayStatus);
+                return (
+                    <span
+                        style={{
+                            ...styles,
+                            padding: "5px 10px",
+                            borderRadius: "5px",
+                            display: "inline-block",
+                        }}
+                    >
+                        {row._original.ListItemAllFields.DisplayStatus}
+                    </span>
+                );
+            },
+
+        },
         // { Header: 'OCR Status', accessor: 'ListItemAllFields.OCRStatus' },
         {
             Header: DisplayLabel.Action, accessor: "Id", Cell: ({ row }: { row: any; }) => {
@@ -742,7 +797,7 @@ export default function TreeView({ props }: any) {
             <div className={styles.grid}>
                 <div className={styles.row}>
                     <div className={styles.col12}>
-                        {isValidUser || libDetails.TileAdminId === props.userID ? <DefaultButton onClick={projectCreation} text={DisplayLabel?.NewRequest} className={styles['primary-btn']} style={{ float: "right" }} /> : ""}
+                        {isValidUser || libDetails.TileAdminId === props.userID ? <DefaultButton onClick={projectCreation} text={DisplayLabel?.NewRequest} className={styles['primary-btn']} style={{ float: "right", marginRight: "20px" }} /> : ""}
                     </div>
                 </div>
             </div>
