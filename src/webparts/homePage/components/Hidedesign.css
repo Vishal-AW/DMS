@@ -759,3 +759,15 @@ label {
     flex: 0 0 calc(16.66% - 20px) !important;
     margin-right: 10px !important;
 }
+
+.ms-StackItem>.ms-Stack-child:not(:first-child) {
+    margin-left: 0px !important;
+}
+
+.css-191>.ms-Stack-child:not(:first-child) {
+    margin-left: 0px !important;
+}
+
+.ms-Stack-child:not(:first-child) {
+    margin-left: 0px !important;
+}
