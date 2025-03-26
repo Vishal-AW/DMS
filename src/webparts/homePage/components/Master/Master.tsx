@@ -28,6 +28,7 @@ import PopupBox from "../ResuableComponents/PopupBox";
 import { breakRoleInheritanceForLib, grantPermissionsForLib } from "../../../../Services/FolderStructure";
 import { getListData } from "../../../../Services/GeneralDocument";
 import Select from "react-select";
+import { Link } from "react-router-dom";
 // import { wrap } from "lodash";
 
 
@@ -191,11 +192,12 @@ export default function Master({ props }: any): JSX.Element {
       Header: DisplayLabel?.LastModified,
       Cell: ({ row }: { row: any; }) => {
         const rowData = row._original;
-        const formattedDate = new Date(rowData.Modified).toLocaleDateString("en-US", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric"
-        });
+        const formattedDate = moment(rowData.Modified).format("DD/MM/YYYY");
+        // new Date(rowData.Modified).toLocaleDateString("en-US", {
+        //   day: "2-digit",
+        //   month: "2-digit",
+        //   year: "numeric"
+        // });
         const formattedTime = new Date(rowData.Modified).toLocaleTimeString("en-US", {
           hour: "2-digit",
           minute: "2-digit",
@@ -306,33 +308,56 @@ export default function Master({ props }: any): JSX.Element {
     }
     await setDynamicDataReference(EditSettingData[0].IsDynamicReference);
 
-    if (EditSettingData[0].IsDynamicReference === true) {
-
-      const formula = EditSettingData[0].ReferenceFormula;
-      await setRefExample(EditSettingData[0].ReferenceFormula);
-
-      const fields = [];
-      if (formula.includes("{YYYY}")) fields.push("YYYY");
-      if (formula.includes("{YY_YY}")) fields.push("YY_YY");
-      if (formula.includes("{MM}")) fields.push("MM");
-
+    if (EditSettingData?.length > 0 && EditSettingData[0].IsDynamicReference) {
+      const formula = EditSettingData[0].ReferenceFormula || "";
+      setRefExample(formula);
+      const fields = new Set<string>();
       const dynamicFieldPattern = /\{([^}]+)\}/g;
-      let match;
-      while ((match = dynamicFieldPattern.exec(formula)) !== null) {
-        const fieldName = (match[1]);
 
-        if (!["YYYY", "YY_YY", "MM", "Continue"].includes(fieldName)) {
-          fields.push(fieldName);
-        }
-      }
+      const matches = [...formula.matchAll(dynamicFieldPattern)];
+      matches.forEach((match, index) => {
+        const fieldName = match[1];
+        if (index === matches.length - 1)
+          setIncrement(fieldName || "Continue");
+        else
+          fields.add(fieldName);
+      });
 
-      setRefFormatData(fields);
+      setRefFormatData(Array.from(fields));
       setSeparator(EditSettingData[0].Separator || "-");
-      setIncrement(EditSettingData[0].InitialIncrement || "Continue");
+
     }
     else {
       await setRefExample(EditSettingData[0].ReferenceFormula);
     }
+    // if (EditSettingData[0].IsDynamicReference === true) {
+
+    //   const formula = EditSettingData[0].ReferenceFormula;
+    //   await setRefExample(EditSettingData[0].ReferenceFormula);
+
+    //   const fields = [];
+    //   if (formula.includes("{YYYY}")) fields.push("YYYY");
+    //   if (formula.includes("{YY_YY}")) fields.push("YY_YY");
+    //   if (formula.includes("{MM}")) fields.push("MM");
+
+    //   const dynamicFieldPattern = /\{([^}]+)\}/g;
+    //   let match;
+    //   while ((match = dynamicFieldPattern.exec(formula)) !== null) {
+    //     const fieldName = (match[1]);
+
+    //     if (!["YYYY", "YY_YY", "MM", "Continue"].includes(fieldName)) {
+    //       fields.push(fieldName);
+    //     }
+    //   }
+
+    //   setRefFormatData(fields);
+    //   setSeparator(EditSettingData[0].Separator || "-");
+    //   setIncrement(EditSettingData[0].InitialIncrement || "Continue");
+    // }
+    // else {
+    //   await setRefExample(EditSettingData[0].ReferenceFormula);
+    // }
+
 
     let GetAttachmentData: any = await GetAttachmentFile(props.SiteURL, props.spHttpClient, str);
 
@@ -1273,6 +1298,14 @@ export default function Master({ props }: any): JSX.Element {
 
     <div>
       <div>
+        <nav aria-label="breadcrumb">
+          <ol className="breadcrumb breadcrumb-style2">
+            <li className="breadcrumb-item">
+              <Link to="/" style={{ textDecoration: "none" }}>Dashboard</Link>
+            </li>
+            <li className="breadcrumb-item active">Tile Setting</li>
+          </ol>
+        </nav>
 
         <div className={styles.alignbutton} style={{ paddingRight: '0px' }}>
           <DefaultButton id="requestButton" className={styles['primary-btn']} text={DisplayLabel?.Add} onClick={openAddPanel}  ></DefaultButton>

@@ -262,7 +262,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
             return;
         }
         const isDuplicate = options.some(
-            (Data) => Data.toLowerCase() === newOption.toLowerCase()
+            (Data) => Data.toLowerCase() === newOption.toLowerCase().trim()
         );
         if (isDuplicate) {
             setNewOptionErr(DisplayLabel?.ValueAlreadyExist || "");
@@ -508,7 +508,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
             });
         }
 
-        if (ColumnTypeID.value === "" || ColumnTypeID.value === undefined || ColumnTypeID.value === null) {
+        if (ColumnTypeID?.value === "" || ColumnTypeID?.value === undefined || ColumnTypeID === null) {
             setColumnTypeIDErr(DisplayLabel?.ThisFieldisRequired as string);
             inputRefs.current["ColumnType"]?.focus();
             isValidForm = false;
