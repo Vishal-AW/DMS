@@ -1,7 +1,7 @@
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import React, { useCallback, useEffect, useState } from 'react';
 import ReactTableComponent from '../ResuableComponents/ReusableDataTable';
-import { getApprovalData, getRecycleData, updateLibrary } from "../../../../Services/GeneralDocument";
+import { getApprovalData, getRecycleData, getArchiveData, updateLibrary } from "../../../../Services/GeneralDocument";
 import { DefaultButton, FontIcon, Panel, PanelType, PrimaryButton, TextField } from "@fluentui/react";
 import styles from "./TreeView.module.scss";
 import { getStatusByInternalStatus } from "../../../../Services/StatusSerivce";
@@ -35,6 +35,8 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
     useEffect(() => {
         if (action === "Approver")
             getFiles();
+        else if (action === "Archive")
+            getArchiveFile();
         else
             getRecycleFile();
 
@@ -46,6 +48,10 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
     };
     const getRecycleFile = async () => {
         const data = await getRecycleData(context, libraryName);
+        setFiles(data.value || []);
+    };
+    const getArchiveFile = async () => {
+        const data = await getArchiveData(context, libraryName);
         setFiles(data.value || []);
     };
     const columns: any = [

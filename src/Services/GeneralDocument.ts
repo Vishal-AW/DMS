@@ -114,6 +114,16 @@ export function getRecycleData(context: WebPartContext, libeName: string) {
     return getMethod(context.pageContext.web.absoluteUrl, context.spHttpClient, filter, libeName);
 }
 
+export function getArchiveData(context: WebPartContext, libeName: string) {
+    const filter = "Active eq 0 and IsArchiveFlag eq 1 and DeleteFlag ne 'Deleted'";
+    return getDocument(context.pageContext.web.absoluteUrl, context.spHttpClient, filter, libeName);
+}
+
+export function getDataByRefID(context: WebPartContext, Id: string, libeName: string) {
+    const filter = "IsExistingRefID eq " + Id;
+    return getDocument(context.pageContext.web.absoluteUrl, context.spHttpClient, filter, libeName);
+}
+
 async function getMethod(WebUrl: string, spHttpClient: any, filter: any, libeName: string) {
 
     let option = {
@@ -133,7 +143,7 @@ export async function getDocument(WebUrl: string, spHttpClient: any, filter: any
     var selectcols = "*,ID,File,DefineRole,ProjectmanagerAllow,Projectmanager/Id,Projectmanager/Title,ProjectmanagerEmail,PublisherAllow,Publisher/Id,";
     selectcols += "Publisher/Title,PublisherEmail,CurrentApprover,InternalStatus,ProjectMasterLID,";
     selectcols += "LatestRemark,AllowApprover,Created,Author/EMail,Author/Title,FileLeafRef,FileRef,FileDirRef,Active,ProjectmanagerId,PublisherId,File,ServerRedirectedEmbedUrl,DisplayStatus,Level,OCRStatus,";
-    selectcols += "Company,Template";
+    selectcols += "Company,Template,IsArchiveFlag";
     var option = {
         select: selectcols,
         expand: "File,Projectmanager,Publisher,Author",

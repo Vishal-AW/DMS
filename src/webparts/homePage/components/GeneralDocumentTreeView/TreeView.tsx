@@ -82,6 +82,7 @@ export default function TreeView({ props }: any) {
 
     const libDetails: any = JSON.parse(tileObject as string);
     const libName = libDetails.LibraryName;
+    //const archivelibName = libDetails.ArchiveLibraryName;
     const portalUrl = new URL(props.SiteURL).origin;
     const [isPanelOpen, setIsPanelOpen] = useState(false);
     const [isOpenFolderPanel, setIsOpenFolderPanel] = useState(false);
@@ -254,7 +255,7 @@ export default function TreeView({ props }: any) {
             //     </span>
             // ),
 
-            Cell: ({ row }: { row: any }) => {
+            Cell: ({ row }: { row: any; }) => {
                 const styles = getStatusStyles(row._original.ListItemAllFields.DisplayStatus);
                 return (
                     <span
@@ -742,6 +743,12 @@ export default function TreeView({ props }: any) {
         setTables("Recycle");
 
     };
+
+    const getArchiveData = () => {
+        setTables("Archive");
+
+    };
+
     const hidePopup = useCallback(() => { setIsPopupBoxVisible(false); }, [isPopupBoxVisible]);
 
     const bindTable = () => {
@@ -751,7 +758,11 @@ export default function TreeView({ props }: any) {
         }
         else if (tables === "Recycle") {
             return <ApprovalFlow context={props.context} libraryName={libName} userEmail={props.UserEmailID} action="Recycle" />;
-        } else {
+        }
+        else if (tables === "Archive") {
+            return <ApprovalFlow context={props.context} libraryName={libName} userEmail={props.UserEmailID} action="Archive" />;
+        }
+        else {
 
             return rightFolders.length === 0 ? <ReactTableComponent
                 TableClassName="ReactTables"
@@ -807,6 +818,7 @@ export default function TreeView({ props }: any) {
                 <Stack.Item grow styles={stackItemStyles} className='column3'>
                     <div className={styles.grid}>
                         <div className={styles.row}>
+                            <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "EmptyArchive", style: { color: "#f1416c" } }} text={`${DisplayLabel.Archive} (${deletedData.length || 0})`} onClick={getArchiveData} /></div>
                             <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "EmptyRecycleBin", style: { color: "#f1416c" } }} text={`${DisplayLabel.RecycleBin} (${deletedData.length || 0})`} onClick={getRecycleData} /></div>
                             <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "DocumentApproval", style: { color: "#50cd89" } }} text={`${DisplayLabel.Approval} (${approvalData.length || 0})`} onClick={() => setTables("Approver")} /></div>
                             <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "Search", style: { color: "#7239ea" } }} text={DisplayLabel.AdvancedSearch} onClick={advancedSearch} /></div>
