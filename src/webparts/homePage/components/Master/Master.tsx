@@ -1383,6 +1383,7 @@ export default function Master({ props }: any): JSX.Element {
                           principalTypes={[PrincipalType.User, PrincipalType.SharePointGroup, PrincipalType.SecurityGroup]}
                           defaultSelectedUsers={isEditMode ? assignEmail : undefined}
                           ref={(input: any) => (inputRefs.current["AccessTileUser"] = input)}
+                          styles={{ root: { order: -1 } }}
                         />
 
                       </div>
@@ -1486,7 +1487,7 @@ export default function Master({ props }: any): JSX.Element {
                     </div>
                   </div>
 
-                  <div style={{ overflow: 'auto' }}>
+                  <div style={{ overflow: 'visible' }}>
                     <table className="addoption" style={{ width: '100%', marginTop: '20px', borderCollapse: 'collapse' }}>
                       <thead>
                         <tr>
