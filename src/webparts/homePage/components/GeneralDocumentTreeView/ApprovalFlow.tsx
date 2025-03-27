@@ -54,6 +54,10 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
         const data = await getArchiveData(context, libraryName);
         setFiles(data.value || []);
     };
+    const visibleColumns = [
+        "Status.StatusName",
+        "Id"
+    ];
     const columns: any = [
         {
             Header: DisplayLabel.FileName, accessor: "Name", Cell: ({ row }: { row: any; }) => <a href="javascript:void('0')" onClick={() => {
@@ -81,8 +85,6 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
                 return `${rowData.Author?.Title || "Unknown"} ${formattedDate} at ${formattedTime}`;
             }
         },
-
-
         { Header: DisplayLabel.Status, accessor: 'Status.StatusName' },
         {
             Header: DisplayLabel.Action,
@@ -92,7 +94,7 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
                     <FontIcon aria-label="Restore" title="Restore" onClick={() => { setItemId(row._original.Id); setHideDialog(true); }} iconName="RemoveFromTrash" style={{ color: '#009ef7', cursor: 'pointer' }} />
             )
         }
-    ];
+    ].filter(column => action === "Archive" ? !visibleColumns.includes(column.accessor) : true);
     const closeDialog = useCallback(() => { setHideDialog(false); setcomment(""); }, []);
 
     const handleConfirm = useCallback(
