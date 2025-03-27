@@ -350,25 +350,21 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
             await UploadFile(context.pageContext.web.absoluteUrl, context.spHttpClient, item.attachment, `${Fileuniqueid}-${item.attachment.name}`, libName, obj, folderPath);
             count++;
 
-            if (item.IsExistingRefID != "" && item.IsExistingRefID != null && item.IsExistingRefID != undefined) {
+            if (item.IsExistingRefID !== "" && item.IsExistingRefID !== null && item.IsExistingRefID !== undefined) {
+                if (LibraryDetails.IsArchiveRequired) {
+                    const AllData = await getDataByRefID(context, item.IsExistingRefID, libName);
+                    const ExistingRefData = AllData.value?.filter((ele: any) => ele.Active == true);
+                    if (ExistingRefData?.length > archiveCount) {
 
-                const AllData = await getDataByRefID(context, item.IsExistingRefID, libName);
-                const ExistingRefData = AllData.value?.filter((ele: any) => ele.Active == true);
+                        const FileID = ExistingRefData[ExistingRefData?.length - 1].ID;
+                        let updateArchiveObj = {
+                            Active: false,
+                            IsArchiveFlag: true
+                        };
 
-                console.log(ExistingRefData);
-
-                if (ExistingRefData?.length > archiveCount) {
-
-                    const FileID = ExistingRefData[ExistingRefData?.length - 1].ID;
-                    let updateArchiveObj = {
-                        Active: false,
-                        IsArchiveFlag: true
-                    };
-
-                    await updateLibrary(context.pageContext.web.absoluteUrl, context.spHttpClient, updateArchiveObj, FileID, libName);
+                        await updateLibrary(context.pageContext.web.absoluteUrl, context.spHttpClient, updateArchiveObj, FileID, libName);
+                    }
                 }
-
-
             }
 
 
