@@ -352,9 +352,10 @@
   background: #7239ea;
 }
 
-.ms-Picker-items {
-  display: flex;
-  flex-wrap: wrap;
-  flex-direction: row-reverse;
+.ms-Picker-items,
+.ms-Picker-text {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  flex-direction: row-reverse !important;
   /* Reverse the order */
 }
