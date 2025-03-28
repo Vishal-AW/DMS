@@ -155,7 +155,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                             <PeoplePicker
                                 titleText={item.Title}
                                 context={peoplePickerContext}
-                                personSelectionLimit={1}
+                                personSelectionLimit={20}
                                 showtooltip={true}
                                 required={item.IsRequired}
                                 showHiddenInUI={false}

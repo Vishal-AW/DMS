@@ -206,7 +206,7 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
                             <PeoplePicker
                                 titleText={DisplayLabel.EnterName}
                                 context={peoplePickerContext}
-                                personSelectionLimit={10}
+                                personSelectionLimit={20}
                                 showtooltip={true}
                                 required={true}
                                 errorMessage={selectedUserError}
