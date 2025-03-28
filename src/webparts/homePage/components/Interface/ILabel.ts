@@ -159,4 +159,37 @@ export interface ILabel {
     CheckIn: string;
     CheckoutConfirm: string;
     CheckedOutThisItem: string;
+    InvalidFileFormat: string;
+
+    SubmitMsg: string;
+    ApprovedMsg: string;
+    DeletedMsg: string;
+    RejectedMsg: string;
+    FolderUpdatedMsg: string;
+    RestoreDoc: string;
+    StopInheritingSuccessMsg: string;
+    AccessHasGranted: string;
+    AccessHasRemoved: string;
+    CheckedOutSuccessfully: string;
+    CheckedInSuccessfully: string;
+    DiscardedCheckOut: string;
+
+    ParentFolder: string;
+    FolderTemplateCombination: string;
+    History: string;
+    ActionBy: string;
+    ColumnNameIsAlreadyExist: string;
+    ValueAlreadyExist: string;
+    UpdateAlertMsg: string;
+
+    MenuName: string;
+    URL: string;
+    OrderNo: string;
+    NextTab: string;
+    ExternalUrl: string;
+    Permission: string;
+    isParentMenu: string;
+    Testcol: string;
+    IconClass: string;
+    ParentMenuId: string;
 }

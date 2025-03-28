@@ -1,6 +1,6 @@
 import * as React from "react";
 import styles from '../Home/Dashboard.module.scss';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SPHttpClient, SPHttpClientResponse } from "@microsoft/sp-http-base";
 import cls from '../HomePage.module.scss';
 
@@ -14,13 +14,12 @@ export default function Dashboard({ props }: any): JSX.Element {
   React.useEffect(() => {
     getTileData();
   }, []);
-  function getTileData() {
-    FindUserGroupMain(props.spHttpClient).then(function (response) {
-      Findusergroupdata();
-    });
-  }
-  async function FindUserGroupMain(spHttpClient: any) {
 
+  function getTileData() {
+    FindUserGroupMain(props.spHttpClient);
+  }
+
+  async function FindUserGroupMain(spHttpClient: any) {
 
     let SiteUrl = props.SiteURL;
     let username = props.userDisplayName;
@@ -60,15 +59,14 @@ export default function Dashboard({ props }: any): JSX.Element {
       }
     });
 
-    setuserRole(UserRole);
   }
 
+  useEffect(() => {
+    Findusergroupdata();
+  }, [userRole]);
   const Findusergroupdata = async () => {
-
     const userData: any = await FindUserGroup(props.SiteURL, props.spHttpClient, props.userID);
-
     console.log(userData);
-
   };
   const [tileData, setTileData] = useState<any>([]);
   async function FindUserGroup(WebUrl: string, spHttpClient: any, loginName: number): Promise<any> {
@@ -95,11 +93,11 @@ export default function Dashboard({ props }: any): JSX.Element {
             dinamicurl = dinamicurl + " or  Permission/ID eq " + GroupData[i].Id + " ";
           }
         }
-        if (userRole == "ProjectAdmin") {
+        if (userRole === "ProjectAdmin") {
           query = WebUrl + "/_api/web/lists/getByTitle('DMS_Mas_Tile')/items?$select=*,ID,TileName,TileImageURL,Permission/ID,Documentpath,Active,Order0,AllowApprover,LibraryName,LibGuidName,AllowApprover,IsArchiveRequired&$expand=Permission&$filter=Active eq 1&$orderby=Order0";
         }
         else {
-          query = WebUrl + "/_api/web/lists/getByTitle('DMS_Mas_Tile')/items?$select=*,ID,TileName,TileImageURL,Permission/ID,Documentpath,Active,Order0,AllowApprover,LibraryName,LibGuidName,AllowApprover,IsArchiveRequired&$expand=Permission&$filter=Active eq 1&$orderby=Order0";
+          query = WebUrl + `/_api/web/lists/getByTitle('DMS_Mas_Tile')/items?$select=*,ID,TileName,TileImageURL,Permission/ID,Documentpath,Active,Order0,AllowApprover,LibraryName,LibGuidName,AllowApprover,IsArchiveRequired&$expand=Permission&$filter=Active eq 1 and ${dinamicurl}&$orderby=Order0`;
         }
 
         await GetListData(query).then(async (responseData: any) => {

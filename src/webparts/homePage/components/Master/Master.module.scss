@@ -351,3 +351,11 @@
   color: #fff;
   background: #7239ea;
 }
+
+.ms-Picker-items,
+.ms-Picker-text {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  flex-direction: row-reverse !important;
+  /* Reverse the order */
+}

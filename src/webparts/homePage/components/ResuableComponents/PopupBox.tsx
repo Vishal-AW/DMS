@@ -49,9 +49,10 @@ import './PopupStyle.css';
 interface IPopupboxProps {
     isPopupBoxVisible: boolean;
     hidePopup: () => void;
+    msg: string;
 }
 
-const PopupBox: React.FC<IPopupboxProps> = ({ isPopupBoxVisible, hidePopup }) => {
+const PopupBox: React.FC<IPopupboxProps> = ({ isPopupBoxVisible, hidePopup, msg }) => {
     console.log("Alert Box");
     if (!isPopupBoxVisible) {
         return null; // Instead of returning 'false', return 'null' when you don't want to render anything
@@ -96,7 +97,7 @@ const PopupBox: React.FC<IPopupboxProps> = ({ isPopupBoxVisible, hidePopup }) =>
                         <div className="alert-icon">
                             <Icon style={{ color: '#50cd89', fontSize: 80 }} iconName="Completed" />
                         </div>
-                        <p className="alert-message">Data Saved Successfully.</p>
+                        <p className="alert-message">{msg}</p>
                         <button className="alert-button" onClick={hidePopup}>OK</button>
                     </div>
                 </div>

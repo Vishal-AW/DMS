@@ -4,6 +4,7 @@ import { WebPartContext } from "@microsoft/sp-webpart-base";
 import { GetListItem, UpdateItem } from "../DAL/Commonfile";
 
 
+
 export async function getAllFolder(WebUrl: string, context: WebPartContext, FolderName: string) {
     const url = WebUrl + "/_api/Web/GetFolderByServerRelativeUrl('" + FolderName + "')?$select=*&$orderby=Id desc&$expand=Files/CheckedOutByUser,Folders,Files,Files/ModifiedBy,Folders/ListItemAllFields,Files/ListItemAllFields,ListItemAllFields,Files/Status,FileLeafRef,FileRef,FileDirRef";
 
@@ -113,6 +114,16 @@ export function getRecycleData(context: WebPartContext, libeName: string) {
     return getMethod(context.pageContext.web.absoluteUrl, context.spHttpClient, filter, libeName);
 }
 
+export function getArchiveData(context: WebPartContext, libeName: string) {
+    const filter = "Active eq 0 and IsArchiveFlag eq 1 and DeleteFlag ne 'Deleted'";
+    return getDocument(context.pageContext.web.absoluteUrl, context.spHttpClient, filter, libeName);
+}
+
+export function getDataByRefID(context: WebPartContext, Id: string, libeName: string) {
+    const filter = "IsExistingRefID eq " + Id;
+    return getDocument(context.pageContext.web.absoluteUrl, context.spHttpClient, filter, libeName);
+}
+
 async function getMethod(WebUrl: string, spHttpClient: any, filter: any, libeName: string) {
 
     let option = {
@@ -132,7 +143,7 @@ export async function getDocument(WebUrl: string, spHttpClient: any, filter: any
     var selectcols = "*,ID,File,DefineRole,ProjectmanagerAllow,Projectmanager/Id,Projectmanager/Title,ProjectmanagerEmail,PublisherAllow,Publisher/Id,";
     selectcols += "Publisher/Title,PublisherEmail,CurrentApprover,InternalStatus,ProjectMasterLID,";
     selectcols += "LatestRemark,AllowApprover,Created,Author/EMail,Author/Title,FileLeafRef,FileRef,FileDirRef,Active,ProjectmanagerId,PublisherId,File,ServerRedirectedEmbedUrl,DisplayStatus,Level,OCRStatus,";
-    selectcols += "Company,Template";
+    selectcols += "Company,Template,IsArchiveFlag";
     var option = {
         select: selectcols,
         expand: "File,Projectmanager,Publisher,Author",
@@ -226,3 +237,37 @@ function getFinancialYear(date: any) {
 function padLeft(value: string, length: number, char: string = "0"): string {
     return char.repeat(Math.max(0, length - value.length)) + value;
 }
+
+
+export async function checkPermissions(context: any, folderPath: string): Promise<boolean> {
+    try {
+        const url = `${context.pageContext.web.absoluteUrl}/_api/web/GetFolderByServerRelativeUrl('${folderPath}')/ListItemAllFields/RoleAssignments?$expand=RoleDefinitionBindings`;
+
+        const response: SPHttpClientResponse = await context.spHttpClient.get(
+            url,
+            SPHttpClient.configurations.v1,
+            {
+                headers: {
+                    Accept: "application/json;odata=nometadata"
+                }
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(`Error fetching permissions: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const roleAssignments = data.value || [];
+        const hasRequiredPermissions = roleAssignments.some((assignment: any) => {
+            return assignment.RoleDefinitionBindings.some((role: any) =>
+                ["Edit", "Contribute", "Full Control"].includes(role.Name)
+            );
+        });
+
+        return hasRequiredPermissions;
+    } catch (error) {
+        console.error("Error checking permissions:", error);
+        return false;
+    }
+};
