@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { checkPermissions, commonPostMethod, getAllFolder, getApprovalData, getListData, updateLibrary } from "../../../../Services/GeneralDocument";
+import { checkPermissions, commonPostMethod, getAllFolder, getApprovalData, getArchiveData, getListData, updateLibrary } from "../../../../Services/GeneralDocument";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./TreeView.module.scss";
 import { CommandBarButton, DefaultButton, DialogType, Icon, IStackItemStyles, IStackStyles, IStackTokens, Panel, PanelType, PrimaryButton, Stack, DirectionalHint } from "@fluentui/react";
@@ -82,6 +82,7 @@ export default function TreeView({ props }: any) {
 
     const libDetails: any = JSON.parse(tileObject as string);
     const libName = libDetails.LibraryName;
+    //const archivelibName = libDetails.ArchiveLibraryName;
     const portalUrl = new URL(props.SiteURL).origin;
     const [isPanelOpen, setIsPanelOpen] = useState(false);
     const [isOpenFolderPanel, setIsOpenFolderPanel] = useState(false);
@@ -102,6 +103,7 @@ export default function TreeView({ props }: any) {
     const [hasPermission, setHasPermission] = useState<boolean>(false);
     const [breadcrumb, setBreadcrumb] = useState<any>([{ name: libName, path: libName }]);
     const [deletedData, setDeletedData] = useState<any>([]);
+    const [archiveData, setArchiveData] = useState<any>([]);
     const [approvalData, setApprovalData] = useState<any>([]);
 
     useEffect(() => {
@@ -109,6 +111,7 @@ export default function TreeView({ props }: any) {
         getAdmin();
         getDeletedData();
         getPendingApprovalData();
+        getArchiveFile();
     }, [isCreateProjectPopupOpen]);
 
     useEffect(() => {
@@ -254,7 +257,7 @@ export default function TreeView({ props }: any) {
             //     </span>
             // ),
 
-            Cell: ({ row }: { row: any }) => {
+            Cell: ({ row }: { row: any; }) => {
                 const styles = getStatusStyles(row._original.ListItemAllFields.DisplayStatus);
                 return (
                     <span
@@ -293,7 +296,7 @@ export default function TreeView({ props }: any) {
                 onClick: () => commonFunction("View", item)
             }
         ];
-        if (libDetails.TileAdminId === props.userID || item._original.ListItemAllFields.AuthorId === props.userID) {
+        if ((libDetails.TileAdminId === props.userID || item._original.ListItemAllFields.AuthorId === props.userID) && !libDetails.IsArchiveRequired) {
             menuItems.push({
                 key: 'deleteDocument',
                 text: DisplayLabel.Delete,
@@ -742,6 +745,12 @@ export default function TreeView({ props }: any) {
         setTables("Recycle");
 
     };
+
+    const getArchive = () => {
+        setTables("Archive");
+
+    };
+
     const hidePopup = useCallback(() => { setIsPopupBoxVisible(false); }, [isPopupBoxVisible]);
 
     const bindTable = () => {
@@ -751,7 +760,11 @@ export default function TreeView({ props }: any) {
         }
         else if (tables === "Recycle") {
             return <ApprovalFlow context={props.context} libraryName={libName} userEmail={props.UserEmailID} action="Recycle" />;
-        } else {
+        }
+        else if (tables === "Archive") {
+            return <ApprovalFlow context={props.context} libraryName={libName} userEmail={props.UserEmailID} action="Archive" />;
+        }
+        else {
 
             return rightFolders.length === 0 ? <ReactTableComponent
                 TableClassName="ReactTables"
@@ -775,6 +788,10 @@ export default function TreeView({ props }: any) {
     const getDeletedData = async () => {
         const deletedData = await getListData(`${props.SiteURL}/_api/web/lists/getbytitle('${libName}')/items?$filter=DeleteFlag eq 'Deleted' and Active eq 0`, props.context);
         setDeletedData(deletedData.value);
+    };
+    const getArchiveFile = async () => {
+        const data = await getArchiveData(props.context, libName);
+        setArchiveData(data.value || []);
     };
     const getPendingApprovalData = async () => {
         const pendingApprovalData = await getApprovalData(props.context, libName, props.UserEmailID);
@@ -807,7 +824,12 @@ export default function TreeView({ props }: any) {
                 <Stack.Item grow styles={stackItemStyles} className='column3'>
                     <div className={styles.grid}>
                         <div className={styles.row}>
-                            <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "EmptyRecycleBin", style: { color: "#f1416c" } }} text={`${DisplayLabel.RecycleBin} (${deletedData.length || 0})`} onClick={getRecycleData} /></div>
+                            <div className={styles.col12}>
+                                {libDetails.IsArchiveRequired ? <CommandBarButton iconProps={{ iconName: "Archive", style: { color: "#f1416c" } }} text={`${DisplayLabel.Archive} (${archiveData.length || 0})`} onClick={getArchive} />
+                                    : <CommandBarButton iconProps={{ iconName: "EmptyRecycleBin", style: { color: "#f1416c" } }} text={`${DisplayLabel.RecycleBin} (${deletedData.length || 0})`} onClick={getRecycleData} />
+                                }
+                            </div>
+
                             <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "DocumentApproval", style: { color: "#50cd89" } }} text={`${DisplayLabel.Approval} (${approvalData.length || 0})`} onClick={() => setTables("Approver")} /></div>
                             <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "Search", style: { color: "#7239ea" } }} text={DisplayLabel.AdvancedSearch} onClick={advancedSearch} /></div>
                         </div>
@@ -857,8 +879,11 @@ export default function TreeView({ props }: any) {
                             <div className={styles.col12}>
                                 {folderPath === libName ? <></> :
                                     <div style={{ float: "right" }}>
-                                        {rightFolders.length === 0 && (isValidUser || libDetails.TileAdminId === props.userID || hasPermission) ? <DefaultButton text={DisplayLabel.Upload} onClick={() => setIsOpenUploadPanel(true)} className={styles['secondary-btn']} styles={{ root: { marginRight: 8 } }} /> : <></>}
-                                        {files.length === 0 ? <DefaultButton className={styles['info-btn']} text={DisplayLabel.NewFolder} onClick={() => { setIsOpenFolderPanel(true); setFolderName(""); }} /> : <></>}
+                                        {tables === "" ? <>
+                                            {rightFolders.length === 0 && (isValidUser || libDetails.TileAdminId === props.userID || hasPermission) ? <DefaultButton text={DisplayLabel.Upload} onClick={() => setIsOpenUploadPanel(true)} className={styles['secondary-btn']} styles={{ root: { marginRight: 8 } }} /> : <></>}
+                                            {files.length === 0 ? <DefaultButton className={styles['info-btn']} text={DisplayLabel.NewFolder} onClick={() => { setIsOpenFolderPanel(true); setFolderName(""); }} /> : <></>}
+                                        </> : <> </>
+                                        }
                                     </div>
                                 }
                             </div>

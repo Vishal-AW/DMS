@@ -5,7 +5,7 @@ import { WebPartContext } from "@microsoft/sp-webpart-base";
 import { IPeoplePickerContext, PeoplePicker, PrincipalType } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 import { getUserIdFromLoginName, uuidv4 } from "../../../../DAL/Commonfile";
 import { getConfigActive } from "../../../../Services/ConfigService";
-import { generateAutoRefNumber, getListData, updateLibrary, UploadFile } from "../../../../Services/GeneralDocument";
+import { generateAutoRefNumber, getListData, updateLibrary, UploadFile, getDataByRefID } from "../../../../Services/GeneralDocument";
 import { getDataByLibraryName } from "../../../../Services/MasTileService";
 import PopupBox from "../ResuableComponents/PopupBox";
 import { getStatusByInternalStatus } from "../../../../Services/StatusSerivce";
@@ -46,6 +46,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
     const [showLoader, setShowLoader] = useState({ display: "none" });
     const [fileKey, setFileKey] = useState<number>(Date.now());
     const [alertMsg, setAlertMsg] = useState("");
+    const [archiveCount, setArchiveCount] = useState("");
 
     const peoplePickerContext: IPeoplePickerContext = {
         absoluteUrl: context.pageContext.web.absoluteUrl,
@@ -93,6 +94,10 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
             });
             setDynamicControl(jsonData);
             bindDropdown(jsonData);
+        }
+
+        if (libraryData.value[0]?.ArchiveVersionCount) {
+            setArchiveCount(libraryData.value[0]?.ArchiveVersionCount);
         }
     };
 
@@ -196,7 +201,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
 
                 case "Date and Time":
                     return (
-                        <div className={dynamicControl.length > 5 ? styles.col6 : styles.col12} key={index}>
+                        <div className="column6" key={index}>
 
                             <label className={styles.Headerlabel}>{item.Title}{item.IsRequired ? <span style={{ color: "red" }}>*</span> : <></>}</label>
                             <DatePicker
@@ -211,7 +216,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
 
                 default:
                     return (
-                        <div className={dynamicControl.length > 5 ? styles.col6 : styles.col12} key={index}>
+                        <div className="column6" key={index}>
                             <TextField
                                 type={"text"}
                                 label={item.Title}
@@ -340,8 +345,28 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
 
             obj.ReferenceNo = ReferenceNo.refNo.replace(/null/, "");
             obj.RefSequence = ReferenceNo.count;
+
+
             await UploadFile(context.pageContext.web.absoluteUrl, context.spHttpClient, item.attachment, `${Fileuniqueid}-${item.attachment.name}`, libName, obj, folderPath);
             count++;
+
+            if (item.IsExistingRefID !== "" && item.IsExistingRefID !== null && item.IsExistingRefID !== undefined) {
+                if (LibraryDetails.IsArchiveRequired) {
+                    const AllData = await getDataByRefID(context, item.IsExistingRefID, libName);
+                    const ExistingRefData = AllData.value?.filter((ele: any) => ele.Active == true);
+                    if (ExistingRefData?.length > archiveCount) {
+
+                        const FileID = ExistingRefData[ExistingRefData?.length - 1].ID;
+                        let updateArchiveObj = {
+                            Active: false,
+                            IsArchiveFlag: true
+                        };
+
+                        await updateLibrary(context.pageContext.web.absoluteUrl, context.spHttpClient, updateArchiveObj, FileID, libName);
+                    }
+                }
+            }
+
 
             if (count === attachmentsFiles.length) {
                 dismissUploadPanel();
