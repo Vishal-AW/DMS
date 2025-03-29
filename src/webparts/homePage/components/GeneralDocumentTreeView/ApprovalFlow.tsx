@@ -164,18 +164,22 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
                     To: ToUser,
                     FolderPath: fileData.FolderDocumentPath,
                     DocName: fileData.ActualName,
-                    AuthorTitle: fileData.Author.Title
+                    AuthorTitle: fileData.Author.Title,
+                    TileName: libraryName
                 };
 
                 if (InternalStatus == "PendingWithPublisher") {
-                    emailObj.Sub = DisplayLabel.PublisherEmailSubject + fileData.ReferenceNo;
-                    emailObj.Msg = DisplayLabel.PublisherEmailMsg;
+                    emailObj.Sub = DisplayLabel.PublisherEmailSubject + " " + fileData.ReferenceNo;
+                    //emailObj.Msg = DisplayLabel.PublisherEmailMsg;
+                    emailObj.Status = InternalStatus;
                 } else if (InternalStatus == "PendingWithPM") {
-                    emailObj.Sub = DisplayLabel.PMEmailSubject + fileData.ReferenceNo;
-                    emailObj.Msg = DisplayLabel.PMEmailMsg;
+                    emailObj.Sub = DisplayLabel.PMEmailSubject + " " + fileData.ReferenceNo;
+                    //emailObj.Msg = DisplayLabel.PMEmailMsg;
+                    emailObj.Status = InternalStatus;
                 } else {
-                    emailObj.Sub = DisplayLabel.PublishedEmailSubject;
+                    emailObj.Sub = DisplayLabel.PublishedEmailSubject + " " + fileData.ReferenceNo;
                     emailObj.Msg = DisplayLabel.PublishedEmailMsg;
+                    emailObj.Status = InternalStatus;
                 }
                 await TileSendMail(context, emailObj);
                 setAlertMsg(DisplayLabel.ApprovedMsg);
@@ -233,8 +237,10 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
                 FolderPath: fileData.FolderDocumentPath,
                 DocName: fileData.ActualName,
                 AuthorTitle: fileData.Author.Title,
-                Sub: DisplayLabel.RejectEmailSubject,
-                Msg: DisplayLabel.RejectEmailMsg
+                TileName: libraryName,
+                Sub: DisplayLabel.RejectEmailSubject + " " + fileData.ReferenceNo,
+                Msg: DisplayLabel.RejectEmailMsg,
+                Status: status.value[0].StatusName
             };
 
             await TileSendMail(context, emailObj);

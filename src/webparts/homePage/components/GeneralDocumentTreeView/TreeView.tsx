@@ -416,7 +416,7 @@ export default function TreeView({ props }: any) {
             const libraryData = await getDataByLibraryName(props.context.pageContext.web.absoluteUrl, props.context.spHttpClient, libName);
             let jsonData = JSON.parse(libraryData.value[0].DynamicControl);
             jsonData = jsonData.filter((ele: any) => ele.IsActiveControl);
-            setPanelSize(PanelType.large);
+            //setPanelSize(PanelType.large);
             const htm = <>
                 <div className={styles.grid}>
                     <div className={styles.row}>
@@ -429,14 +429,16 @@ export default function TreeView({ props }: any) {
                             <label className={styles.Headerlabel}>{DisplayLabel.TileName}</label>
                             <TextField
                                 value={libDetails.TileName}
-                                disabled={true}
+                                //disabled={true}
+                                readOnly
                             />
                         </div>
                         <div className={styles.col6}>
                             <label className={styles.Headerlabel}>{DisplayLabel.FolderName}</label>
                             <TextField
-                                value={item._original.ListItemAllFields.DocumentSuffix}
-                                disabled={true}
+                                value={folderName}
+                                // disabled={true}
+                                readOnly
                             />
                         </div>
                         {item._original.ListItemAllFields.IsSuffixRequired ? <>
@@ -444,7 +446,8 @@ export default function TreeView({ props }: any) {
                                 <label className={styles.Headerlabel}>{DisplayLabel.DocumentSuffix}</label>
                                 <TextField
                                     value={item._original.ListItemAllFields.DocumentSuffix}
-                                    disabled={true}
+                                    //disabled={true}
+                                    readOnly
                                 />
                             </div>
 
@@ -454,7 +457,8 @@ export default function TreeView({ props }: any) {
                                     <label className={styles.Headerlabel}>{DisplayLabel.OtherSuffixName}</label>
                                     <TextField
                                         value={item._original.ListItemAllFields.OtherSuffix}
-                                        disabled={true}
+                                        //disabled={true}
+                                        readOnly
                                     />
                                 </div>
                             )}</> : <></>
@@ -470,7 +474,8 @@ export default function TreeView({ props }: any) {
                                         disabled={true}
                                     /> : <TextField
                                         value={item._original.ListItemAllFields.hasOwnProperty(el.InternalTitleName) ? (el.ColumnType === "Person or Group" ? item._original.ListItemAllFields[el.InternalTitleName].Title : item._original.ListItemAllFields[el.InternalTitleName]) : ""}
-                                        disabled={true}
+                                        //disabled={true}
+                                        readOnly
                                     />}
                                 </div>;
 
