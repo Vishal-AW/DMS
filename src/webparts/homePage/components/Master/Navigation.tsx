@@ -5,7 +5,7 @@ import styles from "../Master/Master.module.scss";
 import { useEffect, useState } from "react";
 import cls from '../HomePage.module.scss';
 import PopupBox from "../ResuableComponents/PopupBox";
-import { SaveNavigationMaster, getdata, getChildMenu, getChildMenunew, getDataByID, UpdateNavigationMaster } from "../../../../Services/NavigationService";
+import { SaveNavigationMaster,getdata,getChildMenu,getChildMenunew,getDataByID,UpdateNavigationMaster} from "../../../../Services/NavigationService";
 import { getUserIdFromLoginName } from "../../../../DAL/Commonfile";
 import { PeoplePicker, PrincipalType, IPeoplePickerContext } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 import ReactTableComponent from '../ResuableComponents/ReusableDataTable';
@@ -13,25 +13,29 @@ import Select from "react-select";
 
 
 
-export default function Navigation({ props }: any): JSX.Element {
+export default function ConfigMaster({ props }: any): JSX.Element {
 
     const [DisplayLabel, setDisplayLabel] = useState<ILabel>();
     const [isPanelOpen, setIsPanelOpen] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [MenuName, setMenuName] = useState("");
+    const [selectedUsers, setSelectedUsers] = useState<any[]>([]);
     const [assignID, setAssignID] = useState<string[]>([]);
     const [AccessTileUserErr, setAccessTileUserErr] = useState("");
     const [parent0Data, setparent0Data] = useState([]);
     const [isActive, setisActive] = React.useState<boolean>(true);
     const [isNextActive, setisNextActive] = React.useState<boolean>(true);
-    const [isExternalActive, setisExternalActive] = React.useState<boolean>(true);
+    //const [isExternalActive, setisExternalActive] = React.useState<boolean>(true);
     const [isParentMenu, setisParentMenu] = React.useState<boolean>(true);
     const [URLErr, setURLErr] = useState("");
     const [URL, setURL] = useState("");
+  //  const [Order0Data, setOrder0Data] = useState([]);
     const [ParentMenuIDErr, setParentMenuIDErr] = useState("");
     const [ParentMenuID, setParentMenuID] = useState<any>(null);
     const [ParentMenuDataText, setParentMenuDataText] = useState<any>(null);
+   // const [ParentMenuDataID, setParentMenuDataID] = useState('');
     const [dropdownOptions, setDropdownOptions] = useState<any[]>([]);
+   //const div = this.domElement.querySelector("#toggleParentMenu");
 
     const [OrdeIDErr, setOrdeIDErr] = useState("");
     const [OrdeID, setOrdeID] = useState<any>(null);
@@ -44,47 +48,60 @@ export default function Navigation({ props }: any): JSX.Element {
     const [MenuNameErr, setMenuNameErr] = useState("");
     const [assignEmail, setAssignEmail] = useState<string[]>([]);
     const [isVisible, setIsVisible] = React.useState<boolean>(false);
-    const [msg, setMsg] = useState<string>("");
+    const [alertMessage,setAlertMessage]=useState("")
+    // const [SiteListData, setSiteListData] = useState([]);
+    //const [ParentMenuText, setParentMenuText] = useState('');
 
-
-    useEffect(() => {
+     useEffect(() => {
         let DisplayLabel: ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}');
         setDisplayLabel(DisplayLabel);
         fetchData();
+        //   getAllListSite();
+       // setIsVisible(isVisible);
+
+
     }, []);
 
     const onPeoplePickerChange = (items: any[]) => {
+
+        setSelectedUsers(items);
+    
+        console.log("Users to process:", selectedUsers);
         const Users: any = items.map((item: any) => item.id);
         const Emails: any = items.map((item: any) => item.secondaryText);
         setAssignID(Users);
         setAssignEmail(Emails);
-    };
-    const peoplePickerContext: IPeoplePickerContext = {
-        absoluteUrl: props.context.pageContext.web.absoluteUrl,
-        msGraphClientFactory: props.context.msGraphClientFactory,
-        spHttpClient: props.context.spHttpClient
-    };
-    const IsActiveToggleChange = (checked: boolean): void => {
-        setisActive(checked);
-    };
-    const IsNexttabToggleChange = (checked: boolean): void => {
-        setisNextActive(checked);
-    };
-    const IsExternalToggleChange = (checked: boolean): void => {
-        setisExternalActive(checked);
-    };
+    
+      };
+       const peoplePickerContext: IPeoplePickerContext = {
+          absoluteUrl: props.context.pageContext.web.absoluteUrl,
+          msGraphClientFactory: props.context.msGraphClientFactory,
+          spHttpClient: props.context.spHttpClient
+        };
+        const IsActiveToggleChange = (checked: boolean): void => {
+            setisActive(checked);
+        };
+        const IsNexttabToggleChange = (checked: boolean): void => {
+            setisNextActive(checked);
+        };
+      //  const IsExternalToggleChange = (checked: boolean): void => {
+       //     setisExternalActive(checked);
+       // };
 
-    const IsParentMenuToggleChange = (checked: boolean): void => {
-        setisParentMenu(checked);
+        const IsParentMenuToggleChange = (checked: boolean): void => {
+            setisParentMenu(checked);       
+        
         if (checked) {
             setIsVisible(false);
+        
+       }
+       else
+       {
+        setIsVisible(true);
         }
-        else {
-            setIsVisible(true);
-        }
-    };
-
-
+        };
+       
+        
     const stackStyles: IStackStyles = { root: { height: "100vh", marginTop: 15 } };
     const stackItemStyles: IStackItemStyles = {
         root: {
@@ -109,7 +126,7 @@ export default function Navigation({ props }: any): JSX.Element {
 
         setparent0Data(NavigationOptions);
     };
-
+  
     const Tablecolumns = [
         {
             Header: DisplayLabel?.SrNo,
@@ -117,7 +134,7 @@ export default function Navigation({ props }: any): JSX.Element {
             Cell: ({ row }: { row: any; }) => row._index + 1,
         },
         { Header: DisplayLabel?.MenuName, accessor: "MenuName" },
-
+       
         {
             Header: DisplayLabel?.Active,
             accessor: "Active",
@@ -148,7 +165,7 @@ export default function Navigation({ props }: any): JSX.Element {
         await setMenuName(EditData[0].MenuName);
         await setURL(EditData[0].URL);
         await setisActive(EditData[0].Active);
-        await setisExternalActive(EditData[0].External_Url);
+      //  await setisExternalActive(EditData[0].External_Url);
         await setisNextActive(EditData[0].Next_Tab);
         await setisParentMenu(EditData[0].isParentMenu);
         const orderNo = Number(EditData[0].OrderNo);
@@ -156,24 +173,24 @@ export default function Navigation({ props }: any): JSX.Element {
         setOrdeID(orderNo);
         //const AccessData: any = EditData[0].Permission ? ([EditData[0].Permission[0].Name]) : [];
         const AccessTileData: string[] = EditData[0].Permission
-            ? EditData[0].Permission.map((person: any) => {
-                const email = person.Name.split('|');
-                return email.includes("membership") ? email.pop() : person.Name;
-            })
-            : [];
-        const accessEmail = EditData[0].Permission.map((person: any) => person.Name);
-        setAssignID(accessEmail);
-        setAssignEmail(AccessTileData);
+        ? EditData[0].Permission.map((person: any) => {
+          const email = person.Name.split('|');
+          return email.includes("membership") ? email.pop() : person.Name;
+        })
+        : [];
+      const accessEmail = EditData[0].Permission.map((person: any) => person.Name);
+      setAssignID(accessEmail);
+      setAssignEmail(AccessTileData);
 
         const fetchTemplateData = await getdata(props.SiteURL, props.spHttpClient);
-
-        let TemplateData = fetchTemplateData.value;
-
-        const TemplateOptions = TemplateData.map((items: any) => ({
-            value: items.ID,
-            label: items.MenuName
-        }));
-
+        
+                let TemplateData = fetchTemplateData.value;
+        
+                const TemplateOptions = TemplateData.map((items: any) => ({
+                    value: items.ID,
+                    label: items.MenuName
+                }));
+        
         setparent0Data(TemplateOptions);
         if (EditData[0].isParentMenu === false) {
             setIsVisible(true);
@@ -186,41 +203,42 @@ export default function Navigation({ props }: any): JSX.Element {
             }));
             setParentMenuID(optionsValues[0].value);
 
-            const newchild = await getChildMenunew(props.SiteURL, props.spHttpClient, optionsValues[0].value.value);
-            const Bchild = newchild.value;
-            ONOptions = Bchild.map((items: any) => ({
-                label: items.OrderNo,
-                value: items.OrderNo,
+                const newchild = await getChildMenunew(props.SiteURL, props.spHttpClient, optionsValues[0].value.value);
+                const Bchild=newchild.value;
+                ONOptions = Bchild.map((items: any) => ({
+                    label: items.OrderNo,
+                    value: items.OrderNo,
 
-            }));
-            setDropdownOptions(ONOptions);
-            const OrderApply = ONOptions.filter((item: any) => item.value === EditData[0].OrderNo);
-            const OreroptionsValues = OrderApply.map((item: any) => ({
-                label: item,
-                value: item,
-            }));
+                }));
+                setDropdownOptions(ONOptions);
+                const OrderApply = ONOptions.filter((item: any) => item.value === EditData[0].OrderNo);
+                const OreroptionsValues = OrderApply.map((item: any) => ({
+                    label: item,
+                    value: item,
+                }));
             setOrdeID(OreroptionsValues[0].value);
-
+    
         }
-        else {
+        else 
+        {
             setParentMenuID('');
             setIsVisible(false);
             let newOptions: any[] = [];
             let getmaindata: any[] = [];
             getmaindata = MainTableSetdata.filter((item: any) => item.isParentMenu === true);
             newOptions = getmaindata.map((items: any) => ({
-                label: items.OrderNo,
-                value: items.OrderNo,
+            label: items.OrderNo,
+            value: items.OrderNo,
 
-            }));
-            setDropdownOptions(newOptions);
+        }));
+        setDropdownOptions(newOptions);
 
-            const ApplyTo = newOptions.filter((item: any) => item.value === EditData[0].OrderNo);
-            const optionsValues = ApplyTo.map((item: any) => ({
-                label: item,
-                value: item,
-            }));
-            setOrdeID(optionsValues[0].value);
+        const ApplyTo = newOptions.filter((item: any) => item.value === EditData[0].OrderNo);
+        const optionsValues = ApplyTo.map((item: any) => ({
+            label: item,
+            value: item,
+        }));
+       setOrdeID(optionsValues[0].value);
         }
 
     };
@@ -228,9 +246,9 @@ export default function Navigation({ props }: any): JSX.Element {
 
     const openAddPanel = async () => {
         clearField();
-        // div.style.display = "block";
-        //{isVisible ? "Hide" : "Show"} 
-        setIsVisible(false);
+       // div.style.display = "block";
+       //{isVisible ? "Hide" : "Show"} 
+       setIsVisible(false);
         setIsEditMode(false);
         setIsPanelOpen(true);
         let newOptions: any[] = [];
@@ -238,10 +256,10 @@ export default function Navigation({ props }: any): JSX.Element {
         let orderNum = 1;
         let getmaindata: any[] = [];
 
-        // const response = await getparentdata(props.SiteURL, props.spHttpClient);
-        console.log(MainTableSetdata);
+       // const response = await getparentdata(props.SiteURL, props.spHttpClient);
+       console.log(MainTableSetdata);
         getmaindata = MainTableSetdata.filter((item: any) => item.isParentMenu === true);
-        orderNum = (getmaindata.length > 0) ? (getmaindata.length) + 1 : 1;
+       orderNum = (getmaindata.length > 0) ? (getmaindata.length) + 1 : 1;
         newOptions.push({
 
             value: orderNum,
@@ -251,7 +269,7 @@ export default function Navigation({ props }: any): JSX.Element {
         });
         setDropdownOptions(newOptions);
 
-        // setOrderNumber(orderNum);
+       // setOrderNumber(orderNum);
     };
 
     const closePanel = () => {
@@ -260,6 +278,8 @@ export default function Navigation({ props }: any): JSX.Element {
 
     const handleParentMenuonChange = async (option?: any) => {
         setParentMenuID(option);
+       //setParentMenuID(option.key as string);
+
         setParentMenuDataText(option.text as string);
 
         let newOptions: any[] = [];
@@ -280,12 +300,21 @@ export default function Navigation({ props }: any): JSX.Element {
         console.log(newOptions);
         console.log(ParentMenuDataText);
         setDropdownOptions(newOptions);
+        
+        // setTemplateData(option);
+       //setData(option.value);
+       //setOrdeID(option);
+       
     };
 
+//const getFirstLevel= async(option?: any)=>{
+//    return option.filter((it: any) => it.ParentMenuIdId === null);
+ //   };
+    
     const handleOrderChange = async (option?: any) => {
-        setOrdeID(option);
-    };
-
+      setOrdeID(option);
+      };
+    
 
     const hidePopup = React.useCallback(() => {
         setisPopupVisible(false);
@@ -302,18 +331,24 @@ export default function Navigation({ props }: any): JSX.Element {
         setAccessTileUserErr("");
         setParentMenuID(null);
         clearError();
-    };
 
+        //setisParentMenuDisabled(false);
+
+    };
     const clearError = () => {
         setMenuNameErr("");
+       // setURL("");
         setParentMenuIDErr("");
         setURLErr("");
         setOrdeIDErr("");
         setAccessTileUserErr("");
+
     };
 
     const validation = () => {
         let isValidForm = true;
+        let Parentdata: any[] = [];
+        let NoParentdata:any[]=[];
         if (MenuName === "" || MenuName === undefined || MenuName === null) {
             setMenuNameErr(DisplayLabel?.ThisFieldisRequired as string);
             isValidForm = false;
@@ -323,22 +358,79 @@ export default function Navigation({ props }: any): JSX.Element {
             setURLErr(DisplayLabel?.ThisFieldisRequired as string);
             isValidForm = false;
         }
-        if (OrdeID === "" || OrdeID === undefined || OrdeID === null) {
+        if ( OrdeID=== "" || OrdeID === undefined || OrdeID === null) {
             setOrdeIDErr(DisplayLabel?.ThisFieldisRequired as string);
             isValidForm = false;
         }
+        
+       
 
-        if (isParentMenu === false) {
-            if (ParentMenuID === "" || ParentMenuID === undefined || ParentMenuID === null) {
-                setParentMenuIDErr(DisplayLabel?.ThisFieldisRequired as string);
-                isValidForm = false;
+        if(isEditMode)
+        {
+            if (isParentMenu === true) {
+                const isDuplicateTitle = Parentdata.some((item: any) =>
+                    item.ID !== CurrentEditID &&
+                    item.MenuName.toUpperCase() === MenuName.toUpperCase()
+                );
+     
+                if (isDuplicateTitle) {
+                    setParentMenuIDErr(DisplayLabel?.MenuAlreadyExist as string);
+                    isValidForm = false;
+                }
+            }
+            else
+            {
+                NoParentdata = MainTableSetdata.filter((item: any) => item.isParentMenu === false && item.ParentMenuIdId===ParentMenuID.value);
+                const isDuplicateTitle = NoParentdata.some((item: any) =>
+                    item.ID !== CurrentEditID &&
+                    item.MenuName.toUpperCase() === MenuName.toUpperCase()
+                );
+                if (isDuplicateTitle) {
+                    setMenuNameErr(DisplayLabel?.MenuAlreadyExist as string);
+                    isValidForm = false;
+                }
             }
         }
-        if (assignID.length === 0) {
-            setAccessTileUserErr(DisplayLabel?.ThisFieldisRequired as string);
-            isValidForm = false;
+        else
+        {
+            if (isParentMenu === false) 
+                {
+                    if (ParentMenuID === "" || ParentMenuID === undefined || ParentMenuID === null) {
+                        setParentMenuIDErr(DisplayLabel?.ThisFieldisRequired as string);
+                        isValidForm = false;
+                    } 
+            NoParentdata = MainTableSetdata.filter((item: any) => item.isParentMenu === false && item.ParentMenuIdId===ParentMenuID.value);
+            const isDuplicate = NoParentdata.some(
+                    (Data: any) => Data.MenuName.toLowerCase() === MenuName.toLowerCase()
+                )
+                if (isDuplicate) {
+                    setMenuNameErr(DisplayLabel?.MenuAlreadyExist as string);
+                    isValidForm = false;
+                }
+        
+            }
+         else
+        {
+                    Parentdata = MainTableSetdata.filter((item: any) => item.isParentMenu === true);
+                    const isDuplicate = Parentdata.some(
+                        (Data: any) => Data.MenuName.toLowerCase() === MenuName.toLowerCase()
+                    )
+                    if (isDuplicate) {
+                        setMenuNameErr(DisplayLabel?.MenuAlreadyExist as string);
+                        isValidForm = false;
+                    }
+                    
+                }
+
+
+
+           
         }
 
+        if (assignID.length === 0) {
+                setAccessTileUserErr(DisplayLabel?.ThisFieldisRequired as string);
+                isValidForm = false;
+        }
         return isValidForm;
     };
 
@@ -346,7 +438,6 @@ export default function Navigation({ props }: any): JSX.Element {
         clearError();
         let valid = validation();
         valid ? saveData() : "";
-        saveData();
     };
 
     const saveData = async () => {
@@ -354,80 +445,115 @@ export default function Navigation({ props }: any): JSX.Element {
         try {
 
             const userIds = await Promise.all(
-                assignID.map(async (person: any) => {
-                    const user = await getUserIdFromLoginName(props.context, person);
-                    return user.Id;
-                })
-            );
+                    assignID.map(async (person: any) => {
+                      const user = await getUserIdFromLoginName(props.context, person);
+                      return user.Id;
+                    })
+                  );
+
+                //  let permissionData = userIds.map((el) => ({ Type: "User", IDs: el }));
+                //  permissionData.push({ Type: "Admin", IDs: TilesIds[0] }, { Type: "Admin", IDs: admin[0] });
+                  //setPermission(permissionData);
+
+          
+          //  let MenuNameNew = MenuName.split(" ").join("");
             let Name = MenuName;
+                    let ChkparentId=null;
+                    if (isParentMenu === false) 
+                        {
+                            ChkparentId= ParentMenuID.value;
+                        }
+                        else
+                        {
+                            ChkparentId=null;
+            
+                        }
+                    let option = {
+                        __metadata: { type: "SP.Data.GEN_x005f_NavigationListItem" },
+                        //'Title': $("#txtMenuName").val(),
+                        MenuName: Name,
+                        PermissionId:{ results: userIds },
+                        ParentMenuIdId:ChkparentId,
+                        URL: URL,
+                        Active:isActive,
+                        Next_Tab:isNextActive,
+                    // External_Url:isExternalActive,
+                        OrderNo:OrdeID.value,
+                        isParentMenu: isParentMenu,
+                    
+                    };
 
-            let option = {
-                __metadata: { type: "SP.Data.GEN_x005f_NavigationListItem" },
-                //'Title': $("#txtMenuName").val(),
-                MenuName: Name,
-                PermissionId: { results: userIds },
-                ParentMenuIdId: ParentMenuID.value,
-                URL: URL,
-                Active: isActive,
-                Next_Tab: isNextActive,
-                External_Url: isExternalActive,
-                OrderNo: OrdeID.value,
-                isParentMenu: isParentMenu,
-
-            };
-            if (!isEditMode) {
+           
+            if (!isEditMode)
+            {
                 await SaveNavigationMaster(props.SiteURL, props.spHttpClient, option);
+              //let LID = await SaveNavigationMaster(props.SiteURL, props.spHttpClient, option);
                 setShowLoader({ display: "none" });
                 setIsPanelOpen(false);
                 fetchData();
-                setMsg(DisplayLabel?.SubmitMsg as string);
+                setAlertMessage(DisplayLabel?.SubmitMsg as string)
                 setisPopupVisible(true);
+
             }
-            else {
+
+            else
+            {
                 let NewSequencedata: any = [];
                 let SliderSequence = OrdeID.value;
-                let oldSequencedata: any = [];
+                let oldSequencedata:any =[];
                 let flag = "";
                 const newchild = await getChildMenunew(props.SiteURL, props.spHttpClient, editSettingData[0].ParentMenuId.Id);
-                const oldchild = newchild.value;
+                const oldchild=newchild.value;
                 oldSequencedata = oldchild.filter((item: any) => item.OrderNo === SliderSequence);
 
                 const Sequencedata = editSettingData.filter((item: any) => item.Id === CurrentEditID);
+                
+    
 
-                if (Sequencedata.length > 0) {
-                    if (Sequencedata[0].OrderNo != SliderSequence) {
-                        if (Sequencedata[0].OrderNo > OrdeID.value) {
-                            flag = "forward";
-                        }
-                        else {
-                            flag = "backward";
-                        }
-                        NewSequencedata = await UpdateOrderNumber(oldSequencedata, oldSequencedata[0].Id, Sequencedata[0].OrderNo, SliderSequence, editSettingData, flag, CurrentEditID);
-                    }
+        if (Sequencedata.length > 0) {
+
+            if (Sequencedata[0].OrderNo != SliderSequence) {
+
+                if (Sequencedata[0].OrderNo > OrdeID.value) {
+
+                    flag = "forward";
+
                 }
+
+                else {
+
+                    flag = "backward";
+
+                }
+                if (oldSequencedata.length > 0) {  
+                    NewSequencedata = await UpdateOrderNumber(oldSequencedata,oldSequencedata[0].Id,Sequencedata[0].OrderNo, SliderSequence, editSettingData, flag, CurrentEditID);
+                }   
+            }
+
+        }
 
 
                 await UpdateNavigationMaster(props.SiteURL, props.spHttpClient, option, CurrentEditID);
                 setShowLoader({ display: "none" });
                 setIsPanelOpen(false);
                 fetchData();
-                setMsg(DisplayLabel?.UpdateAlertMsg as string);
+                setAlertMessage(DisplayLabel?.UpdateAlertMsg || "")
                 setisPopupVisible(true);
-                //  window.location.reload();
-                if (Sequencedata[0].Order0 != SliderSequence) {
+              //  window.location.reload();
+              if (Sequencedata[0].Order0 != SliderSequence) {
 
-                    if (NewSequencedata.length > 0) {
-
-                        await UpdateMenuSequence(NewSequencedata);
-
-                    }
-
+                if (NewSequencedata.length > 0) {
+    
+                    await UpdateMenuSequence(NewSequencedata);
+    
                 }
+    
+            }
             }
 
 
-
-
+          
+           
 
         } catch (error) {
             console.error("Error during save operation:", error);
@@ -435,19 +561,19 @@ export default function Navigation({ props }: any): JSX.Element {
         }
     };
 
-    const UpdateOrderNumber = async (olddata: any[], oldId: any,
+    const UpdateOrderNumber = async (olddata:any[],oldId:any,
         startIndex: number,
         changeIndex: number,
         data: any[],
         flag: string,
         ID: any
     ) => {
-        let NewSequencedata: { Id: any; OrderNo: number; }[] = [];
-
+        let NewSequencedata: { Id: any; OrderNo: number }[] = [];
+    
         // Add the main item being updated
         NewSequencedata.push({ Id: ID, OrderNo: changeIndex });
         NewSequencedata.push({ Id: oldId, OrderNo: startIndex });
-
+    
         if (changeIndex < startIndex) {
             for (let p = changeIndex; p < startIndex; p++) {
                 const currSequencedata = data.find((item) => item.OrderNo === p);
@@ -463,17 +589,17 @@ export default function Navigation({ props }: any): JSX.Element {
                 }
             }
         }
-
+    
         return NewSequencedata;
     };
-
+    
     const UpdateMenuSequence = async (NewSequencedata: any[]) => {
         for (const item of NewSequencedata) {
             let obj = { OrderNo: item.OrderNo }; // Corrected from Order0 to OrderNo
             await UpdateNavigationMaster(props.SiteURL, props.spHttpClient, obj, item.Id);
         }
     };
-
+    
 
 
     return (
@@ -525,24 +651,24 @@ export default function Navigation({ props }: any): JSX.Element {
                             </div>
                         </div>
                         <div className="column4">
-                            <div className="form-group">
-                                <label className={styles.Headerlabel}>{DisplayLabel?.AccessToTile}<span style={{ color: "red" }}>*</span></label>
-                                <PeoplePicker
-                                    context={peoplePickerContext}
-                                    personSelectionLimit={20}
-                                    showtooltip={true}
-                                    required={true}
-                                    errorMessage={AccessTileUserErr}
-                                    onChange={onPeoplePickerChange}
-                                    showHiddenInUI={false}
-                                    principalTypes={[PrincipalType.User, PrincipalType.SharePointGroup, PrincipalType.SecurityGroup]}
-                                    defaultSelectedUsers={isEditMode ? assignEmail : undefined}
-                                />
+                      <div className="form-group">
+                        <label className={styles.Headerlabel}>{DisplayLabel?.AccessToTile}<span style={{ color: "red" }}>*</span></label>
+                        <PeoplePicker
+                          context={peoplePickerContext}
+                          personSelectionLimit={5}
+                          showtooltip={true}
+                          required={true}
+                          errorMessage={AccessTileUserErr}
+                          onChange={onPeoplePickerChange}
+                          showHiddenInUI={false}
+                          principalTypes={[PrincipalType.User, PrincipalType.SharePointGroup, PrincipalType.SecurityGroup]}
+                          defaultSelectedUsers={isEditMode ? assignEmail : undefined}
+                        />
 
-                            </div>
-                        </div>
-
-                        <div className="column4">
+                      </div>
+                    </div>
+                   
+                          <div className="column4">
                             <div className="form-group">
                                 <label className={styles.Headerlabel}>{DisplayLabel?.URL}<span style={{ color: "red" }}>*</span></label>
                                 <TextField
@@ -555,67 +681,66 @@ export default function Navigation({ props }: any): JSX.Element {
                         </div>
                     </div>
                     <div className="row">
-                        <div className="column4">
-                            <div className={styles.row}>
-                                <div className={styles.col12}>
-                                    <label className={styles.Headerlabel}>{DisplayLabel?.ActiveStatus}</label>
-                                    <Toggle
-                                        checked={isActive} onChange={(_, checked) => IsActiveToggleChange(checked!)} />
+                    <div className="column4">
+                    <div className={styles.row}>
+                        <div className={styles.col12}>
+                            <label className={styles.Headerlabel}>{DisplayLabel?.ActiveStatus}</label>
+                            <Toggle
+                                checked={isActive} onChange={(_, checked) => IsActiveToggleChange(checked!)} />
 
-                                </div>
-                            </div>
                         </div>
-
-                        <div className="column4">
-                            <div className={styles.row}>
-                                <div className={styles.col12}>
-                                    <label className={styles.Headerlabel}>{DisplayLabel?.NextTab}</label>
-                                    <Toggle
-                                        checked={isNextActive} onChange={(_, checked) => IsNexttabToggleChange(checked!)} />
-
-                                </div>
-                            </div>
                         </div>
-                        <div className="column4">
-                            <div className={styles.row}>
-                                <div className={styles.col12}>
-                                    <label className={styles.Headerlabel}>{DisplayLabel?.ExternalUrl}</label>
-                                    <Toggle
-                                        checked={isExternalActive} onChange={(_, checked) => IsExternalToggleChange(checked!)} />
-
-                                </div>
-                            </div>
-                        </div>
-
                     </div>
 
+                    <div className="column4">
+                    <div className={styles.row}>
+                        <div className={styles.col12}>
+                            <label className={styles.Headerlabel}>{DisplayLabel?.NextTab}</label>
+                            <Toggle
+                                checked={isNextActive} onChange={(_, checked) => IsNexttabToggleChange(checked!)} />
+
+                        </div>
+                        </div>
+                    </div>
+                    <div className="column4">
+                           <div className="form-group">
+                               <label className={styles.Headerlabel}>{DisplayLabel?.Order}<span style={{ color: "red" }}>*</span></label>
+                               <Select
+                                   options={dropdownOptions}
+                                   value={OrdeID}
+                                   onChange={handleOrderChange}
+                                   isSearchable
+                                   placeholder={DisplayLabel?.Selectanoption}
+                               />
+                               {OrdeIDErr && <p style={{ color: "rgb(164, 38, 44)" }}>{OrdeIDErr}</p>}
+                           </div>
+                       </div>
+                {/*<div className="column4">
+                    <div className={styles.row}>
+                        <div className={styles.col12}>
+                            <label className={styles.Headerlabel}>{DisplayLabel?.ExternalUrl}</label>
+                            <Toggle
+                                checked={isExternalActive} onChange={(_, checked) => IsExternalToggleChange(checked!)} />
+
+                        </div>
+                        </div>
+                    </div>*/}
+                        
+                    </div>
+  
                     <div className="row">
-                        <div className="column4">
+                    
+                    <div className="column4">
+                    <div className={styles.row}>
+                        <div className={styles.col12}>
+                            <label className={styles.Headerlabel}>{DisplayLabel?.isParentMenu}</label>
+                            <Toggle
+                                checked={isParentMenu} onChange={(_, checked) => IsParentMenuToggleChange(checked!)} />
 
-
-                            <div className="form-group">
-                                <label className={styles.Headerlabel}>{DisplayLabel?.Order}<span style={{ color: "red" }}>*</span></label>
-                                <Select
-                                    options={dropdownOptions}
-                                    value={OrdeID}
-                                    onChange={handleOrderChange}
-                                    isSearchable
-                                    placeholder={DisplayLabel?.Selectanoption}
-                                />
-                                {OrdeIDErr && <p style={{ color: "rgb(164, 38, 44)" }}>{OrdeIDErr}</p>}
-                            </div>
                         </div>
-                        <div className="column4">
-                            <div className={styles.row}>
-                                <div className={styles.col12}>
-                                    <label className={styles.Headerlabel}>{DisplayLabel?.isParentMenu}</label>
-                                    <Toggle
-                                        checked={isParentMenu} onChange={(_, checked) => IsParentMenuToggleChange(checked!)} />
-
-                                </div>
-                            </div>
                         </div>
-                        {isVisible && (<div className="column4">
+                    </div>
+                    {isVisible && (   <div className="column4">
                             <div className="form-group">
                                 <label className={styles.Headerlabel}>{DisplayLabel?.ParentMenuId}<span style={{ color: "red" }}>*</span></label>
                                 <Select
@@ -629,21 +754,21 @@ export default function Navigation({ props }: any): JSX.Element {
                             </div>
                         </div>
                         )}
-
-
-
-
-
+                       
+                                   
+                                       
+                                
+                                             
                     </div>
                 </div>
                 <div className={cls["modal"]} style={showLoader}></div>
 
 
             </Panel>
-            <PopupBox isPopupBoxVisible={isPopupVisible} hidePopup={hidePopup} msg={msg} />
-
+            <PopupBox isPopupBoxVisible={isPopupVisible} hidePopup={hidePopup} msg={alertMessage} />
+               
         </div>
-
+        
     );
 }
 

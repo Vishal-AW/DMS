@@ -192,4 +192,5 @@ export interface ILabel {
     Testcol: string;
     IconClass: string;
     ParentMenuId: string;
+    MenuAlreadyExist: string;
 }
