@@ -1377,7 +1377,7 @@ export default function Master({ props }: any): JSX.Element {
                         <label className={styles.Headerlabel}>{DisplayLabel?.AccessToTile}<span style={{ color: "red" }}>*</span></label>
                         <PeoplePicker
                           context={peoplePickerContext}
-                          personSelectionLimit={5}
+                          personSelectionLimit={20}
                           showtooltip={true}
                           required={true}
                           errorMessage={AccessTileUserErr}

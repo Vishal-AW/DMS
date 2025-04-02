@@ -13,6 +13,7 @@ import cls from '../HomePage.module.scss';
 import { ILabel } from "../Interface/ILabel";
 import Select from "react-select";
 import moment from "moment";
+import { TileSendMail } from "../../../../Services/SendEmail";
 
 interface IUploadFileProps {
     isOpenUploadPanel: boolean;
@@ -155,7 +156,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                             <PeoplePicker
                                 titleText={item.Title}
                                 context={peoplePickerContext}
-                                personSelectionLimit={1}
+                                personSelectionLimit={20}
                                 showtooltip={true}
                                 required={item.IsRequired}
                                 showHiddenInUI={false}
@@ -347,7 +348,21 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
             obj.RefSequence = ReferenceNo.count;
 
 
-            await UploadFile(context.pageContext.web.absoluteUrl, context.spHttpClient, item.attachment, `${Fileuniqueid}-${item.attachment.name}`, libName, obj, folderPath);
+            let UploadFileData = await UploadFile(context.pageContext.web.absoluteUrl, context.spHttpClient, item.attachment, `${Fileuniqueid}-${item.attachment.name}`, libName, obj, folderPath);
+            console.log(UploadFileData);
+
+            if (folderObject.DefineRole != null) {
+                let emailObj: any = {
+                    To: folderObject.ProjectmanagerEmail,
+                    FolderPath: obj.FolderDocumentPath,
+                    DocName: obj.ActualName,
+                    AuthorTitle: context.pageContext.user.displayName,
+                    TileName: libName,
+                    Sub: DisplayLabel.PublisherEmailSubject + " " + obj.ReferenceNo,
+                    Status: status.value[0].InternalStatus
+                };
+                await TileSendMail(context, emailObj);
+            }
             count++;
 
             if (item.IsExistingRefID !== "" && item.IsExistingRefID !== null && item.IsExistingRefID !== undefined) {

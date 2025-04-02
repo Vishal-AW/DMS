@@ -247,7 +247,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                             <PeoplePicker
                                 titleText={item.Title}
                                 context={peoplePickerContext}
-                                personSelectionLimit={1}
+                                personSelectionLimit={20}
                                 showtooltip={true}
                                 required={item.IsRequired}
                                 showHiddenInUI={false}
@@ -731,7 +731,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                             {FormType === "EntryForm" ? <PeoplePicker
                                 titleText={DisplayLabel.FolderAccess}
                                 context={peoplePickerContext}
-                                personSelectionLimit={10}
+                                personSelectionLimit={20}
                                 showtooltip={true}
                                 required
                                 showHiddenInUI={false}

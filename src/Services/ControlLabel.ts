@@ -208,6 +208,8 @@ export async function GetAllLabel(WebUrl: string, spHttpClient: SPHttpClient, La
       Testcol: getValue("Testcol", data, Language),
       IconClass: getValue("IconClass", data, Language),
       ParentMenuId: getValue("ParentMenuId", data, Language),
+      MenuAlreadyExist: getValue("MenuAlreadyExist", data, Language),
+
 
     };
 
