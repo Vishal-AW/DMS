@@ -214,10 +214,10 @@ export default function Dashboard({ props }: any): JSX.Element {
     //   }
     // </div>
 
-    <div className={styles["row1-container"]}>
+    <div className={styles["row"]}>
       {
         tileData.length > 0 ? tileData.map((el: any) => (
-          <div className="col-xl-3 mb-4" onClick={() => { openLib(el); }}>
+          <div className="col-xl-3 mb-4" style={{ paddingRight: "10px" }} onClick={() => { openLib(el); }}>
             <a href="javascript:void(0)" className={styles["dashcard"]} >
               <img className={styles["dashcard__image"]}
                 src={el.Documentpath ? el.Documentpath : `${props.SiteURL}/DMS_TileDocument/Default.jpg`}
