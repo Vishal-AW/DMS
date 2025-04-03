@@ -502,13 +502,24 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                 let SliderSequence = OrdeID.value;
                 let oldSequencedata:any =[];
                 let flag = "";
-                const newchild = await getChildMenunew(props.SiteURL, props.spHttpClient, editSettingData[0].ParentMenuId.Id);
-                const oldchild=newchild.value;
-                oldSequencedata = oldchild.filter((item: any) => item.OrderNo === SliderSequence);
+                let oldchild: any=[];
+                let Sequencedata:any=[];
+                if (isParentMenu === false) 
+                    {
+                        const newchild = await getChildMenunew(props.SiteURL, props.spHttpClient, editSettingData[0].ParentMenuId.Id);
+                        oldchild=newchild.value;
+                        oldSequencedata = oldchild.filter((item: any) => item.OrderNo === SliderSequence);
 
-                const Sequencedata = editSettingData.filter((item: any) => item.Id === CurrentEditID);
-                
-    
+                    }
+                    else
+                    {
+                        const newchild = MainTableSetdata.filter((item: any) => item.isParentMenu === true);
+
+                        oldchild=newchild;
+                        oldSequencedata = oldchild.filter((item: any) => item.OrderNo === SliderSequence);
+
+                    }
+         Sequencedata = editSettingData.filter((item: any) => item.Id === CurrentEditID);
 
         if (Sequencedata.length > 0) {
 
@@ -526,7 +537,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
 
                 }
                 if (oldSequencedata.length > 0) {  
-                    NewSequencedata = await UpdateOrderNumber(oldSequencedata,oldSequencedata[0].Id,Sequencedata[0].OrderNo, SliderSequence, editSettingData, flag, CurrentEditID);
+                    NewSequencedata = await UpdateOrderNumber(oldSequencedata,oldSequencedata[0].Id,Sequencedata[0].OrderNo, SliderSequence, editSettingData, flag, CurrentEditID,oldchild);
                 }   
             }
 
@@ -561,37 +572,40 @@ export default function ConfigMaster({ props }: any): JSX.Element {
         }
     };
 
-    const UpdateOrderNumber = async (olddata:any[],oldId:any,
-        startIndex: number,
-        changeIndex: number,
-        data: any[],
-        flag: string,
-        ID: any
+    const UpdateOrderNumber = async (
+        olddata: any, oldId: any,
+        startIndex: number, changeIndex: number,
+        data: any[], flag: string, ID: number,old:any,
     ) => {
-        let NewSequencedata: { Id: any; OrderNo: number }[] = [];
+        let NewSequencedata = [];
     
         // Add the main item being updated
         NewSequencedata.push({ Id: ID, OrderNo: changeIndex });
-        NewSequencedata.push({ Id: oldId, OrderNo: startIndex });
-    
+        
+        // Adjust the sequence when moving an item to a new position
         if (changeIndex < startIndex) {
             for (let p = changeIndex; p < startIndex; p++) {
-                const currSequencedata = data.find((item) => item.OrderNo === p);
+                const currSequencedata = old.find((item: { OrderNo: any; }) => item.OrderNo === p);
                 if (currSequencedata) {
                     NewSequencedata.push({ Id: currSequencedata.Id, OrderNo: p + 1 });
                 }
             }
         } else {
             for (let p = changeIndex; p > startIndex; p--) {
-                const currSequencedata = data.find((item) => item.OrderNo === p);
+                const currSequencedata = old.find((item: { OrderNo: any; }) => item.OrderNo === p);
                 if (currSequencedata) {
                     NewSequencedata.push({ Id: currSequencedata.Id, OrderNo: p - 1 });
                 }
             }
         }
     
-        return NewSequencedata;
+        // Ensure sequential order from 1 to N
+        NewSequencedata.sort((a, b) => a.OrderNo - b.OrderNo);
+        let finalData = NewSequencedata.map((item, index) => ({ Id: item.Id, OrderNo: index + 1 }));
+    
+        return finalData;
     };
+
     
     const UpdateMenuSequence = async (NewSequencedata: any[]) => {
         for (const item of NewSequencedata) {
