@@ -29,14 +29,18 @@ export async function TileSendMail(context: WebPartContext, docinfo: any) {
     MailBody += `<br><b>${actionBy}:</b> ${context.pageContext.user.displayName}`;
     MailBody += "<br>";
 
-    const subject = docinfo.Sub;
+    //const subject = docinfo.Sub;
     const Mail = {
         From: context.pageContext.user.email,
-        Subject: subject,
+        //Subject: subject,
         Body: MailBody,
         To: docinfo.To,
         FolderPath: docinfo.FolderPath,
-        DocName: docinfo.DocName
+        DocName: docinfo.DocName,
+        LID:docinfo.ID,
+        LibraryName:docinfo.libraryName,
+        Status:docinfo.Status,
+
     };
 
     return await createSendMailItem(context, Mail);

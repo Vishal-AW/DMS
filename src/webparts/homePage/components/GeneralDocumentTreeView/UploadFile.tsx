@@ -361,6 +361,8 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                     Sub: DisplayLabel.PublisherEmailSubject + " " + obj.ReferenceNo,
                     Status: status.value[0].InternalStatus
                 };
+                emailObj.ID = folderObject.Id;
+                emailObj.libraryName = libName;
                 await TileSendMail(context, emailObj);
             }
             count++;

@@ -11,13 +11,20 @@ body {
 .ControlZone {
     padding: 0px !important;
 }
-
+#CommentsWrapper
+{
+    display: none !important;
+}
 ::-webkit-scrollbar {
     width: 9px !important;
     background-color: transparent !important;
     height: 8px !important;
 }
 
+
+  div[class*="socialBar"] {
+    display: none !important;
+}
 /* Handle */
 ::-webkit-scrollbar-thumb {
     background: #b5b7b9 !important;

@@ -11,8 +11,6 @@ import { PeoplePicker, PrincipalType, IPeoplePickerContext } from "@pnp/spfx-con
 import ReactTableComponent from '../ResuableComponents/ReusableDataTable';
 import Select from "react-select";
 
-
-
 export default function ConfigMaster({ props }: any): JSX.Element {
 
     const [DisplayLabel, setDisplayLabel] = useState<ILabel>();
@@ -318,7 +316,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
 
     const hidePopup = React.useCallback(() => {
         setisPopupVisible(false);
-        window.location.reload();
+    //window.location.reload();
         clearField();
         closePanel();
         setShowLoader({ display: "none" });
