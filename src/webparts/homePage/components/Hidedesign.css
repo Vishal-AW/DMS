@@ -11,10 +11,7 @@ body {
 .ControlZone {
     padding: 0px !important;
 }
-#CommentsWrapper
-{
-    display: none !important;
-}
+
 ::-webkit-scrollbar {
     width: 9px !important;
     background-color: transparent !important;

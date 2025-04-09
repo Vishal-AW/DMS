@@ -1,7 +1,5 @@
 import * as React from "react";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
-import styles from '../GlobalCSS/global.module.scss'; 
-import { useEffect } from 'react';
 
 
 interface ISearchResult {
@@ -14,14 +12,7 @@ interface ISearchResult {
 interface ISearchProps {
     context: WebPartContext;
 }
-useEffect(() => {
-    const footerSection = document.querySelector('[data-automation-id="sp-socialbar"]');
-    if (footerSection) {
-      footerSection.setAttribute("style", "display: none;");
-    }
-  
-   
-  }, []);
+
 
 const SearchComponent: React.FC<ISearchProps> = ({ context }) => {
     const [searchResults, setSearchResults] = React.useState<ISearchResult[]>([]);
@@ -85,9 +76,7 @@ const SearchComponent: React.FC<ISearchProps> = ({ context }) => {
                     </div>
                 ))}
             </div>
-            <div className={styles.zo_cf_ada2ac09}>
-  {/* This will be hidden */}
-</div>
+           
         </div>
     );
     
