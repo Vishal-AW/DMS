@@ -200,7 +200,7 @@ export default function SearchFilter({ props }: any): JSX.Element {
         else {
             let query = ContentSearchinput == undefined ? "*" : ContentSearchinput;
             let GetLibraryName = libraryName;
-            const routePath = `${props.SiteURL}/SitePages/Search.aspx?env=Embedded&query='${query}'&Library='${GetLibraryName}'`;
+            const routePath = `${props.SiteURL}/SitePages/Search.aspx?env=WebViewList&query='${query}'&Library='${GetLibraryName}'`;
             window.open(routePath, "_blank");
         }
     };

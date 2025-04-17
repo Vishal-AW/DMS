@@ -224,7 +224,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                 case "Dropdown":
                 case "Multiple Select":
                     return (
-                        <div className={dynamicControl.length > 5 ? styles.col6 : styles.col12} key={index}>
+                        <div className="col-md-12" key={index}>
                             <label className={styles.Headerlabel}>{item.Title}{item.IsRequired ? <span style={{ color: "red" }}>*</span> : <></>}</label>
                             <Select
                                 options={options[item.InternalTitleName]}
@@ -243,7 +243,8 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
 
                 case "Person or Group":
                     return (
-                        <div className={dynamicControl.length > 5 ? styles.col6 : styles.col12} key={index}>
+                        // <div className={dynamicControl.length > 5 ? styles.col6 : styles.col12} key={index}>
+                        <div className="col-md-12" key={index}>
                             <PeoplePicker
                                 titleText={item.Title}
                                 context={peoplePickerContext}
@@ -286,7 +287,8 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                         text: ele,
                     }));
                     return (
-                        <div className={dynamicControl.length > 5 ? styles.col6 : styles.col12} key={index}>
+                        // <div className={dynamicControl.length > 5 ? styles.col6 : styles.col12} key={index}>
+                        <div className="col-md-12" key={index}>
                             <ChoiceGroup
                                 options={radioOptions}
                                 onChange={(ev, option) => handleInputChange(item.InternalTitleName, option?.key)}
@@ -299,7 +301,8 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                     );
                 case "Date and Time":
                     return (
-                        <div className={dynamicControl.length > 5 ? styles.col6 : styles.col12} key={index}>
+                        //<div className={dynamicControl.length > 5 ? styles.col6 : styles.col12} key={index}>
+                        <div className="col-md-12" key={index}>
                             <label className={styles.Headerlabel}>{item.Title}{item.IsRequired ? <span style={{ color: "red" }}>*</span> : <></>}</label>
                             <DatePicker
                                 componentRef={(input: any) => (inputRefs.current[item.InternalTitleName] = input)}
@@ -315,7 +318,8 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
 
                 default:
                     return (
-                        <div className={dynamicControl.length > 5 ? styles.col6 : styles.col12} key={index}>
+                        //<div className={dynamicControl.length > 5 ? styles.col6 : styles.col12} key={index}>
+                        <div className="col-md-12" key={index}>
                             <TextField
                                 type={"text"}
                                 label={item.Title}
@@ -580,14 +584,14 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
             >
                 <div className={styles.grid}>
                     <div className="row">
-                        <div className="column6">
+                        <div className="col-md-6">
                             <TextField
                                 label={DisplayLabel.TileName}
                                 value={LibraryDetails.TileName}
                                 disabled
                             />
                         </div>
-                        <div className="column6">
+                        <div className="col-md-6">
                             <TextField
                                 label={DisplayLabel.FolderName}
                                 value={folderName}
@@ -604,7 +608,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                     </div>
 
                     <div className="row">
-                        <div className="column12">
+                        <div className="col-md-12">
                             <Toggle
                                 label={DisplayLabel.IsSuffixRequired}
                                 onChange={handleToggleChange}
@@ -617,7 +621,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                     {isSuffixRequired && (
                         <>
                             <div className="row">
-                                <div className="column12">
+                                <div className="col-md-12">
                                     <label className={styles.Headerlabel}>{DisplayLabel.DocumentSuffix}<span style={{ color: "red" }}>*</span> </label>
                                     <Select
                                         options={SuffixData}
@@ -634,7 +638,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
 
                             {Suffix === "Other" && (
                                 <div className="row">
-                                    <div className="column12">
+                                    <div className="col-md-12">
                                         <TextField
                                             label={DisplayLabel.OtherSuffixName}
                                             value={OtherSuffix}
@@ -653,8 +657,8 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                     )}
 
                     <div className="row">{renderDynamicControls()}</div>
-                    {libraryDetails.AllowApprover ? <div className={styles.row}>
-                        <div className="column12">
+                    {libraryDetails.AllowApprover ? <div className="row">
+                        <div className="col-md-12">
                             <Toggle
                                 label={DisplayLabel.IsApprovalFlowRequired}
                                 onChange={() => { setIsApprovalRequired((pre) => !pre); }}
@@ -663,7 +667,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                             />
                         </div>
                         {
-                            isApprovalRequired ? <><div className="column6">
+                            isApprovalRequired ? <><div className="col-md-6">
 
                                 <PeoplePicker
                                     titleText={DisplayLabel.Approver}
@@ -693,7 +697,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                                     ref={(input: any) => (inputRefs.current["Approver"] = input)}
                                 />
                             </div>
-                                <div className="column6">
+                                <div className="col-md-6">
                                     <PeoplePicker
                                         titleText={DisplayLabel.Publisher}
                                         context={peoplePickerContext}
@@ -727,7 +731,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                         }
                     </div> : <></>}
                     <div className="row">
-                        <div className="column12">
+                        <div className="col-md-12">
                             {FormType === "EntryForm" ? <PeoplePicker
                                 titleText={DisplayLabel.FolderAccess}
                                 context={peoplePickerContext}
@@ -763,7 +767,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                         </div>
                     </div>
                     <div className="row">
-                        <div className="column6">
+                        <div className="col-md-6">
                             <Toggle
                                 label={DisplayLabel.CreateStructure}
                                 onChange={() => { setCreateStructure((pre) => !pre); }}
@@ -772,7 +776,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                             />
                         </div>
                         {
-                            createStructure ? <div className="column6">
+                            createStructure ? <div className="col-md-6">
                                 <label className={styles.Headerlabel}>{DisplayLabel.TemplateName}<span style={{ color: "red" }}>*</span> </label>
                                 <Select
                                     options={allFolderTemplate}

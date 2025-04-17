@@ -3,7 +3,7 @@
 .tree-view {
     list-style: none;
     margin: 0;
-    padding: 0;
+    padding: 0px 20px;
     font-family: Arial, sans-serif;
 }
 
@@ -158,11 +158,26 @@
 }
 
 
+.folderTile {
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+
+}
+
+.folderLabel {
+    //font-weight: 500;
+    font-size: 14px;
+    //color: #000;
+    margin-top: 7px;
+
+}
+
 .primary-btn {
     // padding: 12px 22px;
     text-align: center;
     color: #fff;
-    background: #0d6efd;
+    background: #009ef7;
     text-decoration: none;
     // margin: 3px 15px 0px 3px;
     //font-size: 15px;
@@ -174,7 +189,7 @@
 
 .primary-btn:hover {
     color: #fff;
-    background: #0d6efd;
+    background: #009ef7;
 }
 
 .light-btn {

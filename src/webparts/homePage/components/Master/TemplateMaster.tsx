@@ -61,14 +61,17 @@ export default function TemplateMaster({ props }: any): JSX.Element {
             accessor: "row._index",
             Cell: ({ row }: { row: any; }) => row._index + 1,
             filterable: false,
+            width: 65
         },
         {
             Header: DisplayLabel?.TemplateName, accessor: "Name",
+            width: '25%',
             filterMethod: (filter: any, row: any) => row[filter.id]?.toLowerCase().includes(filter.value?.toLowerCase() || "")
         },
         {
             Header: DisplayLabel?.ActiveStatus,
             accessor: "Active",
+            width: '25%',
             Cell: ({ row }: { row: any; }) => (row.Active === true ? "Yes" : "No"),
             Filter: ({ filter, onChange }: { filter: any; onChange: (value: any) => void; }) => (
                 <select
@@ -87,12 +90,14 @@ export default function TemplateMaster({ props }: any): JSX.Element {
             }
         },
         {
-            Header: DisplayLabel?.Action,
+            Header: <div style={{ textAlign: 'center' }}>{DisplayLabel?.Action}</div>,
             accessor: "Action",
             Cell: ({ row }: { row: any; }) => (
-                <FontIcon aria-label="Edit" onClick={() => openEditTemplatePanel(row._original.Id)} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer' }}></FontIcon>
+                <FontIcon aria-label="Edit" className="action-icon" onClick={() => openEditTemplatePanel(row._original.Id)} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer', backgroundColor: '#f5f8fa', padding: '6px 9px', borderRadius: '4px', textAlign: 'center' }}></FontIcon>
             ),
             filterable: false,
+            width: '10%',
+            className: 'text-center',
 
         },
     ];
@@ -218,7 +223,7 @@ export default function TemplateMaster({ props }: any): JSX.Element {
 
     return (
         <div>
-            <nav aria-label="breadcrumb">
+            {/* <nav aria-label="breadcrumb">
                 <ol className="breadcrumb breadcrumb-style2">
                     <li className="breadcrumb-item">
                         <Link to="/" style={{ textDecoration: "none" }}>Dashboard</Link>
@@ -228,7 +233,21 @@ export default function TemplateMaster({ props }: any): JSX.Element {
             </nav>
             <div className={styles.alignbutton} style={{ paddingRight: '0px' }}>
                 <DefaultButton id="requestButton" className={styles['primary-btn']} text={DisplayLabel?.Add} onClick={openTemplatePanel}  ></DefaultButton>
-            </div>
+            </div> */}
+
+            <nav aria-label="breadcrumb" className="toolbarcontainer">
+                <div>
+                    <ol className="breadcrumb breadcrumb-style2">
+                        <li className="breadcrumb-item text-dark">
+                            <Link to="/" style={{ textDecoration: "none" }}>Dashboard</Link>
+                        </li>
+                        <li className="breadcrumb-item active text-primary">Template Master</li>
+                    </ol>
+                </div>
+                <div className={styles.alignbutton} style={{ paddingRight: '0px' }}>
+                    <DefaultButton id="requestButton" className={styles['primary-btn']} text={DisplayLabel?.Add} onClick={openTemplatePanel}  ></DefaultButton>
+                </div>
+            </nav>
 
             <Stack horizontal styles={stackStyles} tokens={stackTokens}>
                 <Stack.Item grow={2} styles={stackItemStyles}>

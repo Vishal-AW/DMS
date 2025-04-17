@@ -83,18 +83,21 @@ export default function FolderMaster({ props }: any): JSX.Element {
             accessor: "row._index",
             Cell: ({ row }: { row: any; }) => row._index + 1,
             filterable: false,
+            width: 65
         },
         {
             Header: DisplayLabel?.FolderName, accessor: "FolderName",
+            width: '25%',
             filterMethod: (filter: any, row: any) => row[filter.id]?.toLowerCase().includes(filter.value?.toLowerCase() || "")
-
         },
         {
             Header: DisplayLabel?.ParentFolder, accessor: "ParentFolderId.FolderName",
+            width: '20%',
             filterMethod: (filter: any, row: any) => row[filter.id]?.toLowerCase().includes(filter.value?.toLowerCase() || "")
         },
         {
             Header: DisplayLabel?.TemplateName, accessor: "TemplateName.Name",
+            width: '20%',
             Filter: ({ filter, onChange }: { filter: any; onChange: (value: any) => void; }) => (
                 <select
                     value={filter ? filter.value : ""}
@@ -117,6 +120,7 @@ export default function FolderMaster({ props }: any): JSX.Element {
         {
             Header: DisplayLabel?.Active,
             accessor: "Active",
+            width: '20%',
             Cell: ({ row }: { row: any; }) => (row.Active === true ? "Yes" : "No"),
             Filter: ({ filter, onChange }: { filter: any; onChange: (value: any) => void; }) => (
                 <select
@@ -135,12 +139,14 @@ export default function FolderMaster({ props }: any): JSX.Element {
             }
         },
         {
-            Header: DisplayLabel?.Action,
+            Header: <div style={{ textAlign: 'center' }}>{DisplayLabel?.Action}</div>,
             accessor: "Action",
             Cell: ({ row }: { row: any; }) => (
-                <FontIcon aria-label="Edit" onClick={() => openEditFolderPanel(row._original.Id)} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer' }}></FontIcon>
+                <FontIcon aria-label="Edit" className="action-icon" onClick={() => openEditFolderPanel(row._original.Id)} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer', backgroundColor: '#f5f8fa', padding: '6px 9px', borderRadius: '4px', textAlign: 'center' }}></FontIcon>
             ),
             filterable: false,
+            width: '10%',
+            className: 'text-center',
         },
 
     ];
@@ -367,17 +373,21 @@ export default function FolderMaster({ props }: any): JSX.Element {
 
     return (
         <div>
-            <nav aria-label="breadcrumb">
-                <ol className="breadcrumb breadcrumb-style2">
-                    <li className="breadcrumb-item">
-                        <Link to="/" style={{ textDecoration: "none" }}>Dashboard</Link>
-                    </li>
-                    <li className="breadcrumb-item active">Folder Master</li>
-                </ol>
+
+
+            <nav aria-label="breadcrumb" className="toolbarcontainer">
+                <div>
+                    <ol className="breadcrumb breadcrumb-style2">
+                        <li className="breadcrumb-item text-dark">
+                            <Link to="/" style={{ textDecoration: "none" }}>Dashboard</Link>
+                        </li>
+                        <li className="breadcrumb-item active text-primary">Folder Master</li>
+                    </ol>
+                </div>
+                <div className="d-flex align-items-center py-1">
+                    <DefaultButton id="requestButton" className={styles['primary-btn']} text={DisplayLabel?.Add} onClick={openFolderPanel}  ></DefaultButton>
+                </div>
             </nav>
-            <div className={styles.alignbutton} style={{ paddingRight: '0px' }}>
-                <DefaultButton id="requestButton" className={styles['primary-btn']} text={DisplayLabel?.Add} onClick={openFolderPanel}  ></DefaultButton>
-            </div>
 
             <Stack horizontal styles={stackStyles} tokens={stackTokens}>
                 <Stack.Item grow={2} styles={stackItemStyles}>

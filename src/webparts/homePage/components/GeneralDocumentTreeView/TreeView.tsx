@@ -34,10 +34,10 @@ const stackStyles: IStackStyles = { root: { height: '100vh' } };
 const stackItemStyles: IStackItemStyles = {
     root: {
         padding: 10,
-        border: '1px solid #ddd',
-        overflow: 'auto',
-        background: '#fff',
-        boxShadow: '0 10px 30px 0 rgba(82, 63, 105, .05)',
+        border: "1px solid #ddd",
+        overflowY: "auto",
+        // background: "#fff",
+        //boxShadow: "0 10px 30px 0 rgba(82, 63, 105, .05)",
     },
 };
 const stackTokens: IStackTokens = { childrenGap: 10 };
@@ -418,14 +418,14 @@ export default function TreeView({ props }: any) {
             jsonData = jsonData.filter((ele: any) => ele.IsActiveControl);
             //setPanelSize(PanelType.large);
             const htm = <>
-                <div className={styles.grid}>
-                    <div className={styles.row}>
-                        <div className={styles.col12}>
+                <div className="grid">
+                    <div className="row">
+                        <div className="col-md-12">
                             <label>{DisplayLabel.Path}: <b>{folderPath}</b></label>
                         </div>
                     </div>
-                    <div className={styles.row}>
-                        <div className={styles.col6}>
+                    <div className="row">
+                        <div className="col-md-6">
                             <label className={styles.Headerlabel}>{DisplayLabel.TileName}</label>
                             <TextField
                                 value={libDetails.TileName}
@@ -433,7 +433,7 @@ export default function TreeView({ props }: any) {
                                 readOnly
                             />
                         </div>
-                        <div className={styles.col6}>
+                        <div className="col-md-6">
                             <label className={styles.Headerlabel}>{DisplayLabel.FolderName}</label>
                             <TextField
                                 value={folderName}
@@ -442,7 +442,7 @@ export default function TreeView({ props }: any) {
                             />
                         </div>
                         {item._original.ListItemAllFields.IsSuffixRequired ? <>
-                            <div className={styles.col6}>
+                            <div className="col-md-6">
                                 <label className={styles.Headerlabel}>{DisplayLabel.DocumentSuffix}</label>
                                 <TextField
                                     value={item._original.ListItemAllFields.DocumentSuffix}
@@ -453,7 +453,7 @@ export default function TreeView({ props }: any) {
 
 
                             {item._original.ListItemAllFields.DocumentSuffix === "Other" && (
-                                <div className={styles.col6}>
+                                <div className="col-md-6">
                                     <label className={styles.Headerlabel}>{DisplayLabel.OtherSuffixName}</label>
                                     <TextField
                                         value={item._original.ListItemAllFields.OtherSuffix}
@@ -467,7 +467,7 @@ export default function TreeView({ props }: any) {
                             jsonData.map((el: any, index: number) => {
                                 const filterObj = dataConfig?.value.find((ele: any) => ele.Id === el.Id);
                                 if (!filterObj) return null;
-                                return <div className={styles.col6}>
+                                return <div className="col-md-6">
                                     <label className={styles.Headerlabel}>{el.Title}</label>
                                     {filterObj.ColumnType === "Date and Time" ? <TextField
                                         value={item._original.ListItemAllFields.hasOwnProperty(el.InternalTitleName) ? moment(item._original.ListItemAllFields[el.InternalTitleName]).format("DD/MM/YYYY") : ""}
@@ -492,12 +492,12 @@ export default function TreeView({ props }: any) {
     };
     useEffect(() => {
         setPanelForm(<>
-            <div className={styles.col10}>
+            <div className="col-md-10">
                 <TextField value={fileName} required errorMessage={fileNameErr} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                     setFileName(event.target.value);
                 }} />
             </div>
-            <div className={styles.col2}><TextField readOnly value={extension} /></div>
+            <div className="col-md-2"><TextField readOnly value={extension} /></div>
         </>);
         setActionButton(<PrimaryButton text={DisplayLabel.Rename} style={{ marginRight: "10px" }} onClick={() => renameTheFile(itemId)} />);
     }, [fileName, extension, fileNameErr]);
@@ -505,7 +505,7 @@ export default function TreeView({ props }: any) {
 
     useEffect(() => {
         setPanelForm(<>
-            <div className={styles.col10}>
+            <div className="col-md-10">
                 <TextField value={comment} onChange={(event: React.ChangeEvent<HTMLInputElement>) => setComment(event.target.value)} />
             </div>
         </>);
@@ -602,7 +602,7 @@ export default function TreeView({ props }: any) {
                                         : "FabricFolderFill"
                                 }
                                 className={styles["folder-icon"]}
-                                style={{ marginRight: "5px", color: "#0162e8" }}
+                                style={{ marginRight: "5px", color: "#009ef7" }}
                             />
                             <span className={styles["node-name"]}>{node.Name}</span>
                         </span>
@@ -610,7 +610,7 @@ export default function TreeView({ props }: any) {
                             <Icon
                                 iconName={"More"}
                                 className={styles["folder-icon"]}
-                                style={{ marginLeft: "5px", color: "#0162e8", cursor: "pointer" }}
+                                style={{ marginLeft: "5px", color: "#009ef7", cursor: "pointer" }}
                             />
                             {showContextualMenu[node.ListItemAllFields.Id] && nodeId === node.ListItemAllFields.Id ? (
                                 <ContextualMenu
@@ -638,20 +638,18 @@ export default function TreeView({ props }: any) {
     const renderRightFolder = (nodes: Folder[]) => {
         return nodes.map((node: any) => (
             node.Name !== "Forms" && (
-                <div key={node.Id} className={styles.col2}>
-                    <div>
-                        <span
-                            onClick={() => toggleNode(node.Name, `${node.folderPath}`, node)}
-                            style={{ cursor: "pointer" }}
-                        >
-                            <Icon
-                                iconName="FabricFolderFill"
-                                className={styles["folder-icon"]}
-                                style={{ marginRight: "5px", color: "#0162e8", fontSize: "50px" }}
-                            />
-                            <br />
-                            <span className={styles["node-name"]}>{node.Name}</span>
-                        </span>
+                <div key={node.Id} className="col-md-2">
+                    <div
+                        onClick={() => toggleNode(node.Name, `${node.folderPath}`, node)}
+                        style={{ cursor: "pointer" }}
+                        className={styles["folderTile"]}
+                    >
+                        <Icon
+                            iconName="FabricFolderFill"
+                            className={styles["folder-icon"]}
+                            style={{ marginRight: "5px", color: "#009ef7", fontSize: "50px", height: "50px" }}
+                        />
+                        <span className={styles["folderLabel"]}>{node.Name}</span>
                     </div>
                 </div>
             )
@@ -778,8 +776,8 @@ export default function TreeView({ props }: any) {
                 PagedefaultSize={10}
                 TableRows={1}
                 TableshowPagination={files.length > 10}
-            /> : <div className={styles.grid}>
-                <div className={styles.row}>
+            /> : <div className="grid" style={{ height: "871px", overflow: "auto" }}>
+                <div className="row">
                     {renderRightFolder(rightFolders)}
                 </div>
             </div>;
@@ -808,93 +806,113 @@ export default function TreeView({ props }: any) {
 
     return (
         <div>
-            <nav aria-label="breadcrumb">
+            {/* <nav aria-label="breadcrumb">
                 <ol className="breadcrumb breadcrumb-style2">
                     <li className="breadcrumb-item">
                         <Link to="/" style={{ textDecoration: "none" }}>Dashboard</Link>
                     </li>
                     <li className="breadcrumb-item active">{libName}</li>
                 </ol>
-            </nav>
-            <div className={styles.grid}>
+            </nav> */}
+
+            {/* <div className={styles.grid}>
                 <div className={styles.row}>
                     <div className={styles.col12}>
                         {isValidUser || libDetails.TileAdminId === props.userID ? <DefaultButton onClick={projectCreation} text={DisplayLabel?.NewRequest} className={styles['primary-btn']} style={{ float: "right", marginRight: "20px" }} /> : ""}
                     </div>
                 </div>
-            </div>
+            </div> */}
+
+            <nav aria-label="breadcrumb" className="toolbarcontainer" style={{ marginBottom: "20px", padding: "0px 0px 0px 8px" }}>
+                <div>
+                    <ol className="breadcrumb breadcrumb-style2">
+                        <li className="breadcrumb-item text-dark">
+                            <Link to="/" style={{ textDecoration: "none" }}>Dashboard</Link>
+                        </li>
+                        <li className="breadcrumb-item active">{libName}</li>
+                    </ol>
+                </div>
+                <div className="d-flex align-items-center py-1">
+                    {isValidUser || libDetails.TileAdminId === props.userID ? <DefaultButton onClick={projectCreation} text={DisplayLabel?.NewRequest} className={styles['primary-btn']} style={{ float: "right", marginRight: "20px" }} /> : ""}
+                </div>
+            </nav>
 
 
             <Stack enableScopedSelectors horizontal styles={stackStyles} tokens={stackTokens} className="row">
-                <Stack.Item grow styles={stackItemStyles} className='column3'>
-                    <div className={styles.grid}>
-                        <div className={styles.row}>
-                            <div className={styles.col12}>
-                                {libDetails.IsArchiveRequired ? <CommandBarButton iconProps={{ iconName: "Archive", style: { color: "#f1416c" } }} text={`${DisplayLabel.Archive} (${archiveData.length || 0})`} onClick={getArchive} />
-                                    : <CommandBarButton iconProps={{ iconName: "EmptyRecycleBin", style: { color: "#f1416c" } }} text={`${DisplayLabel.RecycleBin} (${deletedData.length || 0})`} onClick={getRecycleData} />
-                                }
-                            </div>
-
-                            <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "DocumentApproval", style: { color: "#50cd89" } }} text={`${DisplayLabel.Approval} (${approvalData.length || 0})`} onClick={() => setTables("Approver")} /></div>
-                            <div className={styles.col12}><CommandBarButton iconProps={{ iconName: "Search", style: { color: "#7239ea" } }} text={DisplayLabel.AdvancedSearch} onClick={advancedSearch} /></div>
-                        </div>
-                    </div>
-                    <hr className="customHrdot" style={{ borderTop: 'var(--bs-border-width) dashed !important' }} />
-                    <ul className={styles["tree-view"]}>
-                        <li>
-                            <div className={styles["tree-node"]}>
-                                <span
-                                    onClick={() => toggleNode(libName, libName, {})}
-                                    style={{ cursor: "pointer" }}
-                                >
-                                    <Icon
-                                        iconName={
-                                            expandedNodes.includes(libName)
-                                                ? "FabricOpenFolderHorizontal"
-                                                : "FabricFolderFill"
-                                        }
-                                        className={styles["folder-icon"]}
-                                        style={{ marginRight: "5px", color: "#0162e8" }}
-                                    />
-                                    <span className={styles["node-name"]}>{libDetails.TileName}</span>
-                                </span>
-                            </div>
-                            <ul className="nested-list">
-                                {expandedNodes.includes(libName) && renderTree(folders, libName)}
-                            </ul>
-                        </li>
-                    </ul>
-                </Stack.Item>
-                <Stack.Item grow styles={stackItemStyles} className='column9'>
-                    <div className={styles.grid}>
-                        <div className={styles.row}>
-                            <nav aria-label="breadcrumb">
-                                <ol className="breadcrumb breadcrumb-style2">
-                                    {
-                                        breadcrumb.map((el: any, index: number) => {
-                                            return <li key={index} className="breadcrumb-item">
-                                                <a href="javascript:void(0)" onClick={() => fetchFolders(el.path, el.name)}>{el.name}</a>
-                                            </li>;
-                                        })
+                <Stack.Item grow styles={stackItemStyles} className="col-md-3">
+                    <div className="card" style={{ border: "none", padding: "18px 15px" }}>
+                        <div className="grid">
+                            <div className="row">
+                                <div className="col-md-12">
+                                    {libDetails.IsArchiveRequired ? <CommandBarButton iconProps={{ iconName: "Archive", style: { color: "#f1416c" } }} text={`${DisplayLabel.Archive} (${archiveData.length || 0})`} onClick={getArchive} />
+                                        : <CommandBarButton iconProps={{ iconName: "delete", style: { color: "#f1416c" } }} text={`${DisplayLabel.RecycleBin} (${deletedData.length || 0})`} onClick={getRecycleData} />
                                     }
-                                </ol>
-                            </nav>
-                        </div>
-                        <div className={styles.row}>
-                            <div className={styles.col12}>
-                                {folderPath === libName ? <></> :
-                                    <div style={{ float: "right" }}>
-                                        {tables === "" ? <>
-                                            {rightFolders.length === 0 && (isValidUser || libDetails.TileAdminId === props.userID || hasPermission) ? <DefaultButton text={DisplayLabel.Upload} onClick={() => setIsOpenUploadPanel(true)} className={styles['secondary-btn']} styles={{ root: { marginRight: 8 } }} /> : <></>}
-                                            {files.length === 0 ? <DefaultButton className={styles['info-btn']} text={DisplayLabel.NewFolder} onClick={() => { setIsOpenFolderPanel(true); setFolderName(""); }} /> : <></>}
-                                        </> : <> </>
-                                        }
-                                    </div>
-                                }
+                                </div>
+
+                                <div className="col-md-12"><CommandBarButton iconProps={{ iconName: "DocumentApproval", style: { color: "#50cd89" } }} text={`${DisplayLabel.Approval} (${approvalData.length || 0})`} onClick={() => setTables("Approver")} /></div>
+
+                                <div className="col-md-12"><CommandBarButton iconProps={{ iconName: "Search", style: { color: "#7239ea" } }} text={DisplayLabel.AdvancedSearch} onClick={advancedSearch} /></div>
                             </div>
                         </div>
+                        <hr className="customHrdot" style={{ borderTop: 'var(--bs-border-width) dashed !important' }} />
+                        <ul className={styles["tree-view"]} style={{ height: "760px", overflow: "auto" }}>
+                            <li>
+                                <div className={styles["tree-node"]}>
+                                    <span
+                                        onClick={() => toggleNode(libName, libName, {})}
+                                        style={{ cursor: "pointer" }}
+                                    >
+                                        <Icon
+                                            iconName={
+                                                expandedNodes.includes(libName)
+                                                    ? "FabricOpenFolderHorizontal"
+                                                    : "FabricFolderFill"
+                                            }
+                                            className={styles["folder-icon"]}
+                                            style={{ marginRight: "5px", color: "#009ef7" }}
+                                        />
+                                        <span className={styles["node-name"]}>{libDetails.TileName}</span>
+                                    </span>
+                                </div>
+                                <ul className="nested-list">
+                                    {expandedNodes.includes(libName) && renderTree(folders, libName)}
+                                </ul>
+                            </li>
+                        </ul>
                     </div>
-                    {bindTable()}
+                </Stack.Item>
+                <Stack.Item grow styles={stackItemStyles} className="col-md-9">
+                    <div className="card" style={{ border: "none", padding: "18px 25px" }}>
+                        <div className="grid">
+                            <div className="row">
+                                <nav aria-label="breadcrumb">
+                                    <ol className="breadcrumb breadcrumb-style2">
+                                        {
+                                            breadcrumb.map((el: any, index: number) => {
+                                                return <li key={index} className="breadcrumb-item">
+                                                    <a href="javascript:void(0)" onClick={() => fetchFolders(el.path, el.name)} style={{ color: "#009ef7", textDecoration: "none" }}>{el.name}</a>
+                                                </li>;
+                                            })
+                                        }
+                                    </ol>
+                                </nav>
+                            </div>
+                            <div className="row">
+                                <div className="col-md-12">
+                                    {folderPath === libName ? <></> :
+                                        <div style={{ float: "right" }}>
+                                            {tables === "" ? <>
+                                                {rightFolders.length === 0 && (isValidUser || libDetails.TileAdminId === props.userID || hasPermission) ? <DefaultButton text={DisplayLabel.Upload} onClick={() => setIsOpenUploadPanel(true)} className={styles['secondary-btn']} styles={{ root: { marginRight: 8 } }} /> : <></>}
+                                                {files.length === 0 ? <DefaultButton className={styles['info-btn']} text={DisplayLabel.NewFolder} onClick={() => { setIsOpenFolderPanel(true); setFolderName(""); }} /> : <></>}
+                                            </> : <> </>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        {bindTable()}
+                    </div>
                 </Stack.Item>
             </Stack>
 
@@ -929,14 +947,14 @@ export default function TreeView({ props }: any) {
                 </>)}
                 isFooterAtBottom={true}
             >
-                <div className={styles.grid}>
+                <div className="grid">
                     <div className="row">
-                        <div className="column12">
+                        <div className="col-md-12">
                             <label>{DisplayLabel.Path}: <b>{folderPath}</b></label>
                         </div>
                     </div>
-                    <div className={styles.row}>
-                        <div className="column12">
+                    <div className="row">
+                        <div className="col-md-12">
                             <TextField label={DisplayLabel.FolderName} required value={folderName} onChange={(el: React.ChangeEvent<HTMLInputElement>) => setFolderName(el.target.value)} errorMessage={folderNameErr} />
                         </div>
                     </div>
@@ -954,8 +972,8 @@ export default function TreeView({ props }: any) {
                 isFooterAtBottom={true}
             >
                 <div style={{ marginTop: "10px" }}>
-                    <div className={styles.grid}>
-                        <div className={styles.row}>
+                    <div className="grid">
+                        <div className="row">
                             {panelForm}
                         </div>
                     </div>

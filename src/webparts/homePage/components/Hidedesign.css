@@ -681,6 +681,8 @@ label {
     margin: -10px; */
     /* Counteracts column padding */
     /* 2/3 and 1/3 split */
+    border-bottom: none !important;
+    box-sizing: unset !important;
 }
 
 .column1 {
@@ -780,4 +782,88 @@ label {
 
 .ms-Stack-child:not(:first-child) {
     margin-left: 0px !important;
+}
+
+.toolbarcontainer {
+    justify-content: space-between;
+    align-items: center;
+    display: flex !important;
+}
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    background-color: transparent;
+    padding: 0;
+    margin: 0;
+}
+
+.breadcrumb .breadcrumb-item {
+    display: flex;
+    align-items: center;
+    padding-left: 0;
+    color: #181c32 !important;
+}
+
+.breadcrumb-itemactive {
+    color: #009ef7 !important;
+}
+
+.align-items-center {
+    align-items: center !important;
+}
+
+.py-1 {
+    padding-top: .25rem !important;
+    padding-bottom: .25rem !important;
+}
+
+.d-flex {
+    display: flex !important;
+}
+
+a {
+    direction: none !important;
+}
+
+.simpleFooterContainer {
+    display: none !important;
+}
+
+.ms-TextField-field {
+    background-color: #f5f8fa !important;
+}
+
+.col-md-1,
+.col-md-2,
+.col-md-3,
+.col-md-4,
+.col-md-5,
+.col-md-6,
+.col-md-7,
+.col-md-8,
+.col-md-9,
+.col-md-10,
+.col-md-11,
+.col-md-12,
+.col-sm-1,
+.col-sm-2,
+.col-sm-3,
+.col-sm-4,
+.col-sm-5,
+.col-sm-6,
+.col-sm-7,
+.col-sm-8,
+.col-sm-9,
+.col-sm-10,
+.col-sm-11,
+.col-sm-12 {
+    padding-right: 10px !important;
+}
+
+/* button */
+
+.btn-info {
+    background-color: #7239ea;
+    color: white;
 }

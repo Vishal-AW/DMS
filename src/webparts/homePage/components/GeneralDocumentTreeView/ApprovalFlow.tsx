@@ -274,7 +274,7 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
             >
                 <div className={styles.grid}>
                     <div className="row">
-                        <div className="column12">
+                        <div className="col-md-12">
                             <TextField
                                 label={DisplayLabel.TileName}
                                 value={libraryName}
@@ -284,7 +284,7 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
                     </div>
 
                     <div className="row">
-                        <div className="column12">
+                        <div className="col-md-12">
                             <TextField
                                 label={DisplayLabel.FolderName}
                                 value={fileData?.FolderDocumentPath
@@ -297,7 +297,7 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
 
 
                     <div className="row">
-                        <div className="column12">
+                        <div className="col-md-12">
                             <TextField
                                 label={DisplayLabel.AttachFile}
                                 value={fileData.ActualName}
@@ -307,7 +307,7 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
                     </div>
 
                     <div className="row">
-                        <div className="column12">
+                        <div className="col-md-12">
                             <TextField
                                 label={DisplayLabel.Comments}
                                 value={comment}

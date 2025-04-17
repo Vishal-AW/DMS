@@ -181,7 +181,7 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
                 <div className={styles.grid}>
                     {/* Stop Inheriting Permissions */}
                     <div className="row">
-                        <div className="column6">
+                        <div className="col-md-6">
                             <PrimaryButton
                                 text={DisplayLabel.StopInheritingPermission}
                                 disabled={hasUniquePermission}
@@ -191,7 +191,7 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
                                 }}
                             />
                         </div>
-                        <div className="column6">
+                        <div className="col-md-6">
                             <PrimaryButton
                                 text={DisplayLabel.RemoveUserPermission}
                                 disabled={isCheckedUser.length === 0}
@@ -202,9 +202,11 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
 
                     {/* People Picker and Dropdown */}
                     <div className="row">
-                        <div className="column6">
+                        <div className="col-md-6">
+                            <label className={styles.Headerlabel}>{DisplayLabel?.EnterName}<span style={{ color: "red" }}>*</span></label>
+
                             <PeoplePicker
-                                titleText={DisplayLabel.EnterName}
+                                // titleText={DisplayLabel.EnterName}
                                 context={peoplePickerContext}
                                 personSelectionLimit={20}
                                 showtooltip={true}
@@ -215,7 +217,7 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
                                 principalTypes={[PrincipalType.User, PrincipalType.SharePointGroup, PrincipalType.SecurityGroup]}
                             />
                         </div>
-                        <div className="column6">
+                        <div className="col-md-6">
 
                             <label className={styles.Headerlabel}>{DisplayLabel?.SelectPermissionLevel}<span style={{ color: "red" }}>*</span></label>
                             <Select
@@ -225,6 +227,7 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
                                 onChange={(opt: any) => setOption(opt?.value as string)}
                                 isSearchable
                                 placeholder={DisplayLabel?.Selectanoption}
+                                style={{ margintop: "7px" }}
                             />
                             {selectedPermissionError && <p style={{ color: "rgb(164, 38, 44)" }}>{selectedPermissionError}</p>}
                         </div>
@@ -232,16 +235,16 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
 
                     {/* Permission Details */}
                     <div className="row">
-                        <div className="column12">
+                        <div className="col-md-12">
                             {option && <span style={{ color: "red" }}>Note: {permissionDetails[option]}</span>}
                         </div>
                     </div>
                     <div className="row">
-                        <div className="column6"><DefaultButton text={DisplayLabel.GrantPermissions} onClick={grantPermission} className={styles['primary-btn']} /></div>
+                        <div className="col-md-6"><DefaultButton text={DisplayLabel.GrantPermissions} onClick={grantPermission} className={styles['primary-btn']} /></div>
                     </div>
                     {/* User Permissions Table */}
                     <div className="row">
-                        <div className="column12">
+                        <div className="col-md-12">
                             <table className={styles.table}>
                                 <thead>
                                     <tr>
