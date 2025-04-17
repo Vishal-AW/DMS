@@ -1,6 +1,7 @@
 import * as React from "react";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 
+
 interface ISearchResult {
     Title: string;
     Path: string;
@@ -11,6 +12,7 @@ interface ISearchResult {
 interface ISearchProps {
     context: WebPartContext;
 }
+
 
 const SearchComponent: React.FC<ISearchProps> = ({ context }) => {
     const [searchResults, setSearchResults] = React.useState<ISearchResult[]>([]);
@@ -67,13 +69,18 @@ const SearchComponent: React.FC<ISearchProps> = ({ context }) => {
                 {searchResults.map((item, index) => (
                     <div key={index} style={{ borderBottom: "1px solid #ddd", padding: "10px 0" }}>
                         <a href={item.Path} target="_blank" style={{ fontSize: "16px", fontWeight: "bold" }}>{item.Title}</a>
+                        <a href={item.Path} ></a>
+
                         <p style={{ margin: "5px 0", color: "#555" }}>{item.Description}</p>
                         <span style={{ fontSize: "12px", color: "#777" }}>File Type: {item.FileType}</span>
                     </div>
                 ))}
             </div>
+           
         </div>
     );
+    
+
 };
 
 export default SearchComponent;

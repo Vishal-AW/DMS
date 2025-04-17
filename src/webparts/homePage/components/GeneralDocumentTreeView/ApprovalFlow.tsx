@@ -176,11 +176,14 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
                     emailObj.Sub = DisplayLabel.PMEmailSubject + " " + fileData.ReferenceNo;
                     //emailObj.Msg = DisplayLabel.PMEmailMsg;
                     emailObj.Status = InternalStatus;
+                    
                 } else {
                     emailObj.Sub = DisplayLabel.PublishedEmailSubject + " " + fileData.ReferenceNo;
                     emailObj.Msg = DisplayLabel.PublishedEmailMsg;
                     emailObj.Status = InternalStatus;
                 }
+                emailObj.ID = fileData.Id;
+                emailObj.libraryName=libraryName;
                 await TileSendMail(context, emailObj);
                 setAlertMsg(DisplayLabel.ApprovedMsg);
                 setIsPopupBoxVisible(true);
