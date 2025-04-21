@@ -201,10 +201,15 @@ export default function TreeView({ props }: any) {
 
 
     const columns = [
-        { Header: DisplayLabel.SrNo, accessor: "Id", Cell: ({ row }: { row: any; }) => { return <span>{row._index + 1}</span>; } },
+        {
+            Header: DisplayLabel.SrNo, accessor: "Id",
+            Cell: ({ row }: { row: any; }) => { return <span>{row._index + 1}</span>; },
+            width: 65
+        },
         {
             Header: DisplayLabel.FileName,
             accessor: "ListItemAllFields.ActualName",
+            width: 250,
             Cell: ({ row }: { row: any; }) => {
                 const item = row._original?.ListItemAllFields;
                 const checkedOutUser = row._original?.CheckedOutByUser;
@@ -240,8 +245,8 @@ export default function TreeView({ props }: any) {
                 );
             }
         },
-        { Header: DisplayLabel.ReferenceNo, accessor: 'ListItemAllFields.ReferenceNo' },
-        { Header: DisplayLabel.Versions, accessor: 'ListItemAllFields.Level' },
+        { Header: DisplayLabel.ReferenceNo, accessor: 'ListItemAllFields.ReferenceNo', width: 120, },
+        { Header: DisplayLabel.Versions, accessor: 'ListItemAllFields.Level', width: 80, },
         {
             Header: DisplayLabel.Status, accessor: 'ListItemAllFields.DisplayStatus',
             // Cell: ({ row }: { row: any }) => (
@@ -256,7 +261,7 @@ export default function TreeView({ props }: any) {
             //         {row._original.ListItemAllFields.DisplayStatus}
             //     </span>
             // ),
-
+            width: '168',
             Cell: ({ row }: { row: any; }) => {
                 const styles = getStatusStyles(row._original.ListItemAllFields.DisplayStatus);
                 return (
@@ -276,10 +281,14 @@ export default function TreeView({ props }: any) {
         },
         // { Header: 'OCR Status', accessor: 'ListItemAllFields.OCRStatus' },
         {
-            Header: DisplayLabel.Action, accessor: "Id", Cell: ({ row }: { row: any; }) => {
+            Header: <div style={{ textAlign: 'center' }}>{DisplayLabel?.Action}</div>,
+            accessor: "Id",
+            Cell: ({ row }: { row: any; }) => {
                 const menuProps = useConst<IContextualMenuProps>(() => createMenuProps(row));
-                return <DefaultButton text={DisplayLabel.Action} className={styles['info-btn']} menuProps={menuProps} />;
-            }
+                return <DefaultButton text={DisplayLabel.Action} className={styles['info-btn']} menuProps={menuProps} style={{ textAlign: 'center' }} />;
+            },
+            width: '10%',
+            className: 'text-center',
         }
     ];
     const createMenuProps = (item: any): IContextualMenuProps => {

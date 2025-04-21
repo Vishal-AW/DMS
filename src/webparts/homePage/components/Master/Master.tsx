@@ -237,7 +237,6 @@ export default function Master({ props }: any): JSX.Element {
       Cell: ({ row }: { row: any; }) => (
         <FontIcon aria-label="Edit" className="action-icon" onClick={() => openEditPanel(row._original.Id)} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer', backgroundColor: '#f5f8fa', padding: '6px 9px', borderRadius: '4px' }}></FontIcon>
       ),
-      filterMethod: false,
       width: '10%',
       className: 'text-center',
     }

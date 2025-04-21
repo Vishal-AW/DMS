@@ -5,7 +5,7 @@ import styles from "../Master/Master.module.scss";
 import { useEffect, useState } from "react";
 import cls from '../HomePage.module.scss';
 import PopupBox from "../ResuableComponents/PopupBox";
-import { SaveNavigationMaster,getdata,getChildMenu,getChildMenunew,getDataByID,UpdateNavigationMaster} from "../../../../Services/NavigationService";
+import { SaveNavigationMaster, getdata, getChildMenu, getChildMenunew, getDataByID, UpdateNavigationMaster } from "../../../../Services/NavigationService";
 import { getUserIdFromLoginName } from "../../../../DAL/Commonfile";
 import { PeoplePicker, PrincipalType, IPeoplePickerContext } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 import ReactTableComponent from '../ResuableComponents/ReusableDataTable';
@@ -27,13 +27,13 @@ export default function ConfigMaster({ props }: any): JSX.Element {
     const [isParentMenu, setisParentMenu] = React.useState<boolean>(true);
     const [URLErr, setURLErr] = useState("");
     const [URL, setURL] = useState("");
-  //  const [Order0Data, setOrder0Data] = useState([]);
+    //  const [Order0Data, setOrder0Data] = useState([]);
     const [ParentMenuIDErr, setParentMenuIDErr] = useState("");
     const [ParentMenuID, setParentMenuID] = useState<any>(null);
     const [ParentMenuDataText, setParentMenuDataText] = useState<any>(null);
-   // const [ParentMenuDataID, setParentMenuDataID] = useState('');
+    // const [ParentMenuDataID, setParentMenuDataID] = useState('');
     const [dropdownOptions, setDropdownOptions] = useState<any[]>([]);
-   //const div = this.domElement.querySelector("#toggleParentMenu");
+    //const div = this.domElement.querySelector("#toggleParentMenu");
 
     const [OrdeIDErr, setOrdeIDErr] = useState("");
     const [OrdeID, setOrdeID] = useState<any>(null);
@@ -46,16 +46,16 @@ export default function ConfigMaster({ props }: any): JSX.Element {
     const [MenuNameErr, setMenuNameErr] = useState("");
     const [assignEmail, setAssignEmail] = useState<string[]>([]);
     const [isVisible, setIsVisible] = React.useState<boolean>(false);
-    const [alertMessage,setAlertMessage]=useState("")
+    const [alertMessage, setAlertMessage] = useState("")
     // const [SiteListData, setSiteListData] = useState([]);
     //const [ParentMenuText, setParentMenuText] = useState('');
 
-     useEffect(() => {
+    useEffect(() => {
         let DisplayLabel: ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}');
         setDisplayLabel(DisplayLabel);
         fetchData();
         //   getAllListSite();
-       // setIsVisible(isVisible);
+        // setIsVisible(isVisible);
 
 
     }, []);
@@ -63,43 +63,42 @@ export default function ConfigMaster({ props }: any): JSX.Element {
     const onPeoplePickerChange = (items: any[]) => {
 
         setSelectedUsers(items);
-    
+
         console.log("Users to process:", selectedUsers);
         const Users: any = items.map((item: any) => item.id);
         const Emails: any = items.map((item: any) => item.secondaryText);
         setAssignID(Users);
         setAssignEmail(Emails);
-    
-      };
-       const peoplePickerContext: IPeoplePickerContext = {
-          absoluteUrl: props.context.pageContext.web.absoluteUrl,
-          msGraphClientFactory: props.context.msGraphClientFactory,
-          spHttpClient: props.context.spHttpClient
-        };
-        const IsActiveToggleChange = (checked: boolean): void => {
-            setisActive(checked);
-        };
-        const IsNexttabToggleChange = (checked: boolean): void => {
-            setisNextActive(checked);
-        };
-      //  const IsExternalToggleChange = (checked: boolean): void => {
-       //     setisExternalActive(checked);
-       // };
 
-        const IsParentMenuToggleChange = (checked: boolean): void => {
-            setisParentMenu(checked);       
-        
+    };
+    const peoplePickerContext: IPeoplePickerContext = {
+        absoluteUrl: props.context.pageContext.web.absoluteUrl,
+        msGraphClientFactory: props.context.msGraphClientFactory,
+        spHttpClient: props.context.spHttpClient
+    };
+    const IsActiveToggleChange = (checked: boolean): void => {
+        setisActive(checked);
+    };
+    const IsNexttabToggleChange = (checked: boolean): void => {
+        setisNextActive(checked);
+    };
+    //  const IsExternalToggleChange = (checked: boolean): void => {
+    //     setisExternalActive(checked);
+    // };
+
+    const IsParentMenuToggleChange = (checked: boolean): void => {
+        setisParentMenu(checked);
+
         if (checked) {
             setIsVisible(false);
-        
-       }
-       else
-       {
-        setIsVisible(true);
+
         }
-        };
-       
-        
+        else {
+            setIsVisible(true);
+        }
+    };
+
+
     const stackStyles: IStackStyles = { root: { height: "100vh", marginTop: 15 } };
     const stackItemStyles: IStackItemStyles = {
         root: {
@@ -124,32 +123,37 @@ export default function ConfigMaster({ props }: any): JSX.Element {
 
         setparent0Data(NavigationOptions);
     };
-  
+
     const Tablecolumns = [
         {
             Header: DisplayLabel?.SrNo,
             accessor: "row._index",
             Cell: ({ row }: { row: any; }) => row._index + 1,
+            width: 65
         },
-        { Header: DisplayLabel?.MenuName, accessor: "MenuName" },
-       
+        { Header: DisplayLabel?.MenuName, accessor: "MenuName", width: '20%' },
+
         {
             Header: DisplayLabel?.Active,
             accessor: "Active",
-            Cell: ({ row }: { row: any; }) => (row.Active === true ? "Yes" : "No")
+            Cell: ({ row }: { row: any; }) => (row.Active === true ? "Yes" : "No"),
+            width: '20%'
         },
         {
             Header: DisplayLabel?.NextTab,
             accessor: "Next_Tab",
-            Cell: ({ row }: { row: any; }) => (row.Next_Tab === true ? "Yes" : "No")
+            Cell: ({ row }: { row: any; }) => (row.Next_Tab === true ? "Yes" : "No"),
+            width: '20%'
         },
-        { Header: DisplayLabel?.ParentMenuId, accessor: "ParentMenuId.MenuName" },
-        { Header: DisplayLabel?.OrderNo, accessor: "OrderNo" },
+        { Header: DisplayLabel?.ParentMenuId, accessor: "ParentMenuId.MenuName", width: '20%' },
+        { Header: DisplayLabel?.OrderNo, accessor: "OrderNo", width: '20%' },
         {
-            Header: DisplayLabel?.Action,
+            Header: () => <div style={{ textAlign: 'center' }}>{DisplayLabel?.Action}</div>,
             Cell: ({ row }: { row: any; }) => (
-                <FontIcon aria-label="Edit" onClick={() => openEditPanel(row._original.Id)} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer', backgroundColor: '#f5f8fa', padding: '6px 9px', borderRadius: '4px' }}></FontIcon>
+                <FontIcon aria-label="Edit" onClick={() => openEditPanel(row._original.Id)} iconName="EditSolid12" style={{ color: '#009ef7', cursor: 'pointer', backgroundColor: '#f5f8fa', padding: '6px 9px', borderRadius: '4px', textAlign: 'center' }}></FontIcon>
             ),
+            width: '10%',
+            className: 'text-center',
         },
     ];
     const openEditPanel = async (rowData: any) => {
@@ -163,7 +167,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
         await setMenuName(EditData[0].MenuName);
         await setURL(EditData[0].URL);
         await setisActive(EditData[0].Active);
-      //  await setisExternalActive(EditData[0].External_Url);
+        //  await setisExternalActive(EditData[0].External_Url);
         await setisNextActive(EditData[0].Next_Tab);
         await setisParentMenu(EditData[0].isParentMenu);
         const orderNo = Number(EditData[0].OrderNo);
@@ -171,24 +175,24 @@ export default function ConfigMaster({ props }: any): JSX.Element {
         setOrdeID(orderNo);
         //const AccessData: any = EditData[0].Permission ? ([EditData[0].Permission[0].Name]) : [];
         const AccessTileData: string[] = EditData[0].Permission
-        ? EditData[0].Permission.map((person: any) => {
-          const email = person.Name.split('|');
-          return email.includes("membership") ? email.pop() : person.Name;
-        })
-        : [];
-      const accessEmail = EditData[0].Permission.map((person: any) => person.Name);
-      setAssignID(accessEmail);
-      setAssignEmail(AccessTileData);
+            ? EditData[0].Permission.map((person: any) => {
+                const email = person.Name.split('|');
+                return email.includes("membership") ? email.pop() : person.Name;
+            })
+            : [];
+        const accessEmail = EditData[0].Permission.map((person: any) => person.Name);
+        setAssignID(accessEmail);
+        setAssignEmail(AccessTileData);
 
         const fetchTemplateData = await getdata(props.SiteURL, props.spHttpClient);
-        
-                let TemplateData = fetchTemplateData.value;
-        
-                const TemplateOptions = TemplateData.map((items: any) => ({
-                    value: items.ID,
-                    label: items.MenuName
-                }));
-        
+
+        let TemplateData = fetchTemplateData.value;
+
+        const TemplateOptions = TemplateData.map((items: any) => ({
+            value: items.ID,
+            label: items.MenuName
+        }));
+
         setparent0Data(TemplateOptions);
         if (EditData[0].isParentMenu === false) {
             setIsVisible(true);
@@ -201,42 +205,41 @@ export default function ConfigMaster({ props }: any): JSX.Element {
             }));
             setParentMenuID(optionsValues[0].value);
 
-                const newchild = await getChildMenunew(props.SiteURL, props.spHttpClient, optionsValues[0].value.value);
-                const Bchild=newchild.value;
-                ONOptions = Bchild.map((items: any) => ({
-                    label: items.OrderNo,
-                    value: items.OrderNo,
+            const newchild = await getChildMenunew(props.SiteURL, props.spHttpClient, optionsValues[0].value.value);
+            const Bchild = newchild.value;
+            ONOptions = Bchild.map((items: any) => ({
+                label: items.OrderNo,
+                value: items.OrderNo,
 
-                }));
-                setDropdownOptions(ONOptions);
-                const OrderApply = ONOptions.filter((item: any) => item.value === EditData[0].OrderNo);
-                const OreroptionsValues = OrderApply.map((item: any) => ({
-                    label: item,
-                    value: item,
-                }));
+            }));
+            setDropdownOptions(ONOptions);
+            const OrderApply = ONOptions.filter((item: any) => item.value === EditData[0].OrderNo);
+            const OreroptionsValues = OrderApply.map((item: any) => ({
+                label: item,
+                value: item,
+            }));
             setOrdeID(OreroptionsValues[0].value);
-    
+
         }
-        else 
-        {
+        else {
             setParentMenuID('');
             setIsVisible(false);
             let newOptions: any[] = [];
             let getmaindata: any[] = [];
             getmaindata = MainTableSetdata.filter((item: any) => item.isParentMenu === true);
             newOptions = getmaindata.map((items: any) => ({
-            label: items.OrderNo,
-            value: items.OrderNo,
+                label: items.OrderNo,
+                value: items.OrderNo,
 
-        }));
-        setDropdownOptions(newOptions);
+            }));
+            setDropdownOptions(newOptions);
 
-        const ApplyTo = newOptions.filter((item: any) => item.value === EditData[0].OrderNo);
-        const optionsValues = ApplyTo.map((item: any) => ({
-            label: item,
-            value: item,
-        }));
-       setOrdeID(optionsValues[0].value);
+            const ApplyTo = newOptions.filter((item: any) => item.value === EditData[0].OrderNo);
+            const optionsValues = ApplyTo.map((item: any) => ({
+                label: item,
+                value: item,
+            }));
+            setOrdeID(optionsValues[0].value);
         }
 
     };
@@ -244,9 +247,9 @@ export default function ConfigMaster({ props }: any): JSX.Element {
 
     const openAddPanel = async () => {
         clearField();
-       // div.style.display = "block";
-       //{isVisible ? "Hide" : "Show"} 
-       setIsVisible(false);
+        // div.style.display = "block";
+        //{isVisible ? "Hide" : "Show"} 
+        setIsVisible(false);
         setIsEditMode(false);
         setIsPanelOpen(true);
         let newOptions: any[] = [];
@@ -254,10 +257,10 @@ export default function ConfigMaster({ props }: any): JSX.Element {
         let orderNum = 1;
         let getmaindata: any[] = [];
 
-       // const response = await getparentdata(props.SiteURL, props.spHttpClient);
-       console.log(MainTableSetdata);
+        // const response = await getparentdata(props.SiteURL, props.spHttpClient);
+        console.log(MainTableSetdata);
         getmaindata = MainTableSetdata.filter((item: any) => item.isParentMenu === true);
-       orderNum = (getmaindata.length > 0) ? (getmaindata.length) + 1 : 1;
+        orderNum = (getmaindata.length > 0) ? (getmaindata.length) + 1 : 1;
         newOptions.push({
 
             value: orderNum,
@@ -267,7 +270,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
         });
         setDropdownOptions(newOptions);
 
-       // setOrderNumber(orderNum);
+        // setOrderNumber(orderNum);
     };
 
     const closePanel = () => {
@@ -276,7 +279,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
 
     const handleParentMenuonChange = async (option?: any) => {
         setParentMenuID(option);
-       //setParentMenuID(option.key as string);
+        //setParentMenuID(option.key as string);
 
         setParentMenuDataText(option.text as string);
 
@@ -298,25 +301,25 @@ export default function ConfigMaster({ props }: any): JSX.Element {
         console.log(newOptions);
         console.log(ParentMenuDataText);
         setDropdownOptions(newOptions);
-        
+
         // setTemplateData(option);
-       //setData(option.value);
-       //setOrdeID(option);
-       
+        //setData(option.value);
+        //setOrdeID(option);
+
     };
 
-//const getFirstLevel= async(option?: any)=>{
-//    return option.filter((it: any) => it.ParentMenuIdId === null);
- //   };
-    
+    //const getFirstLevel= async(option?: any)=>{
+    //    return option.filter((it: any) => it.ParentMenuIdId === null);
+    //   };
+
     const handleOrderChange = async (option?: any) => {
-      setOrdeID(option);
-      };
-    
+        setOrdeID(option);
+    };
+
 
     const hidePopup = React.useCallback(() => {
         setisPopupVisible(false);
-    //window.location.reload();
+        //window.location.reload();
         clearField();
         closePanel();
         setShowLoader({ display: "none" });
@@ -335,7 +338,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
     };
     const clearError = () => {
         setMenuNameErr("");
-       // setURL("");
+        // setURL("");
         setParentMenuIDErr("");
         setURLErr("");
         setOrdeIDErr("");
@@ -346,7 +349,7 @@ export default function ConfigMaster({ props }: any): JSX.Element {
     const validation = () => {
         let isValidForm = true;
         let Parentdata: any[] = [];
-        let NoParentdata:any[]=[];
+        let NoParentdata: any[] = [];
         if (MenuName === "" || MenuName === undefined || MenuName === null) {
             setMenuNameErr(DisplayLabel?.ThisFieldisRequired as string);
             isValidForm = false;
@@ -356,29 +359,27 @@ export default function ConfigMaster({ props }: any): JSX.Element {
             setURLErr(DisplayLabel?.ThisFieldisRequired as string);
             isValidForm = false;
         }
-        if ( OrdeID=== "" || OrdeID === undefined || OrdeID === null) {
+        if (OrdeID === "" || OrdeID === undefined || OrdeID === null) {
             setOrdeIDErr(DisplayLabel?.ThisFieldisRequired as string);
             isValidForm = false;
         }
-        
-       
 
-        if(isEditMode)
-        {
+
+
+        if (isEditMode) {
             if (isParentMenu === true) {
                 const isDuplicateTitle = Parentdata.some((item: any) =>
                     item.ID !== CurrentEditID &&
                     item.MenuName.toUpperCase() === MenuName.toUpperCase()
                 );
-     
+
                 if (isDuplicateTitle) {
                     setParentMenuIDErr(DisplayLabel?.MenuAlreadyExist as string);
                     isValidForm = false;
                 }
             }
-            else
-            {
-                NoParentdata = MainTableSetdata.filter((item: any) => item.isParentMenu === false && item.ParentMenuIdId===ParentMenuID.value);
+            else {
+                NoParentdata = MainTableSetdata.filter((item: any) => item.isParentMenu === false && item.ParentMenuIdId === ParentMenuID.value);
                 const isDuplicateTitle = NoParentdata.some((item: any) =>
                     item.ID !== CurrentEditID &&
                     item.MenuName.toUpperCase() === MenuName.toUpperCase()
@@ -389,45 +390,42 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                 }
             }
         }
-        else
-        {
-            if (isParentMenu === false) 
-                {
-                    if (ParentMenuID === "" || ParentMenuID === undefined || ParentMenuID === null) {
-                        setParentMenuIDErr(DisplayLabel?.ThisFieldisRequired as string);
-                        isValidForm = false;
-                    } 
-            NoParentdata = MainTableSetdata.filter((item: any) => item.isParentMenu === false && item.ParentMenuIdId===ParentMenuID.value);
-            const isDuplicate = NoParentdata.some(
+        else {
+            if (isParentMenu === false) {
+                if (ParentMenuID === "" || ParentMenuID === undefined || ParentMenuID === null) {
+                    setParentMenuIDErr(DisplayLabel?.ThisFieldisRequired as string);
+                    isValidForm = false;
+                }
+                NoParentdata = MainTableSetdata.filter((item: any) => item.isParentMenu === false && item.ParentMenuIdId === ParentMenuID.value);
+                const isDuplicate = NoParentdata.some(
                     (Data: any) => Data.MenuName.toLowerCase() === MenuName.toLowerCase()
                 )
                 if (isDuplicate) {
                     setMenuNameErr(DisplayLabel?.MenuAlreadyExist as string);
                     isValidForm = false;
                 }
-        
+
             }
-         else
-        {
-                    Parentdata = MainTableSetdata.filter((item: any) => item.isParentMenu === true);
-                    const isDuplicate = Parentdata.some(
-                        (Data: any) => Data.MenuName.toLowerCase() === MenuName.toLowerCase()
-                    )
-                    if (isDuplicate) {
-                        setMenuNameErr(DisplayLabel?.MenuAlreadyExist as string);
-                        isValidForm = false;
-                    }
-                    
+            else {
+                Parentdata = MainTableSetdata.filter((item: any) => item.isParentMenu === true);
+                const isDuplicate = Parentdata.some(
+                    (Data: any) => Data.MenuName.toLowerCase() === MenuName.toLowerCase()
+                )
+                if (isDuplicate) {
+                    setMenuNameErr(DisplayLabel?.MenuAlreadyExist as string);
+                    isValidForm = false;
                 }
 
+            }
 
 
-           
+
+
         }
 
         if (assignID.length === 0) {
-                setAccessTileUserErr(DisplayLabel?.ThisFieldisRequired as string);
-                isValidForm = false;
+            setAccessTileUserErr(DisplayLabel?.ThisFieldisRequired as string);
+            isValidForm = false;
         }
         return isValidForm;
     };
@@ -443,49 +441,46 @@ export default function ConfigMaster({ props }: any): JSX.Element {
         try {
 
             const userIds = await Promise.all(
-                    assignID.map(async (person: any) => {
-                      const user = await getUserIdFromLoginName(props.context, person);
-                      return user.Id;
-                    })
-                  );
+                assignID.map(async (person: any) => {
+                    const user = await getUserIdFromLoginName(props.context, person);
+                    return user.Id;
+                })
+            );
 
-                //  let permissionData = userIds.map((el) => ({ Type: "User", IDs: el }));
-                //  permissionData.push({ Type: "Admin", IDs: TilesIds[0] }, { Type: "Admin", IDs: admin[0] });
-                  //setPermission(permissionData);
+            //  let permissionData = userIds.map((el) => ({ Type: "User", IDs: el }));
+            //  permissionData.push({ Type: "Admin", IDs: TilesIds[0] }, { Type: "Admin", IDs: admin[0] });
+            //setPermission(permissionData);
 
-          
-          //  let MenuNameNew = MenuName.split(" ").join("");
+
+            //  let MenuNameNew = MenuName.split(" ").join("");
             let Name = MenuName;
-                    let ChkparentId=null;
-                    if (isParentMenu === false) 
-                        {
-                            ChkparentId= ParentMenuID.value;
-                        }
-                        else
-                        {
-                            ChkparentId=null;
-            
-                        }
-                    let option = {
-                        __metadata: { type: "SP.Data.GEN_x005f_NavigationListItem" },
-                        //'Title': $("#txtMenuName").val(),
-                        MenuName: Name,
-                        PermissionId:{ results: userIds },
-                        ParentMenuIdId:ChkparentId,
-                        URL: URL,
-                        Active:isActive,
-                        Next_Tab:isNextActive,
-                    // External_Url:isExternalActive,
-                        OrderNo:OrdeID.value,
-                        isParentMenu: isParentMenu,
-                    
-                    };
+            let ChkparentId = null;
+            if (isParentMenu === false) {
+                ChkparentId = ParentMenuID.value;
+            }
+            else {
+                ChkparentId = null;
 
-           
-            if (!isEditMode)
-            {
+            }
+            let option = {
+                __metadata: { type: "SP.Data.GEN_x005f_NavigationListItem" },
+                //'Title': $("#txtMenuName").val(),
+                MenuName: Name,
+                PermissionId: { results: userIds },
+                ParentMenuIdId: ChkparentId,
+                URL: URL,
+                Active: isActive,
+                Next_Tab: isNextActive,
+                // External_Url:isExternalActive,
+                OrderNo: OrdeID.value,
+                isParentMenu: isParentMenu,
+
+            };
+
+
+            if (!isEditMode) {
                 await SaveNavigationMaster(props.SiteURL, props.spHttpClient, option);
-              //let LID = await SaveNavigationMaster(props.SiteURL, props.spHttpClient, option);
+                //let LID = await SaveNavigationMaster(props.SiteURL, props.spHttpClient, option);
                 setShowLoader({ display: "none" });
                 setIsPanelOpen(false);
                 fetchData();
@@ -494,52 +489,49 @@ export default function ConfigMaster({ props }: any): JSX.Element {
 
             }
 
-            else
-            {
+            else {
                 let NewSequencedata: any = [];
                 let SliderSequence = OrdeID.value;
-                let oldSequencedata:any =[];
+                let oldSequencedata: any = [];
                 let flag = "";
-                let oldchild: any=[];
-                let Sequencedata:any=[];
-                if (isParentMenu === false) 
-                    {
-                        const newchild = await getChildMenunew(props.SiteURL, props.spHttpClient, editSettingData[0].ParentMenuId.Id);
-                        oldchild=newchild.value;
-                        oldSequencedata = oldchild.filter((item: any) => item.OrderNo === SliderSequence);
-
-                    }
-                    else
-                    {
-                        const newchild = MainTableSetdata.filter((item: any) => item.isParentMenu === true);
-
-                        oldchild=newchild;
-                        oldSequencedata = oldchild.filter((item: any) => item.OrderNo === SliderSequence);
-
-                    }
-         Sequencedata = editSettingData.filter((item: any) => item.Id === CurrentEditID);
-
-        if (Sequencedata.length > 0) {
-
-            if (Sequencedata[0].OrderNo != SliderSequence) {
-
-                if (Sequencedata[0].OrderNo > OrdeID.value) {
-
-                    flag = "forward";
+                let oldchild: any = [];
+                let Sequencedata: any = [];
+                if (isParentMenu === false) {
+                    const newchild = await getChildMenunew(props.SiteURL, props.spHttpClient, editSettingData[0].ParentMenuId.Id);
+                    oldchild = newchild.value;
+                    oldSequencedata = oldchild.filter((item: any) => item.OrderNo === SliderSequence);
 
                 }
-
                 else {
+                    const newchild = MainTableSetdata.filter((item: any) => item.isParentMenu === true);
 
-                    flag = "backward";
+                    oldchild = newchild;
+                    oldSequencedata = oldchild.filter((item: any) => item.OrderNo === SliderSequence);
 
                 }
-                if (oldSequencedata.length > 0) {  
-                    NewSequencedata = await UpdateOrderNumber(oldSequencedata,oldSequencedata[0].Id,Sequencedata[0].OrderNo, SliderSequence, editSettingData, flag, CurrentEditID,oldchild);
-                }   
-            }
+                Sequencedata = editSettingData.filter((item: any) => item.Id === CurrentEditID);
 
-        }
+                if (Sequencedata.length > 0) {
+
+                    if (Sequencedata[0].OrderNo != SliderSequence) {
+
+                        if (Sequencedata[0].OrderNo > OrdeID.value) {
+
+                            flag = "forward";
+
+                        }
+
+                        else {
+
+                            flag = "backward";
+
+                        }
+                        if (oldSequencedata.length > 0) {
+                            NewSequencedata = await UpdateOrderNumber(oldSequencedata, oldSequencedata[0].Id, Sequencedata[0].OrderNo, SliderSequence, editSettingData, flag, CurrentEditID, oldchild);
+                        }
+                    }
+
+                }
 
 
                 await UpdateNavigationMaster(props.SiteURL, props.spHttpClient, option, CurrentEditID);
@@ -548,21 +540,21 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                 fetchData();
                 setAlertMessage(DisplayLabel?.UpdateAlertMsg || "")
                 setisPopupVisible(true);
-              //  window.location.reload();
-              if (Sequencedata[0].Order0 != SliderSequence) {
+                //  window.location.reload();
+                if (Sequencedata[0].Order0 != SliderSequence) {
 
-                if (NewSequencedata.length > 0) {
-    
-                    await UpdateMenuSequence(NewSequencedata);
-    
+                    if (NewSequencedata.length > 0) {
+
+                        await UpdateMenuSequence(NewSequencedata);
+
+                    }
+
                 }
-    
-            }
             }
 
 
-          
-           
+
+
 
         } catch (error) {
             console.error("Error during save operation:", error);
@@ -573,13 +565,13 @@ export default function ConfigMaster({ props }: any): JSX.Element {
     const UpdateOrderNumber = async (
         olddata: any, oldId: any,
         startIndex: number, changeIndex: number,
-        data: any[], flag: string, ID: number,old:any,
+        data: any[], flag: string, ID: number, old: any,
     ) => {
         let NewSequencedata = [];
-    
+
         // Add the main item being updated
         NewSequencedata.push({ Id: ID, OrderNo: changeIndex });
-        
+
         // Adjust the sequence when moving an item to a new position
         if (changeIndex < startIndex) {
             for (let p = changeIndex; p < startIndex; p++) {
@@ -596,22 +588,22 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                 }
             }
         }
-    
+
         // Ensure sequential order from 1 to N
         NewSequencedata.sort((a, b) => a.OrderNo - b.OrderNo);
         let finalData = NewSequencedata.map((item, index) => ({ Id: item.Id, OrderNo: index + 1 }));
-    
+
         return finalData;
     };
 
-    
+
     const UpdateMenuSequence = async (NewSequencedata: any[]) => {
         for (const item of NewSequencedata) {
             let obj = { OrderNo: item.OrderNo }; // Corrected from Order0 to OrderNo
             await UpdateNavigationMaster(props.SiteURL, props.spHttpClient, obj, item.Id);
         }
     };
-    
+
 
 
     return (
@@ -663,24 +655,24 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                             </div>
                         </div>
                         <div className="column4">
-                      <div className="form-group">
-                        <label className={styles.Headerlabel}>{DisplayLabel?.AccessToTile}<span style={{ color: "red" }}>*</span></label>
-                        <PeoplePicker
-                          context={peoplePickerContext}
-                          personSelectionLimit={5}
-                          showtooltip={true}
-                          required={true}
-                          errorMessage={AccessTileUserErr}
-                          onChange={onPeoplePickerChange}
-                          showHiddenInUI={false}
-                          principalTypes={[PrincipalType.User, PrincipalType.SharePointGroup, PrincipalType.SecurityGroup]}
-                          defaultSelectedUsers={isEditMode ? assignEmail : undefined}
-                        />
+                            <div className="form-group">
+                                <label className={styles.Headerlabel}>{DisplayLabel?.AccessToTile}<span style={{ color: "red" }}>*</span></label>
+                                <PeoplePicker
+                                    context={peoplePickerContext}
+                                    personSelectionLimit={5}
+                                    showtooltip={true}
+                                    required={true}
+                                    errorMessage={AccessTileUserErr}
+                                    onChange={onPeoplePickerChange}
+                                    showHiddenInUI={false}
+                                    principalTypes={[PrincipalType.User, PrincipalType.SharePointGroup, PrincipalType.SecurityGroup]}
+                                    defaultSelectedUsers={isEditMode ? assignEmail : undefined}
+                                />
 
-                      </div>
-                    </div>
-                   
-                          <div className="column4">
+                            </div>
+                        </div>
+
+                        <div className="column4">
                             <div className="form-group">
                                 <label className={styles.Headerlabel}>{DisplayLabel?.URL}<span style={{ color: "red" }}>*</span></label>
                                 <TextField
@@ -693,41 +685,41 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                         </div>
                     </div>
                     <div className="row">
-                    <div className="column4">
-                    <div className={styles.row}>
-                        <div className={styles.col12}>
-                            <label className={styles.Headerlabel}>{DisplayLabel?.ActiveStatus}</label>
-                            <Toggle
-                                checked={isActive} onChange={(_, checked) => IsActiveToggleChange(checked!)} />
+                        <div className="column4">
+                            <div className={styles.row}>
+                                <div className={styles.col12}>
+                                    <label className={styles.Headerlabel}>{DisplayLabel?.ActiveStatus}</label>
+                                    <Toggle
+                                        checked={isActive} onChange={(_, checked) => IsActiveToggleChange(checked!)} />
 
+                                </div>
+                            </div>
                         </div>
-                        </div>
-                    </div>
 
-                    <div className="column4">
-                    <div className={styles.row}>
-                        <div className={styles.col12}>
-                            <label className={styles.Headerlabel}>{DisplayLabel?.NextTab}</label>
-                            <Toggle
-                                checked={isNextActive} onChange={(_, checked) => IsNexttabToggleChange(checked!)} />
+                        <div className="column4">
+                            <div className={styles.row}>
+                                <div className={styles.col12}>
+                                    <label className={styles.Headerlabel}>{DisplayLabel?.NextTab}</label>
+                                    <Toggle
+                                        checked={isNextActive} onChange={(_, checked) => IsNexttabToggleChange(checked!)} />
 
+                                </div>
+                            </div>
                         </div>
+                        <div className="column4">
+                            <div className="form-group">
+                                <label className={styles.Headerlabel}>{DisplayLabel?.Order}<span style={{ color: "red" }}>*</span></label>
+                                <Select
+                                    options={dropdownOptions}
+                                    value={OrdeID}
+                                    onChange={handleOrderChange}
+                                    isSearchable
+                                    placeholder={DisplayLabel?.Selectanoption}
+                                />
+                                {OrdeIDErr && <p style={{ color: "rgb(164, 38, 44)" }}>{OrdeIDErr}</p>}
+                            </div>
                         </div>
-                    </div>
-                    <div className="column4">
-                           <div className="form-group">
-                               <label className={styles.Headerlabel}>{DisplayLabel?.Order}<span style={{ color: "red" }}>*</span></label>
-                               <Select
-                                   options={dropdownOptions}
-                                   value={OrdeID}
-                                   onChange={handleOrderChange}
-                                   isSearchable
-                                   placeholder={DisplayLabel?.Selectanoption}
-                               />
-                               {OrdeIDErr && <p style={{ color: "rgb(164, 38, 44)" }}>{OrdeIDErr}</p>}
-                           </div>
-                       </div>
-                {/*<div className="column4">
+                        {/*<div className="column4">
                     <div className={styles.row}>
                         <div className={styles.col12}>
                             <label className={styles.Headerlabel}>{DisplayLabel?.ExternalUrl}</label>
@@ -737,22 +729,22 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                         </div>
                         </div>
                     </div>*/}
-                        
-                    </div>
-  
-                    <div className="row">
-                    
-                    <div className="column4">
-                    <div className={styles.row}>
-                        <div className={styles.col12}>
-                            <label className={styles.Headerlabel}>{DisplayLabel?.isParentMenu}</label>
-                            <Toggle
-                                checked={isParentMenu} onChange={(_, checked) => IsParentMenuToggleChange(checked!)} />
 
-                        </div>
-                        </div>
                     </div>
-                    {isVisible && (   <div className="column4">
+
+                    <div className="row">
+
+                        <div className="column4">
+                            <div className={styles.row}>
+                                <div className={styles.col12}>
+                                    <label className={styles.Headerlabel}>{DisplayLabel?.isParentMenu}</label>
+                                    <Toggle
+                                        checked={isParentMenu} onChange={(_, checked) => IsParentMenuToggleChange(checked!)} />
+
+                                </div>
+                            </div>
+                        </div>
+                        {isVisible && (<div className="column4">
                             <div className="form-group">
                                 <label className={styles.Headerlabel}>{DisplayLabel?.ParentMenuId}<span style={{ color: "red" }}>*</span></label>
                                 <Select
@@ -766,11 +758,11 @@ export default function ConfigMaster({ props }: any): JSX.Element {
                             </div>
                         </div>
                         )}
-                       
-                                   
-                                       
-                                
-                                             
+
+
+
+
+
                     </div>
                 </div>
                 <div className={cls["modal"]} style={showLoader}></div>
@@ -778,9 +770,9 @@ export default function ConfigMaster({ props }: any): JSX.Element {
 
             </Panel>
             <PopupBox isPopupBoxVisible={isPopupVisible} hidePopup={hidePopup} msg={alertMessage} />
-               
+
         </div>
-        
+
     );
 }
 
