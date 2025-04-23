@@ -82,6 +82,7 @@ export default function TreeView({ props }: any) {
 
     const libDetails: any = JSON.parse(tileObject as string);
     const libName = libDetails.LibraryName;
+    const libtitlename = libDetails.TileName;
     //const archivelibName = libDetails.ArchiveLibraryName;
     const portalUrl = new URL(props.SiteURL).origin;
     const [isPanelOpen, setIsPanelOpen] = useState(false);
@@ -98,10 +99,10 @@ export default function TreeView({ props }: any) {
     const [actionFolderPath, setActionFolderPath] = useState("");
     const [extension, setExtension] = useState("");
     const [fileName, setFileName] = useState("");
-    const [folderPath, setFolderPath] = useState(libName);
+    const [folderPath, setFolderPath] = useState(libtitlename);
     const [isValidUser, setIsValidUser] = useState<boolean>(false);
     const [hasPermission, setHasPermission] = useState<boolean>(false);
-    const [breadcrumb, setBreadcrumb] = useState<any>([{ name: libName, path: libName }]);
+    const [breadcrumb, setBreadcrumb] = useState<any>([{ name: libtitlename, path: libtitlename }]);
     const [deletedData, setDeletedData] = useState<any>([]);
     const [archiveData, setArchiveData] = useState<any>([]);
     const [approvalData, setApprovalData] = useState<any>([]);
@@ -838,7 +839,7 @@ export default function TreeView({ props }: any) {
                         <li className="breadcrumb-item text-dark">
                             <Link to="/" style={{ textDecoration: "none" }}>Dashboard</Link>
                         </li>
-                        <li className="breadcrumb-item active">{libName}</li>
+                        <li className="breadcrumb-item active">{libtitlename}</li>
                     </ol>
                 </div>
                 <div className="d-flex align-items-center py-1">
