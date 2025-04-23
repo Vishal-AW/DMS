@@ -255,8 +255,14 @@ body {
 
 }
 
+.ReactTable .rt-tbody {
+    overflow: unset !important;
+    flex-direction: unset !important;
+}
+
 .ReactTable .rt-thead {
     box-shadow: none !important;
+    flex-direction: unset !important;
 }
 
 .rt-tr {
@@ -895,4 +901,16 @@ a {
 .btn-info {
     background-color: #7239ea;
     color: white;
+}
+
+#sbcId {
+    display: none !important;
+}
+
+#TipsNTricksButton_container {
+    display: none !important;
+}
+
+#TipsNTricksButton_container {
+    display: none !important;
 }
