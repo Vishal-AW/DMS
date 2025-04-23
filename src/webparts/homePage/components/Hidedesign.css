@@ -257,12 +257,10 @@ body {
 
 .ReactTable .rt-tbody {
     overflow: unset !important;
-    flex-direction: unset !important;
 }
 
 .ReactTable .rt-thead {
     box-shadow: none !important;
-    flex-direction: unset !important;
 }
 
 .rt-tr {

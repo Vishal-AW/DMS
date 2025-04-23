@@ -210,7 +210,7 @@ export default function TreeView({ props }: any) {
         {
             Header: DisplayLabel.FileName,
             accessor: "ListItemAllFields.ActualName",
-            width: 250,
+            width: 278,
             Cell: ({ row }: { row: any; }) => {
                 const item = row._original?.ListItemAllFields;
                 const checkedOutUser = row._original?.CheckedOutByUser;
@@ -262,7 +262,7 @@ export default function TreeView({ props }: any) {
             //         {row._original.ListItemAllFields.DisplayStatus}
             //     </span>
             // ),
-            width: '168',
+            width: 175,
             Cell: ({ row }: { row: any; }) => {
                 const styles = getStatusStyles(row._original.ListItemAllFields.DisplayStatus);
                 return (
@@ -288,7 +288,7 @@ export default function TreeView({ props }: any) {
                 const menuProps = useConst<IContextualMenuProps>(() => createMenuProps(row));
                 return <DefaultButton text={DisplayLabel.Action} className={styles['info-btn']} menuProps={menuProps} style={{ textAlign: 'center' }} />;
             },
-            width: '10%',
+            width: 150,
             className: 'text-center',
         }
     ];
@@ -839,7 +839,7 @@ export default function TreeView({ props }: any) {
                         <li className="breadcrumb-item text-dark">
                             <Link to=" /" style={{ textDecoration: "none" }}>Dashboard</Link>
                         </li>
-                        <li className="breadcrumb-item active"> {libtitlename}</li>
+                        <li className="breadcrumb-item active">{libtitlename}</li>
                     </ol>
                 </div>
                 <div className="d-flex align-items-center py-1">
