@@ -132,9 +132,9 @@
   display: flex;
   align-items: center;
   gap: 2em;
-  padding: 25px;
+  padding: 15px;
   border-top-right-radius: 0px;
-  background-color: #fff;
+  //background-color: #fff;
   transform: translateY(-100%);
   transition: .2s ease-in-out;
 
@@ -150,7 +150,7 @@
 }
 
 .dashcard__arc path {
-  fill: #fff;
+  fill: #ffffff00;
   d: path("M 40 80 c 22 0 40 -22 40 -40 v 40 Z") !important;
 }
 
@@ -169,6 +169,9 @@
   font-size: 1em;
   margin: 0 0 .3em;
   color: #6A515E;
+  background: #fff;
+  padding: 2px 9px;
+  border-radius: 8px;
 }
 
 .dashcard__tagline {
