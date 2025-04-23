@@ -122,7 +122,7 @@ export default function TreeView({ props }: any) {
     const fetchFolders = async (folderPath: string, nodeName: string) => {
         try {
             setFolderPath(folderPath);
-            const bread = folderPath.split("/").map((el, index) => ({ name: el, path: folderPath.split("/").slice(0, index + 1).join("/") }));
+            const bread = folderPath.split("/").map((el, index) => ({ name: el, displayname: (index == 0 ? libtitlename : el), path: folderPath.split("/").slice(0, index + 1).join("/") }));
             setBreadcrumb(bread);
             const data: any = await getAllFolder(props.SiteURL, props.context, folderPath);
             if (data && data.Folders) {
@@ -900,7 +900,7 @@ export default function TreeView({ props }: any) {
                                         {
                                             breadcrumb.map((el: any, index: number) => {
                                                 return <li key={index} className="breadcrumb-item">
-                                                    <a href="javascript:void(0)" onClick={() => fetchFolders(el.path, el.name)} style={{ color: "#009ef7", textDecoration: "none" }}>{el.name}</a>
+                                                    <a href="javascript:void(0)" onClick={() => fetchFolders(el.path, el.name)} style={{ color: "#009ef7", textDecoration: "none" }}>{el.displayname}</a>
                                                 </li>;
                                             })
                                         }
