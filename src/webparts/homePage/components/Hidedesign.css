@@ -912,3 +912,7 @@ a {
 #TipsNTricksButton_container {
     display: none !important;
 }
+
+a {
+    text-decoration: none !important;
+}
