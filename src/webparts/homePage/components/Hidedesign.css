@@ -916,3 +916,10 @@ a {
 a {
     text-decoration: none !important;
 }
+
+.breadcrumb-item+.breadcrumb-item::before {
+    content: " / ";
+    padding: 0 5px;
+    color: #6c757d;
+    /* optional */
+}
