@@ -23,8 +23,6 @@ import FolderMaster from './Master/FolderMaster';
 import Navigation from "./Master/Navigation";
 
 
-
-
 export default function HomePage(props: IHomePageProps): JSX.Element {
   //export default class HomePage extends React.Component<IHomePageProps> {
   //public render(): React.ReactElement<IHomePageProps> {
