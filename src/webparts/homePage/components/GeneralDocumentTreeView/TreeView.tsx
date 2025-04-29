@@ -219,7 +219,7 @@ export default function TreeView({ props }: any) {
 
                 return (
                     <div style={{ display: "flex", alignItems: "center" }} >
-                        <a href="javascript:void('0')" onClick={() => {
+                        <a style={{ color: "#009ef7" }} href="javascript:void('0')" onClick={() => {
                             if (row._original.LinkingUrl === "")
                                 window.open(row._original.ServerRelativeUrl, "_blank");
                             else
@@ -786,7 +786,7 @@ export default function TreeView({ props }: any) {
                 PagedefaultSize={10}
                 TableRows={1}
                 TableshowPagination={files.length > 10}
-            /> : <div className="grid" style={{ height: "871px", overflow: "auto" }}>
+            /> : <div className="grid" style={{ height: "832px", overflow: "auto" }}>
                 <div className="row">
                     {renderRightFolder(rightFolders)}
                 </div>
@@ -921,7 +921,9 @@ export default function TreeView({ props }: any) {
                                 </div>
                             </div>
                         </div>
-                        {bindTable()}
+                        <div style={{ height: "832px", overflow: "auto" }}>
+                            {bindTable()}
+                        </div>
                     </div>
                 </Stack.Item>
             </Stack>
