@@ -1,8 +1,10 @@
 import * as React from "react";
 import styles from '../Home/Dashboard.module.scss';
-import { useEffect, useState } from "react";
+import { useEffect, useState, } from "react";
 import { SPHttpClient, SPHttpClientResponse } from "@microsoft/sp-http-base";
 import cls from '../HomePage.module.scss';
+import { FontIcon } from "office-ui-fabric-react";
+
 
 export default function Dashboard({ props }: any): JSX.Element {
   const [userRole, setuserRole] = useState('');
@@ -188,24 +190,32 @@ export default function Dashboard({ props }: any): JSX.Element {
         tileData.length > 0 ? tileData.map((el: any) => (
           <div className="col-xl-3 col-lg-6 col-md-12 mb-4" onClick={() => { openLib(el); }}>
             <a href="javascript:void(0)" className={styles["dashcard"]} >
-              <img className={styles["dashcard__image"]}
-                src={el.Documentpath ? el.Documentpath : `${props.SiteURL}/DMS_TileDocument/Default.jpg`}
-                //src={el.Documentpath}
-                alt={el.TileName}
-                loading="lazy" />
+              <div>
+                <img className={styles["dashcard__image"]}
+                  src={el.Documentpath ? el.Documentpath : `${props.SiteURL}/DMS_TileDocument/Default.jpg`}
+                  //src={el.Documentpath}
+                  alt={el.TileName}
+                  loading="lazy" />
+              </div>
 
               <div className={styles["dashcard__overlay"]}>
                 <div className={styles["dashcard__header"]}>
-                  <svg className={styles["dashcard__arc"]} xmlns="http://www.w3.org/2000/svg"> <path d="M 40 80 c 22 0 40 -22 40 -40 v 40 Z"
-                  /></svg>
+                  {/* <svg className={styles["dashcard__arc"]} xmlns="http://www.w3.org/2000/svg"> <path d="M 40 80 c 22 0 40 -22 40 -40 v 40 Z"
+                  /></svg> */}
                   {/* <img className={styles["dashcard__thumb"]} src="https://i.imgur.com/oYiTqum.jpg" alt="" /> */}
                   <div>
                     <h3 className={styles["dashcard__title"]}>{el.TileName}</h3>
                     {/* <span className={styles["dashcard__status"]}>1 hour ago</span> */}
                   </div>
                   <a href="javascript:void(0)" className={styles["card-overlay"]} target="_self"></a>
+                  <p className={styles["dashcard__description"]}>
+                    <FontIcon aria-label="" iconName="Forward" style={{
+                      color: '#000', cursor: 'pointer', padding: '4px 8px', borderRadius: '50%', fontWeight: '800',
+                      fontSize: '13px'
+                    }}></FontIcon>
+                  </p>
                 </div>
-                <p className={styles["dashcard__description"]}></p>
+
               </div>
             </a>
           </div>
