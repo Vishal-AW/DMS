@@ -193,4 +193,6 @@ export interface ILabel {
     IconClass: string;
     ParentMenuId: string;
     MenuAlreadyExist: string;
+    FileValidationForSize: string;
+    FileAttachmentNote: string;
 }

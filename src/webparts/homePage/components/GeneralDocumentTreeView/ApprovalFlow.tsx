@@ -58,6 +58,10 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
         "Status.StatusName",
         "Id"
     ];
+
+    const truncateText = (text: string, maxLength: number) => {
+        return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
+    };
     const columns: any = [
         {
             Header: DisplayLabel.FileName, accessor: "Name", Cell: ({ row }: { row: any; }) => <a href="javascript:void('0')" onClick={() => {
@@ -65,7 +69,7 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
                     window.open(row._original.File.ServerRelativeUrl, "_blank");
                 else
                     window.open(row._original.File.LinkingUrl, "_blank");
-            }}>{row._original?.ActualName}</a>
+            }}> {truncateText(row._original?.ActualName, 35)}</a>
         },
         { Header: DisplayLabel.FolderPath, accessor: 'FolderDocumentPath' },
         {
@@ -109,7 +113,7 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
     const restoreFile = async () => {
         const obj = {
             Active: true,
-            DeleteFlag: null
+            DeleteFlag: false // Instead of null
         };
         await updateLibrary(context.pageContext.web.absoluteUrl, context.spHttpClient, obj, itemId, libraryName);
         setAlertMsg(DisplayLabel.RestoreDoc);
@@ -176,14 +180,14 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
                     emailObj.Sub = DisplayLabel.PMEmailSubject + " " + fileData.ReferenceNo;
                     //emailObj.Msg = DisplayLabel.PMEmailMsg;
                     emailObj.Status = InternalStatus;
-                    
+
                 } else {
                     emailObj.Sub = DisplayLabel.PublishedEmailSubject + " " + fileData.ReferenceNo;
                     emailObj.Msg = DisplayLabel.PublishedEmailMsg;
                     emailObj.Status = InternalStatus;
                 }
                 emailObj.ID = fileData.Id;
-                emailObj.libraryName=libraryName;
+                emailObj.libraryName = libraryName;
                 await TileSendMail(context, emailObj);
                 setAlertMsg(DisplayLabel.ApprovedMsg);
                 setIsPopupBoxVisible(true);

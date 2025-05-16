@@ -209,6 +209,8 @@ export async function GetAllLabel(WebUrl: string, spHttpClient: SPHttpClient, La
       IconClass: getValue("IconClass", data, Language),
       ParentMenuId: getValue("ParentMenuId", data, Language),
       MenuAlreadyExist: getValue("MenuAlreadyExist", data, Language),
+      FileValidationForSize: getValue("FileValidationForSize", data, Language),
+      FileAttachmentNote: getValue("FileAttachmentNote", data, Language),
 
 
     };

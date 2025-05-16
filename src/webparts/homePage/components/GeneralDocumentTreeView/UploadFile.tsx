@@ -66,6 +66,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
     }, []);
 
     useEffect(() => {
+        setAttachmentErr("");
         setDynamicValuesErr({});
         setDynamicValues({});
         setAttachmentsFiles([]);
@@ -233,6 +234,8 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
         });
     }, [dynamicControl, options, dynamicValues, dynamicValuesErr]);
 
+    const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15 MB
+
     const addAttachment = () => {
         if (!attachment.name) {
             setAttachmentErr(DisplayLabel.ThisFieldisRequired);
@@ -242,6 +245,12 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
             setAttachmentErr(DisplayLabel.InvalidFileFormat);
             return false;
         }
+
+        if (attachment.size > MAX_FILE_SIZE) {
+            setAttachmentErr(DisplayLabel.FileValidationForSize);
+            return false;
+        }
+
         setAttachmentErr('');
         const newAttachment = {
             attachment: attachment,
@@ -348,6 +357,8 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
             obj.RefSequence = ReferenceNo.count;
 
 
+
+
             let UploadFileData = await UploadFile(context.pageContext.web.absoluteUrl, context.spHttpClient, item.attachment, `${Fileuniqueid}-${item.attachment.name}`, libName, obj, folderPath);
             console.log(UploadFileData);
 
@@ -430,15 +441,22 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                     </div>
                     <div className="row">
                         <div className="column10">
-                            <TextField type="file" label={DisplayLabel.ChooseFile} required onChange={(event: React.ChangeEvent<HTMLInputElement>) => { if (event.target.files) setAttachment(event.target.files[0]); }}
+                            <label className={styles.Headerlabel}>{DisplayLabel.ChooseFile}<span style={{ color: "red" }}>*</span> </label>
+                            <br></br>
+                            <label className={styles.Headerlabel} style={{ color: "red" }}>
+                                {DisplayLabel?.FileAttachmentNote}
+                            </label>
+
+                            <TextField type="file" onChange={(event: React.ChangeEvent<HTMLInputElement>) => { if (event.target.files) setAttachment(event.target.files[0]); }}
                                 errorMessage={attachmentErr}
                                 key={fileKey}
                             />
+
                         </div>
                         <div className="column2">
                             <IconButton
                                 iconProps={{ iconName: 'Add' }}
-                                style={{ background: "#009ef7", color: "#fff", border: "#009ef7", marginTop: "40px" }}
+                                style={{ background: "#009ef7", color: "#fff", border: "#009ef7", marginTop: "58px" }}
                                 onClick={addAttachment}
                                 label="Add"
                             />

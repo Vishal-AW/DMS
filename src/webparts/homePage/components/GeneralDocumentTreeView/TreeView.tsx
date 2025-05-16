@@ -200,7 +200,9 @@ export default function TreeView({ props }: any) {
         }
     };
 
-
+    const truncateText = (text: string, maxLength: number) => {
+        return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
+    };
     const columns = [
         {
             Header: DisplayLabel.SrNo, accessor: "Id",
@@ -219,12 +221,19 @@ export default function TreeView({ props }: any) {
 
                 return (
                     <div style={{ display: "flex", alignItems: "center" }} >
+                        {/* <a style={{ color: "#009ef7" }} href="javascript:void('0')" onClick={() => {
+                            if (row._original.LinkingUrl === "")
+                                window.open(row._original.ServerRelativeUrl, "_blank");
+                            else
+                                window.open(row._original.LinkingUrl, "_blank");
+                        }}>{item?.ActualName}</a> */}
+
                         <a style={{ color: "#009ef7" }} href="javascript:void('0')" onClick={() => {
                             if (row._original.LinkingUrl === "")
                                 window.open(row._original.ServerRelativeUrl, "_blank");
                             else
                                 window.open(row._original.LinkingUrl, "_blank");
-                        }}>{item?.ActualName}</a>
+                        }}>{truncateText(item?.ActualName, 35)}</a>
                         {" "}
                         {isCheckedOut && (
                             <TooltipHost
@@ -568,6 +577,7 @@ export default function TreeView({ props }: any) {
         async (value: boolean) => {
             if (value) {
                 setHideDialog(false);
+                setIsPanelOpen(true);
                 deleteDoc();
             }
         },
@@ -893,7 +903,7 @@ export default function TreeView({ props }: any) {
                 </Stack.Item>
                 <Stack.Item grow styles={stackItemStyles} className="col-md-9">
                     <div className="card" style={{ border: "none", padding: "18px 25px" }}>
-                        <div className="grid">
+                        <div className="grid" style={{ alignItems: "center", display: "flex", justifyContent: "space-between" }}>
                             <div className="row">
                                 <nav aria-label="breadcrumb">
                                     <ol className="breadcrumb breadcrumb-style2">

@@ -42,12 +42,12 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
 
     const permissionDetails: Record<string, string> = {
         "1073741829": DisplayLabel.FullControlAccessDec,
-        "1073741828": DisplayLabel.DesignAccessDec,
+        // "1073741828": DisplayLabel.DesignAccessDec,
         "1073741830": DisplayLabel.EditAccessDec,
-        "1073741827": DisplayLabel.ContributeAccessDec,
+        // "1073741827": DisplayLabel.ContributeAccessDec,
         "1073741826": DisplayLabel.ReadAccessDec,
-        "1073741832": DisplayLabel.RestrictedViewAccessDec,
-        "1073741924": DisplayLabel.ViewOnlyAccessDec
+        // "1073741832": DisplayLabel.RestrictedViewAccessDec,
+        // "1073741924": DisplayLabel.ViewOnlyAccessDec
     };
 
     useEffect(() => {
@@ -166,15 +166,23 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
         { value: "1073741924", label: DisplayLabel.ViewOnlyAccess },
     ];
 
+
+
+
     return (
         <div>
             <Panel
                 headerText={DisplayLabel.AdvancePermission}
                 isOpen={isOpen}
                 onDismiss={() => {
-                    dismissPanel();
-                    setOption("");
+                    // dismissPanel();
+                    // setOption("");
+                    if (!hideDialog && !isPopupBoxVisible) { // Prevent dismiss when dialog/popup is open
+                        dismissPanel();
+                        setOption("");
+                    }
                 }}
+                isBlocking={true} // This prevents clicking outside to close
                 closeButtonAriaLabel="Close"
                 type={PanelType.medium}
             >
