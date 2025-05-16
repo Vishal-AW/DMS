@@ -298,11 +298,10 @@ export default function Master({ props }: any): JSX.Element {
     if (EditSettingData[0].IsArchiveRequired === true) {
       let ActiveRedundancyDaysData: any = await getActiveRedundancyDays(props.SiteURL, props.spHttpClient);
       let ActiveRedundancyDaysvalueData = ActiveRedundancyDaysData.value;
+      setArchiveTest(EditSettingData[0].ArchiveLibraryName);
       const FilterRetentionDays = ActiveRedundancyDaysvalueData.filter((item: any) => item.RedundancyDays === EditSettingData[0].RetentionDays);
       if (FilterRetentionDays.length > 0) {
         const RetentiondaysData = FilterRetentionDays[0].ID;
-
-        await setArchiveTest(EditSettingData[0].ArchiveLibraryName);
         await setArchiveVersions(EditSettingData[0].ArchiveVersionCount);
         await setRedundancyDataID(RetentiondaysData);
       }
@@ -1270,7 +1269,7 @@ export default function Master({ props }: any): JSX.Element {
           };
           await UpdateTileSetting(props.SiteURL, props.spHttpClient, items, CurrentEditID);
 
-          if (UpdateTileID[0].ArchiveLibraryName === null || UpdateTileID[0].ArchiveLibraryName === undefined) {
+          if (UpdateTileID[0].ArchiveLibraryName === null || UpdateTileID[0].ArchiveLibraryName === undefined || UpdateTileID[0].IsArchiveRequired === false) {
             const UpdateTileLibraryData = await TileLibrary(Internal, CurrentEditID, ArchiveInternal, true).then(function (response) {
               console.log(UpdateTileLibraryData);
             });
