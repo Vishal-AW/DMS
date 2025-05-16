@@ -182,9 +182,6 @@ export default function Dashboard({ props }: any): JSX.Element {
 
 
   return (
-
-
-
     <div className={styles["row1-container"]}>
       {
         tileData.length > 0 ? tileData.map((el: any) => (
