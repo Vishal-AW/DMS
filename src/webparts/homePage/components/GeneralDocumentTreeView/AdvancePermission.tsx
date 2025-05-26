@@ -141,6 +141,7 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
                     count++;
                     if (count === selectedUser.length) setIsPopupBoxVisible(true);
                     // showAlert("Access has been successfully granted.");
+                    bindPermission();
                 });
             });
         }
