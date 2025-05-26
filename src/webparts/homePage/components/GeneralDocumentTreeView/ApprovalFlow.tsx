@@ -59,17 +59,24 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
         "Id"
     ];
 
-    const truncateText = (text: string, maxLength: number) => {
-        return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
-    };
+    // const truncateText = (text: string, maxLength: number) => {
+    //     return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
+    // };
     const columns: any = [
         {
-            Header: DisplayLabel.FileName, accessor: "Name", Cell: ({ row }: { row: any; }) => <a href="javascript:void('0')" onClick={() => {
+            Header: DisplayLabel.FileName, accessor: "Name", Cell: ({ row }: { row: any; }) => <a style={{
+                color: "#009ef7",
+                display: "inline-block",
+                inlineSize: "150px",
+                overflowWrap: "break-word",
+                wordBreak: "break-word",
+                whiteSpace: "normal"
+            }} href="javascript:void('0')" onClick={() => {
                 if (row._original.File.LinkingUrl === "")
                     window.open(row._original.File.ServerRelativeUrl, "_blank");
                 else
                     window.open(row._original.File.LinkingUrl, "_blank");
-            }}> {truncateText(row._original?.ActualName, 35)}</a>
+            }}> {row._original?.ActualName}</a>
         },
         { Header: DisplayLabel.FolderPath, accessor: 'FolderDocumentPath' },
         {

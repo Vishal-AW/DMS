@@ -190,7 +190,7 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
                     {/* Stop Inheriting Permissions */}
                     <div className="row">
                         <div className="col-md-6">
-                            <PrimaryButton
+                            <PrimaryButton style={{ backgroundColor: '#ca5010', border: '1px solid #ca5010' }}
                                 text={DisplayLabel.StopInheritingPermission}
                                 disabled={hasUniquePermission}
                                 onClick={() => {
