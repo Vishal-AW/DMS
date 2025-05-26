@@ -138,7 +138,9 @@ export const ConfirmationDialog: React.FC<IConfirmboxProps> = ({ hideDialog, clo
                 }}
             >
                 <DialogFooter>
-                    <PrimaryButton text="Yes" onClick={() => handleConfirm(true)} />
+
+                    {/* <PrimaryButton text="Yes" onClick={() => handleConfirm(true)} /> */}
+                    <PrimaryButton text="Yes" style={{ backgroundColor: '#ca5010', border: '1px solid #ca5010' }} onClick={() => handleConfirm(true)} />
                     <DefaultButton text="No" onClick={closeDialog} />
                 </DialogFooter>
             </Dialog>
