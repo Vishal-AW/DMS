@@ -158,12 +158,12 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
     };
     const otions = [
         { value: "1073741829", label: DisplayLabel.FullControlAccess },
-        { value: "1073741828", label: DisplayLabel.DesignAccess },
+        // { value: "1073741828", label: DisplayLabel.DesignAccess },
         { value: "1073741830", label: DisplayLabel.EditAccess },
-        { value: "1073741827", label: DisplayLabel.ContributeAccess },
+        // { value: "1073741827", label: DisplayLabel.ContributeAccess },
         { value: "1073741826", label: DisplayLabel.ReadAccess },
-        { value: "1073741832", label: DisplayLabel.RestrictedViewAccess },
-        { value: "1073741924", label: DisplayLabel.ViewOnlyAccess },
+        // { value: "1073741832", label: DisplayLabel.RestrictedViewAccess },
+        // { value: "1073741924", label: DisplayLabel.ViewOnlyAccess },
     ];
 
 

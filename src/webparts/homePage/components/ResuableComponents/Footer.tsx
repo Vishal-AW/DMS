@@ -7,7 +7,7 @@ export default function Footer(): JSX.Element {
 
     return (
 
-        <div>
+        <div style={{ float: 'right', paddingRight: '80px' }}>
             <a href="https://www.ascenwork.com" target="_blank" rel="noopener noreferrer">
                 <span className={styles.footera}>© AscenWork Technologies | All rights reserved | Made with <span className={styles.heart}>❤️</span> in India</span>
             </a>
