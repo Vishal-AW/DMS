@@ -8,7 +8,7 @@ import { HashRouter, Routes, Route } from 'react-router-dom';
 import SideMenu from '../components/Route/SideMenu';
 import Master from '../components/Master/Master';
 //import Header from '../components/ResuableComponents/Header';
-import Footer from '../components/ResuableComponents/Footer';
+//import Footer from '../components/ResuableComponents/Footer';
 import Datatable from '../components/ResuableComponents/Header';
 import Dashboard from '../components/Home/Dashboard';
 //import ParentComponent from './GeneralDocumentTreeView/ParentTreeView';
@@ -21,6 +21,7 @@ import SearchComponent from './GeneralDocumentTreeView/Search';
 import TemplateMaster from './Master/TemplateMaster';
 import FolderMaster from './Master/FolderMaster';
 import Navigation from "./Master/Navigation";
+import DynamicFooter from '../components/ResuableComponents/Footer';
 
 
 export default function HomePage(props: IHomePageProps): JSX.Element {
@@ -88,7 +89,9 @@ export default function HomePage(props: IHomePageProps): JSX.Element {
           </div>
         </section>
         <div className={styles.footer}>
-          <Footer></Footer>
+        
+
+         <DynamicFooter props={props}></DynamicFooter> 
         </div>
       </HashRouter>
 
