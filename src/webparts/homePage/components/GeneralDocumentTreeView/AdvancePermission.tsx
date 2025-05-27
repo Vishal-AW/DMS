@@ -147,6 +147,7 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
         }
     };
 
+
     const handelPeoplePicker = (items: any) => {
         const ids: number[] = [];
         items.map(async (el: any) => {
