@@ -25,6 +25,7 @@ import Navigation from "./Master/Navigation";
 import DynamicFooter from '../components/ResuableComponents/Footer';
 
 
+
 export default function HomePage(props: IHomePageProps): JSX.Element {
   //export default class HomePage extends React.Component<IHomePageProps> {
   //public render(): React.ReactElement<IHomePageProps> {
