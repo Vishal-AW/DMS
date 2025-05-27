@@ -119,6 +119,7 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
                 await commonPostMethod(requestUri, context);
                 count++;
                 if (count === isCheckedUser.length) setIsPopupBoxVisible(true);
+                bindPermission();
             } catch (error) {
                 console.error("Error removing user permission: ", error);
             }
@@ -140,6 +141,7 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
                     count++;
                     if (count === selectedUser.length) setIsPopupBoxVisible(true);
                     // showAlert("Access has been successfully granted.");
+                    bindPermission();
                 });
             });
         }
@@ -158,12 +160,12 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
     };
     const otions = [
         { value: "1073741829", label: DisplayLabel.FullControlAccess },
-        { value: "1073741828", label: DisplayLabel.DesignAccess },
+        // { value: "1073741828", label: DisplayLabel.DesignAccess },
         { value: "1073741830", label: DisplayLabel.EditAccess },
-        { value: "1073741827", label: DisplayLabel.ContributeAccess },
+        // { value: "1073741827", label: DisplayLabel.ContributeAccess },
         { value: "1073741826", label: DisplayLabel.ReadAccess },
-        { value: "1073741832", label: DisplayLabel.RestrictedViewAccess },
-        { value: "1073741924", label: DisplayLabel.ViewOnlyAccess },
+        // { value: "1073741832", label: DisplayLabel.RestrictedViewAccess },
+        // { value: "1073741924", label: DisplayLabel.ViewOnlyAccess },
     ];
 
 
@@ -190,7 +192,22 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
                     {/* Stop Inheriting Permissions */}
                     <div className="row">
                         <div className="col-md-6">
+                            {/* <PrimaryButton style={{ backgroundColor: '#ca5010', border: '1px solid #ca5010' }}
+                                text={DisplayLabel.StopInheritingPermission}
+                                disabled={hasUniquePermission}
+                                onClick={() => {
+                                    setMessage(DisplayLabel.StopInheritingConfirmMsg);
+                                    setHideDialog(true);
+                                }}
+                            /> */}
+
                             <PrimaryButton
+                                style={{
+                                    backgroundColor: hasUniquePermission ? '#f3f2f1' : '#ca5010',
+                                    border: `1px solid ${hasUniquePermission ? '#f3f2f1' : '#ca5010'}`,
+                                    color: hasUniquePermission ? '#a19f9d' : '#ffffff', // optional: change text color too
+                                    cursor: hasUniquePermission ? 'not-allowed' : 'pointer', // optional
+                                }}
                                 text={DisplayLabel.StopInheritingPermission}
                                 disabled={hasUniquePermission}
                                 onClick={() => {
@@ -200,7 +217,16 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
                             />
                         </div>
                         <div className="col-md-6">
+                            {/* <PrimaryButton style={{ backgroundColor: '#ca5010', border: '1px solid #ca5010' }}
+                                text={DisplayLabel.RemoveUserPermission}
+                                disabled={isCheckedUser.length === 0}
+                                onClick={removeUserPermission}
+                            /> */}
                             <PrimaryButton
+                                style={{
+                                    backgroundColor: isCheckedUser.length > 0 ? '#ca5010' : undefined,
+                                    border: isCheckedUser.length > 0 ? '1px solid #ca5010' : undefined,
+                                }}
                                 text={DisplayLabel.RemoveUserPermission}
                                 disabled={isCheckedUser.length === 0}
                                 onClick={removeUserPermission}

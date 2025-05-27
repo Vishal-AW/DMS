@@ -200,9 +200,9 @@ export default function TreeView({ props }: any) {
         }
     };
 
-    const truncateText = (text: string, maxLength: number) => {
-        return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
-    };
+    // const truncateText = (text: string, maxLength: number) => {
+    //     return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
+    // };
     const columns = [
         {
             Header: DisplayLabel.SrNo, accessor: "Id",
@@ -228,12 +228,19 @@ export default function TreeView({ props }: any) {
                                 window.open(row._original.LinkingUrl, "_blank");
                         }}>{item?.ActualName}</a> */}
 
-                        <a style={{ color: "#009ef7" }} href="javascript:void('0')" onClick={() => {
+                        <a style={{
+                            color: "#009ef7",
+                            display: "inline-block",
+                            inlineSize: "150px",
+                            overflowWrap: "break-word",
+                            wordBreak: "break-word",
+                            whiteSpace: "normal"
+                        }} href="javascript:void('0')" onClick={() => {
                             if (row._original.LinkingUrl === "")
                                 window.open(row._original.ServerRelativeUrl, "_blank");
                             else
                                 window.open(row._original.LinkingUrl, "_blank");
-                        }}>{truncateText(item?.ActualName, 35)}</a>
+                        }}>{item?.ActualName}</a>
                         {" "}
                         {isCheckedOut && (
                             <TooltipHost
