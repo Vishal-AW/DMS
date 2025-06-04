@@ -3,6 +3,7 @@ import { ISPHttpClientOptions, SPHttpClient, SPHttpClientResponse } from '@micro
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import { GetListItem, UpdateItem } from "../DAL/Commonfile";
 
+// import { SPPermission } from '@microsoft/sp-page-context';
 
 
 export async function getAllFolder(WebUrl: string, context: WebPartContext, FolderName: string) {
@@ -239,35 +240,109 @@ function padLeft(value: string, length: number, char: string = "0"): string {
 }
 
 
+
 export async function checkPermissions(context: any, folderPath: string): Promise<boolean> {
     try {
-        const url = `${context.pageContext.web.absoluteUrl}/_api/web/GetFolderByServerRelativeUrl('${folderPath}')/ListItemAllFields/RoleAssignments?$expand=RoleDefinitionBindings`;
+        // const url = `${context.pageContext.web.absoluteUrl}/_api/web/DoesUserHavePermissions?high=${permissionMaskHigh}&low=${permissionMaskLow}`;
+
+        const url = `${context.pageContext.web.absoluteUrl}/_api/web/GetFolderByServerRelativeUrl('${folderPath}')/ListItemAllFields/effectiveBasePermissions`;
 
         const response: SPHttpClientResponse = await context.spHttpClient.get(
             url,
             SPHttpClient.configurations.v1,
             {
                 headers: {
-                    Accept: "application/json;odata=nometadata"
+                    'Accept': 'application/json;odata=nometadata',
+                    'odata-version': ''
                 }
             }
         );
 
         if (!response.ok) {
-            throw new Error(`Error fetching permissions: ${response.statusText}`);
+            throw new Error(`Failed to get folder permissions: ${response.statusText}`);
+        }
+        const data = await response.json();
+        const high = parseInt(data.High, 10);
+        const low = parseInt(data.Low, 10);
+
+        const readListItems = 1; // Read permission bit
+        const addListItems = 3;  // Add permission bit
+        const editListItems = 6; // Edit permission bit
+        const deleteListItems = 7; // Delete permission bit
+
+        function hasPermission(bit: number): boolean {
+            if (bit < 32) {
+                return (low & (1 << bit)) !== 0;
+            } else {
+                return (high & (1 << (bit - 32))) !== 0;
+            }
         }
 
-        const data = await response.json();
-        const roleAssignments = data.value || [];
-        const hasRequiredPermissions = roleAssignments.some((assignment: any) => {
-            return assignment.RoleDefinitionBindings.some((role: any) =>
-                ["Edit", "Contribute", "Full Control"].includes(role.Name)
-            );
-        });
+        const canRead = hasPermission(readListItems);
+        const canAdd = hasPermission(addListItems);
+        const canEdit = hasPermission(editListItems);
+        const canDelete = hasPermission(deleteListItems);
+        console.log("User canRead:", canRead);
+        console.log("User canAdd:", canAdd);
+        console.log("User canEdit:", canEdit);
+        console.log("User canDelete:", canDelete);
 
-        return hasRequiredPermissions;
+        // Define hasWriteAccess based on Add or Edit permissions
+        const hasWriteAccess = canAdd || canEdit;
+
+        console.log("User has write access:", hasWriteAccess);
+
+
+        let checkData = false;
+
+        // If user has Read but no write and no delete access
+        if (canRead === true) {
+            if (canAdd === true || canEdit === true) {
+                checkData = true; // Delete-only (if you want to treat this as read-only)
+            } else if (canDelete) {
+                checkData = false; // Has write access
+            }
+        } else {
+            checkData = false; // Read-only
+        }
+        return checkData;
+
     } catch (error) {
         console.error("Error checking permissions:", error);
         return false;
     }
-};
+}
+
+
+// export async function checkPermissions(context: any, folderPath: string): Promise<boolean> {
+//     try {
+//         const url = `${context.pageContext.web.absoluteUrl}/_api/web/GetFolderByServerRelativeUrl('${folderPath}')/ListItemAllFields/RoleAssignments?$expand=RoleDefinitionBindings`;
+
+//         const response: SPHttpClientResponse = await context.spHttpClient.get(
+//             url,
+//             SPHttpClient.configurations.v1,
+//             {
+//                 headers: {
+//                     Accept: "application/json;odata=nometadata"
+//                 }
+//             }
+//         );
+
+//         if (!response.ok) {
+//             throw new Error(`Error fetching permissions: ${response.statusText}`);
+//         }
+
+//         const data = await response.json();
+//         const roleAssignments = data.value || [];
+//         const hasRequiredPermissions = roleAssignments.some((assignment: any) => {
+//             return assignment.RoleDefinitionBindings.some((role: any) =>
+//                 ["Edit", "Contribute", "Full Control"].includes(role.Name)
+//             );
+//         });
+
+//         return hasRequiredPermissions;
+//     } catch (error) {
+//         console.error("Error checking permissions:", error);
+//         return false;
+//     }
+// };

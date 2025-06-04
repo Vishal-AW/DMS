@@ -74,6 +74,8 @@ export default function TreeView({ props }: any) {
     // const [isHovering, setIsHovering] = useState(false);
     // const hoverRef = React.useRef<Record<string, HTMLDivElement | null>>({});
 
+    const invalidCharsRegex = /["*:<>?/\\|]/;
+
 
     if (tileObject === null) {
         location.href = "#/";
@@ -744,8 +746,17 @@ export default function TreeView({ props }: any) {
 
     const createFolder = (): void => {
         setFolderNameErr("");
+
+
         if (folderName === "") {
             setFolderNameErr(DisplayLabel.ThisFieldisRequired);
+            return;
+        }
+        if (invalidCharsRegex.test(folderName)) {
+            // "Please enter a name that doesn't include any of these characters: \" * : < > ? / \\ |"
+            setFolderNameErr(
+                DisplayLabel.FolderSpecialCharacterValidation
+            );
             return;
         }
         const isDuplicate = childFolders[folderPath].filter((el: any) => el.Name === folderName);
@@ -831,6 +842,21 @@ export default function TreeView({ props }: any) {
         checkPermissions(props.context, uri).then((permission: boolean) => setHasPermission(permission));
     };
 
+
+
+    const handleFolderNameChange = (el: React.ChangeEvent<HTMLInputElement>) => {
+        const value = el.target.value;
+        setFolderName(value);
+
+        if (invalidCharsRegex.test(value)) {
+            setFolderNameErr(
+                "Please enter a name that doesn't include any of these characters: \" * : < > ? / \\ |"
+            );
+        } else {
+            setFolderNameErr(""); // Clear error if valid
+        }
+    };
+
     return (
         <div>
             {/* <nav aria-label="breadcrumb">
@@ -854,7 +880,7 @@ export default function TreeView({ props }: any) {
                 <div>
                     <ol className="breadcrumb breadcrumb-style2">
                         <li className="breadcrumb-item text-dark">
-                            <Link to=" /" style={{ textDecoration: "none" }}>Dashboard</Link>
+                            <Link to="/" style={{ textDecoration: "none" }}>Dashboard</Link>
                         </li>
                         <li className="breadcrumb-item active">{libtitlename}</li>
                     </ol>
@@ -930,7 +956,7 @@ export default function TreeView({ props }: any) {
                                         <div style={{ float: "right" }}>
                                             {tables === "" ? <>
                                                 {rightFolders.length === 0 && (isValidUser || libDetails.TileAdminId === props.userID || hasPermission) ? <DefaultButton text={DisplayLabel.Upload} onClick={() => setIsOpenUploadPanel(true)} className={styles['secondary-btn']} styles={{ root: { marginRight: 8 } }} /> : <></>}
-                                                {files.length === 0 ? <DefaultButton className={styles['info-btn']} text={DisplayLabel.NewFolder} onClick={() => { setIsOpenFolderPanel(true); setFolderName(""); }} /> : <></>}
+                                                {files.length === 0 && (hasPermission) ? <DefaultButton className={styles['info-btn']} text={DisplayLabel.NewFolder} onClick={() => { setIsOpenFolderPanel(true); setFolderName(""); setFolderNameErr(""); }} /> : <></>}
                                             </> : <> </>
                                             }
                                         </div>
@@ -984,7 +1010,9 @@ export default function TreeView({ props }: any) {
                     </div>
                     <div className="row">
                         <div className="col-md-12">
-                            <TextField label={DisplayLabel.FolderName} required value={folderName} onChange={(el: React.ChangeEvent<HTMLInputElement>) => setFolderName(el.target.value)} errorMessage={folderNameErr} />
+                            {/* <TextField label={DisplayLabel.FolderName} required value={folderName} onChange={(el: React.ChangeEvent<HTMLInputElement>) => setFolderName(el.target.value)} errorMessage={folderNameErr} /> */}
+                            <TextField label={DisplayLabel.FolderName} required value={folderName} onChange={handleFolderNameChange} errorMessage={folderNameErr} />
+
                         </div>
                     </div>
                 </div>

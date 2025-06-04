@@ -90,9 +90,9 @@ export default function HomePage(props: IHomePageProps): JSX.Element {
           </div>
         </section>
         <div className={styles.footer}>
-        
 
-         <DynamicFooter props={props}></DynamicFooter> 
+
+          <DynamicFooter props={props}></DynamicFooter>
         </div>
       </HashRouter>
 

@@ -195,4 +195,5 @@ export interface ILabel {
     MenuAlreadyExist: string;
     FileValidationForSize: string;
     FileAttachmentNote: string;
+    FolderSpecialCharacterValidation: string;
 }
