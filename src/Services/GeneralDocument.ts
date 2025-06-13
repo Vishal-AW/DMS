@@ -289,10 +289,7 @@ export async function checkPermissions(context: any, folderPath: string): Promis
 
         // Define hasWriteAccess based on Add or Edit permissions
         const hasWriteAccess = canAdd || canEdit;
-
         console.log("User has write access:", hasWriteAccess);
-
-
         let checkData = false;
 
         // If user has Read but no write and no delete access

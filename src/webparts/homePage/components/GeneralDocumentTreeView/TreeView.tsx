@@ -121,6 +121,38 @@ export default function TreeView({ props }: any) {
         fetchFolders(folderPath, folderName);
     }, [isOpenUploadPanel]);
 
+    // const fetchFolders = async (folderPath: string, nodeName: string) => {
+    //     try {
+    //         setFolderPath(folderPath);
+    //         const bread = folderPath.split("/").map((el, index) => ({ name: el, displayname: (index == 0 ? libtitlename : el), path: folderPath.split("/").slice(0, index + 1).join("/") }));
+    //         setBreadcrumb(bread);
+    //         const data: any = await getAllFolder(props.SiteURL, props.context, folderPath);
+    //         if (data && data.Folders) {
+    //             const updatedFolders = data.Folders.map((folder: any) => {
+    //                 const updatedFolder = { ...folder };
+    //                 updatedFolder.folderPath = `${folderPath}/${folder.Name}`;
+
+    //                 return updatedFolder;
+    //             });
+    //             setRightFolders(updatedFolders);
+    //             if (folderPath === libName) {
+    //                 setFolders(data.Folders);
+    //             } else {
+    //                 setChildFolders((prev) => ({
+    //                     ...prev,
+    //                     [folderPath]: data.Folders,
+    //                 }));
+    //                 setFiles(data.Files.filter((el: any) => (el.ListItemAllFields.Active && (el.ListItemAllFields.InternalStatus === "Published" || el.ListItemAllFields.AuthorId === props.userID))) || []);
+    //             }
+    //             data.Folders.length === 0 ? setExpandedNodes(expandedNodes.filter((name) => name !== nodeName)) : "";
+    //         } else {
+    //             console.error("Unexpected response format", data);
+    //         }
+    //     } catch (error) {
+    //         console.error("Error fetching folders:", error);
+    //     }
+    // };
+
     const fetchFolders = async (folderPath: string, nodeName: string) => {
         try {
             setFolderPath(folderPath);
@@ -128,7 +160,8 @@ export default function TreeView({ props }: any) {
             setBreadcrumb(bread);
             const data: any = await getAllFolder(props.SiteURL, props.context, folderPath);
             if (data && data.Folders) {
-                const updatedFolders = data.Folders.map((folder: any) => {
+                const sortedFolders = data.Folders.sort((a: any, b: any) => a.Name.localeCompare(b.Name));
+                const updatedFolders = sortedFolders.map((folder: any) => {
                     const updatedFolder = { ...folder };
                     updatedFolder.folderPath = `${folderPath}/${folder.Name}`;
 
@@ -140,11 +173,11 @@ export default function TreeView({ props }: any) {
                 } else {
                     setChildFolders((prev) => ({
                         ...prev,
-                        [folderPath]: data.Folders,
+                        [folderPath]: sortedFolders,
                     }));
                     setFiles(data.Files.filter((el: any) => (el.ListItemAllFields.Active && (el.ListItemAllFields.InternalStatus === "Published" || el.ListItemAllFields.AuthorId === props.userID))) || []);
                 }
-                data.Folders.length === 0 ? setExpandedNodes(expandedNodes.filter((name) => name !== nodeName)) : "";
+                sortedFolders.length === 0 ? setExpandedNodes(expandedNodes.filter((name) => name !== nodeName)) : "";
             } else {
                 console.error("Unexpected response format", data);
             }
@@ -152,6 +185,8 @@ export default function TreeView({ props }: any) {
             console.error("Error fetching folders:", error);
         }
     };
+
+
     const getAdmin = async () => {
         const data = await getListData(`${props.SiteURL}/_api/web/lists/getbytitle('DMS_GroupName')/items?`, props.context);
         setAdmin(data.value.map((el: any) => (el.GroupNameId)));
