@@ -9,6 +9,7 @@ import PopupBox, { ConfirmationDialog } from "../ResuableComponents/PopupBox";
 import { ILabel } from "../Interface/ILabel";
 import { DefaultButton } from "office-ui-fabric-react";
 import Select from "react-select";
+import { getUserIdFromLoginName } from "../../../../DAL/Commonfile";
 export interface IAdvanceProps {
     isOpen: boolean;
     dismissPanel: () => void;
@@ -18,7 +19,9 @@ export interface IAdvanceProps {
 }
 
 const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, context, folderId, LibraryName }) => {
-    const [option, setOption] = useState<string>("");
+  //  const [option, setOption] = useState<string>("");
+   // const [option, setOption] = useState<any>(null);
+   const [option, setOption] = useState<string | null>(null);
     const [hasUniquePermission, setHasUniquePermission] = useState<boolean>(false);
     const [userData, setUserData] = useState<any[]>([]);
     const [hideDialog, setHideDialog] = useState<boolean>(false);
@@ -27,10 +30,14 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
     const [message, setMessage] = useState<string>("");
     const [selectedUser, setSelectedUser] = useState<number[]>([]);
     const [selectedUserError, setSelectedUserError] = useState("");
+    
+const [peoplePickerKey, setPeoplePickerKey] = useState(0);
+
+   // const [peoplePickerKey, setpeoplePickerKey] = useState("");
     const [selectedPermissionError, setSelectedPermissionError] = useState("");
     const DisplayLabel: ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}');
     const [alertMsg, setAlertMsg] = useState("");
-
+const peoplePickerRef = React.useRef<any>(null);
     const peoplePickerContext: IPeoplePickerContext = {
         absoluteUrl: context.pageContext.web.absoluteUrl,
         msGraphClientFactory: context.msGraphClientFactory,
@@ -52,12 +59,14 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
 
     useEffect(() => {
         if (isOpen) bindPermission();
+       
     }, [isOpen]);
 
     const bindPermission = async () => {
         if (isOpen) {
             setIsCheckedUser([]);
             try {
+
                 const checkUniquePermissionQuery = `${context.pageContext.web.absoluteUrl}/_api/web/lists/getbytitle('${LibraryName}')/items(${folderId})/HasUniqueRoleAssignments`;
                 const getMemberQuery = `${context.pageContext.web.absoluteUrl}/_api/web/lists/getbytitle('${LibraryName}')/items(${folderId})/roleassignments?$expand=RoleDefinitionBindings,Member`;
 
@@ -66,10 +75,15 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
 
                 const memberDataResponse = await getPermission(getMemberQuery, context);
                 setUserData(memberDataResponse?.value || []);
+                setPeoplePickerKey(prev => prev + 1);
+                setOption(null);
+             
             } catch (error) {
                 console.error("Error binding permissions: ", error);
             }
         }
+        //  setSelectedUser([]);
+      //  setOption("null");
     };
 
     const handleSelectAllChange = () => {
@@ -91,8 +105,10 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
     const closeDialog = useCallback(() => setHideDialog(false), []);
 
     const handleConfirm = useCallback(
+       
         async (value: boolean) => {
             if (value) {
+                
                 setHideDialog(false);
                 const requestUri = `${context.pageContext.web.absoluteUrl}/_api/web/lists/getbytitle('${LibraryName}')/items(${folderId})/breakroleinheritance(true)`;
                 try {
@@ -126,6 +142,7 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
         }
     };
     const grantPermission = () => {
+        
         setSelectedPermissionError("");
         setSelectedUserError("");
         if (selectedUser.length === 0)
@@ -141,24 +158,37 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
                     count++;
                     if (count === selectedUser.length) setIsPopupBoxVisible(true);
                     // showAlert("Access has been successfully granted.");
+
                     bindPermission();
+                   
+          
+          
+   
+
+  // ✅ Clear picker visually
+
+       
                 });
             });
         }
+         setOption(null);
     };
 
 
-    const handelPeoplePicker = (items: any) => {
-        const ids: number[] = [];
-        items.map(async (el: any) => {
-            const userId = await getPermission(`${context.pageContext.web.absoluteUrl}/_api/web/siteusers?$filter=LoginName eq '${encodeURIComponent(el.id)}'`, context);
-            if (userId) {
-                ids.push(userId.value[0].Id);
-            }
-        });
-        setSelectedUser(ids);
-        console.log(ids);
-    };
+
+    // const handelPeoplePicker = (items: any) => {
+
+    //     const ids: number[] = [];
+    //     items.map(async (el: any) => {
+
+    //         const userId = await getPermission(`${context.pageContext.web.absoluteUrl}/_api/web/siteusers?$filter=LoginName eq '${encodeURIComponent(el.id )}'`, context);
+    //         if (userId) {
+    //             ids.push(userId.value[0].Id);
+    //          }
+    //      });
+    //      setSelectedUser(ids);
+    //      console.log(ids);
+    //  };
     const otions = [
         { value: "1073741829", label: DisplayLabel.FullControlAccess },
         // { value: "1073741828", label: DisplayLabel.DesignAccess },
@@ -182,7 +212,8 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
                     // setOption("");
                     if (!hideDialog && !isPopupBoxVisible) { // Prevent dismiss when dialog/popup is open
                         dismissPanel();
-                        setOption("");
+                        setOption(null);
+
                     }
                 }}
                 isBlocking={true} // This prevents clicking outside to close
@@ -214,6 +245,7 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
                                 onClick={() => {
                                     setMessage(DisplayLabel.StopInheritingConfirmMsg);
                                     setHideDialog(true);
+                                     dismissPanel();
                                 }}
                             />
                         </div>
@@ -241,16 +273,37 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
                             <label className={styles.Headerlabel}>{DisplayLabel?.EnterName}<span style={{ color: "red" }}>*</span></label>
 
                             <PeoplePicker
+                              key={peoplePickerKey}
                                 // titleText={DisplayLabel.EnterName}
                                 context={peoplePickerContext}
                                 personSelectionLimit={20}
                                 showtooltip={true}
                                 required={true}
                                 errorMessage={selectedUserError}
-                                onChange={handelPeoplePicker}
-                                showHiddenInUI={false}
+                              //  onChange={handelPeoplePicker}
+                              onChange={
+                                
+                                async (items) => {
+                                                                    try {
+                                                                        const userIds = await Promise.all(
+                                                                            items.map(async (item: any) => {
+                                                                                const data = await getUserIdFromLoginName(context, item.id);
+                                                                                return data.Id;
+                                                                            })
+                                                                        );
+                                                                          setSelectedUser(userIds);
+                                                                     //  handelPeoplePicker(userIds)
+                                                                       // setUsersIds((prev) => [...prev, ...userIds]);
+                                                                    } catch (error) {
+                                                                        console.error("Error fetching user IDs:", error);
+                                                                    }
+                                                                }}
+
+                               ref={peoplePickerRef.current?.clear()}
+                               // showHiddenInUI={false}
                                 principalTypes={[PrincipalType.User, PrincipalType.SharePointGroup, PrincipalType.SecurityGroup]}
                             />
+                             
                         </div>
                         <div className="col-md-6">
 
@@ -258,9 +311,15 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
                             <Select
                                 required
                                 options={otions}
-                                value={otions.find((item: any) => item.value === option)}
-                                onChange={(opt: any) => setOption(opt?.value as string)}
+                               // value={option}
+                               value={otions.find((item: any) => item.value === option)|| null}
+                                //  value={options.find((o) => o.value === dropdown2) || null}
+                                onChange={(opt: any) => setOption(opt?.value as string ?? null)}
+
+                              //  onChange={(opt: any) => setOption(opt?.value as string)}
+                            //  onChange={(opt: any) => setOption(opt?.value || null)}
                                 isSearchable
+                                 isClearable
                                 placeholder={DisplayLabel?.Selectanoption}
                                 style={{ margintop: "7px" }}
                             />
