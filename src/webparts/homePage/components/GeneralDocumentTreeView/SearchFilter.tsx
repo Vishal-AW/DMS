@@ -12,6 +12,7 @@ import { getDataByLibraryName } from "../../../../Services/MasTileService";
 //import { useNavigate } from "react-router-dom";
 import Select from 'react-select';
 import moment from "moment";
+//import { useNavigate } from "react-router-dom";
 export default function SearchFilter({ props }: any): JSX.Element {
 
     const libraryName: any = sessionStorage.getItem("LibName");
@@ -29,7 +30,7 @@ export default function SearchFilter({ props }: any): JSX.Element {
     const [searchData, setSearchData] = useState<any>([]);
     const [DynamicDataTable, setDynamicDataTable] = React.useState<boolean>(false);
     const [ContentSearch, setContentSearch] = useState("");
-
+//const navigate = useNavigate();
     useEffect(() => {
         let DisplayLabel: ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}');
         setDisplayLabel(DisplayLabel);
@@ -218,12 +219,24 @@ export default function SearchFilter({ props }: any): JSX.Element {
         });
     };
 
-    const Reset = () => {
-        setDynamicValues({});
-        setSearchData([]);
-        setDynamicDataTable(false);
-    };
+    // const Reset = () => {
+    //     // setDynamicValues({});
 
+    //     // setSearchData([]);
+    //     // setDynamicDataTable(false);
+    // };
+    
+   const Reset = () => {
+         setDynamicValues({});
+
+         setSearchData([]);
+         setDynamicDataTable(false);
+        
+            // navigate("/SearchFilter");
+                window.location.reload();    
+ 
+
+    };
 
     return (
         <div>
