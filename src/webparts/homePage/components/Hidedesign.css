@@ -923,3 +923,12 @@ a {
     color: #6c757d;
     /* optional */
 }
+
+/* Hide green default footer */
+#vpc_Page\.SiteFooter\.internal\.03025612-a400-4804-a78e-e1493200a43b {
+    display: none !important;
+}
+
+.simpleFooterContainer {
+    display: none !important;
+}

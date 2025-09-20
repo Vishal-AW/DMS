@@ -302,8 +302,15 @@ export default function FolderMaster({ props }: any): JSX.Element {
                 isValidForm = false;
             }
         }
+        // const isDuplicate = MainTableSetdata.some(
+        //     (Data) => Data.FolderName.toLowerCase() === FolderName.toLowerCase().trim() && Data.TemplateNameId === TemplatedropdownID.value
+        // );
+
         const isDuplicate = MainTableSetdata.some(
-            (Data) => Data.FolderName.toLowerCase() === FolderName.toLowerCase().trim() && Data.TemplateNameId === TemplatedropdownID.value
+            (Data) =>
+                Data.Id !== FolderCurrentEditID && // exclude the record being edited
+                Data.FolderName.toLowerCase().trim() === FolderName.toLowerCase().trim() &&
+                Data.TemplateNameId === TemplatedropdownID.value
         );
 
         if (isDuplicate && !isFolderEditMode) {

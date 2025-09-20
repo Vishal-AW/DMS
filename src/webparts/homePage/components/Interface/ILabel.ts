@@ -196,4 +196,6 @@ export interface ILabel {
     FileValidationForSize: string;
     FileAttachmentNote: string;
     FolderSpecialCharacterValidation: string;
+    ActionDate: string;
+
 }

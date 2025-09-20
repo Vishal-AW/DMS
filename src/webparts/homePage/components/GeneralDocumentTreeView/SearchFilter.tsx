@@ -30,7 +30,7 @@ export default function SearchFilter({ props }: any): JSX.Element {
     const [searchData, setSearchData] = useState<any>([]);
     const [DynamicDataTable, setDynamicDataTable] = React.useState<boolean>(false);
     const [ContentSearch, setContentSearch] = useState("");
-//const navigate = useNavigate();
+    //const navigate = useNavigate();
     useEffect(() => {
         let DisplayLabel: ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}');
         setDisplayLabel(DisplayLabel);
@@ -225,16 +225,16 @@ export default function SearchFilter({ props }: any): JSX.Element {
     //     // setSearchData([]);
     //     // setDynamicDataTable(false);
     // };
-    
-   const Reset = () => {
-         setDynamicValues({});
 
-         setSearchData([]);
-         setDynamicDataTable(false);
-        
-            // navigate("/SearchFilter");
-                window.location.reload();    
- 
+    const Reset = () => {
+        setDynamicValues({});
+
+        setSearchData([]);
+        setDynamicDataTable(false);
+
+        // navigate("/SearchFilter");
+        window.location.reload();
+
 
     };
 
