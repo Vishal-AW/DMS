@@ -458,15 +458,38 @@ export default function TreeView({ props }: any) {
         else if (action === "History") {
             setActionButton(null);
             const HistoryData = await getHistoryByID(props.SiteURL, props.spHttpClient, item._original.ListItemAllFields.Id, libName);
-            const bindData = HistoryData?.value.length > 0 ? HistoryData.value.map((el: any, index: number) =>
-                <tr><td>{index + 1}</td>
-                    <td>{el.Action}</td>
-                    <td> {el.Author.Title}</td>
-                    <td>
-                        {el.ActionDate ? moment(el.ActionDate).format("DD-MM-YYYY") : ""}
-                    </td>
-                    <td>{el.InternalComment}</td>
-                </tr>) : <tr><td>No Data</td></tr>;
+
+            // const bindData = HistoryData?.value.length > 0 ? HistoryData.value.map((el: any, index: number) =>
+            //     <tr><td>{index + 1}</td>
+            //         <td>{el.Action}</td>
+            //         <td> {el.Author.Title}</td>
+            //         <td>
+            //             {el.ActionDate ? moment(el.ActionDate).format("DD-MM-YYYY") : ""}
+            //         </td>
+            //         <td>{el.InternalComment}</td>
+            //     </tr>) : <tr><td>No Data</td></tr>;
+
+            const bindData =
+                HistoryData?.value.length > 0 ? (
+                    HistoryData.value
+                        // ✅ sort descending by ActionDate
+                        .sort((a: any, b: any) => {
+                            return new Date(b.ActionDate).getTime() - new Date(a.ActionDate).getTime();
+                        })
+                        .map((el: any, index: number) => (
+                            <tr key={index}>
+                                <td>{index + 1}</td>
+                                <td>{el.Action}</td>
+                                <td>{el.Author.Title}</td>
+                                <td>{el.ActionDate ? moment(el.ActionDate).format("DD-MM-YYYY") : ""}</td>
+                                <td>{el.InternalComment}</td>
+                            </tr>
+                        ))
+                ) : (
+                    <tr>
+                        <td colSpan={5}>No Data</td>
+                    </tr>
+                );
             setPanelForm(<table className="addoption" style={{ width: '100%', marginTop: '20px', borderCollapse: 'collapse' }}>
                 <thead>
                     <tr>

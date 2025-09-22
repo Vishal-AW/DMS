@@ -28,7 +28,7 @@ import PopupBox from "../ResuableComponents/PopupBox";
 import { breakRoleInheritanceForLib, grantPermissionsForLib } from "../../../../Services/FolderStructure";
 import { getListData } from "../../../../Services/GeneralDocument";
 import Select from "react-select";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 // import { wrap } from "lodash";
 
 
@@ -93,6 +93,7 @@ export default function Master({ props }: any): JSX.Element {
   const [permission, setPermission] = useState<any[]>([]);
   const [admin, setAdmin] = useState<any[]>([]);
 
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState<any>({
     field: null,
@@ -915,7 +916,7 @@ export default function Master({ props }: any): JSX.Element {
         inputRefs.current["Redundancy"]?.focus();
         isValidForm = false;
       }
-      if (ArchiveVersions === "" || ArchiveVersions === undefined || ArchiveVersions === null) {
+      else if (ArchiveVersions === "" || ArchiveVersions === undefined || ArchiveVersions === null) {
         setTileArchiveVersionErr(DisplayLabel?.ThisFieldisRequired as string);
         inputRefs.current["Archive"]?.focus();
         isValidForm = false;
@@ -1866,7 +1867,7 @@ export default function Master({ props }: any): JSX.Element {
                           //   flex: 1, // Make both sections take equal width
                           // }}
                           >
-                            <label className={styles.Headerlabel} style={{ display: 'block' }}>{DisplayLabel?.SelectArchiveDays}</label>
+                            <label className={styles.Headerlabel} style={{ display: 'block' }}>{DisplayLabel?.SelectArchiveDays}<span style={{ color: "red" }}>*</span></label>
 
                             <Select
                               options={RedundancyData}
@@ -1891,7 +1892,7 @@ export default function Master({ props }: any): JSX.Element {
                               // flex: 1,
                             }}
                           >
-                            <label className={styles.Headerlabel} style={{ display: 'block' }}>{DisplayLabel?.ArchiveVersions}</label>
+                            <label className={styles.Headerlabel} style={{ display: 'block' }}>{DisplayLabel?.ArchiveVersions}<span style={{ color: "red" }}>*</span></label>
                             <TextField
                               placeholder=" "
                               value={ArchiveVersions}
@@ -2088,70 +2089,183 @@ export default function Master({ props }: any): JSX.Element {
   }
 
 
+  //New Code
 
-
-
-  async function getDefaultView(IListItem: []) {
+  async function getDefaultView(IListItem: any[]) {
     console.log(IListItem);
     defaulttViewID = [];
-    for (let list = 0; list < IListItem.length; list++) {
 
-      const url = `${props.SiteURL}/_api/Web/Lists/getByTitle('${encodeURIComponent(IListItem[list]["ListName"])}')/views/getByTitle('${encodeURIComponent("All Documents")}')`;
+    const promises = IListItem.map(async (item) => {
+      const url = `${props.SiteURL}/_api/Web/Lists/getByTitle('${encodeURIComponent(item["ListName"])}')/views/getByTitle('${encodeURIComponent("All Documents")}')`;
 
-      await props.context.spHttpClient.get(url, SPHttpClient.configurations.v1,
-        {
-          headers: {
-            'Accept': 'application/json;odata=verbose',
-            'odata-version': ''
-          }
-        }).then((response: SPHttpClientResponse) => {
-          response.json().then((result: any) => {
-            console.log(result);
-            defaulttViewID.push(result["d"]["Id"]);
-            if (defaulttViewID.length === IListItem.length) {
-              addColumnOnView(IListItem, defaulttViewID);
-            }
-          });
-        });
-    }
+      const response = await props.context.spHttpClient.get(url, SPHttpClient.configurations.v1, {
+        headers: {
+          Accept: "application/json;odata=verbose",
+          "odata-version": "",
+        },
+      });
+
+      const result: any = await response.json();
+      return result?.d?.Id;
+    });
+
+    defaulttViewID = await Promise.all(promises);
+
+    await addColumnOnView(IListItem, defaulttViewID);
   }
 
-  async function addColumnOnView(IListItem: [], defaultView: []) {
-    let listCount = 0;
-    for (let listName = 0; listName < IListItem.length; listName++) {
-      listCount++;
-      let columnCount = 0;
-      // let Count = 0;
-      let ColumnsObj: any = IListItem[listName]["Columns"];
-      for (let colName = 0; colName < ColumnsObj.length; colName++) {
-        // Count++;
-        let obj = { 'strField': ColumnsObj[colName]["ColName"] };
-        var resURL = props.SiteURL + "/_api/web/lists/getbytitle('" + IListItem[listName]["ListName"] + "')/Views/getbyId('" + defaultView[listName] + "')/ViewFields/AddViewField";
+  async function addColumnOnView(IListItem: any[], defaultView: string[]) {
+    // Create all requests at once
+    const requests: Promise<any>[] = [];
 
-        await addDefaultViewColumn(resURL, obj).then((r: any) => {
-          columnCount++;
-          if (columnCount === ColumnsObj.length && listCount === IListItem.length) {
+    IListItem.forEach((item, listIndex) => {
+      const columns = item["Columns"];
+      const viewId = defaultView[listIndex];
 
-            fetchData();
-            setAlertMsg(DisplayLabel?.SubmitMsg || "");
-            setisPopupVisible(true);
-          }
-        });
-      }
-    }
+      columns.forEach((col: any) => {
+        const obj = { strField: col["ColName"] };
+        const resURL =
+          `${props.SiteURL}/_api/web/lists/getbytitle('${item["ListName"]}')/Views/getbyId('${viewId}')/ViewFields/AddViewField`;
+
+        requests.push(addDefaultViewColumn(resURL, obj));
+      });
+    });
+
+    // Run all requests in parallel
+    await Promise.all(requests);
+
+    // ✅ Once all requests done → update UI
+    setShowLoader({ display: "none" });
+    fetchData();
+    setIsPanelOpen(false);
+
+    setTimeout(() => {
+      setAlertMsg(DisplayLabel?.SubmitMsg || "");
+      setisPopupVisible(true);
+      navigate(`/Master`);
+    }, 2000);
   }
 
   async function addDefaultViewColumn(resURL: string, obj: any) {
-    return await props.context.spHttpClient.post(resURL, SPHttpClient.configurations.v1,
-      {
-        headers: {
-          'Accept': 'application/json;odata=nometadata',
-          'Content-type': 'application/json;odata=nometadata',
-          'odata-version': '',
-        },
-        body: JSON.stringify(obj)
-      });
+    return props.context.spHttpClient.post(resURL, SPHttpClient.configurations.v1, {
+      headers: {
+        Accept: "application/json;odata=nometadata",
+        "Content-type": "application/json;odata=nometadata",
+        "odata-version": "",
+      },
+      body: JSON.stringify(obj),
+    });
   }
+
+
+  //Original Code
+
+  // async function getDefaultView(IListItem: []) {
+  //   console.log(IListItem);
+  //   defaulttViewID = [];
+  //   for (let list = 0; list < IListItem.length; list++) {
+
+  //     const url = `${props.SiteURL}/_api/Web/Lists/getByTitle('${encodeURIComponent(IListItem[list]["ListName"])}')/views/getByTitle('${encodeURIComponent("All Documents")}')`;
+
+  //     await props.context.spHttpClient.get(url, SPHttpClient.configurations.v1,
+  //       {
+  //         headers: {
+  //           'Accept': 'application/json;odata=verbose',
+  //           'odata-version': ''
+  //         }
+  //       }).then((response: SPHttpClientResponse) => {
+  //         response.json().then((result: any) => {
+  //           console.log(result);
+  //           defaulttViewID.push(result["d"]["Id"]);
+  //           if (defaulttViewID.length === IListItem.length) {
+  //             addColumnOnView(IListItem, defaulttViewID);
+  //           }
+  //         });
+  //       });
+  //   }
+  // }
+
+  // async function addColumnOnView(IListItem: [], defaultView: []) {
+  //   let listCount = 0;
+  //   for (let listName = 0; listName < IListItem.length; listName++) {
+  //     listCount++;
+  //     let columnCount = 0;
+  //     // let Count = 0;
+  //     let ColumnsObj: any = IListItem[listName]["Columns"];
+  //     for (let colName = 0; colName < ColumnsObj.length; colName++) {
+  //       // Count++;
+  //       let obj = { 'strField': ColumnsObj[colName]["ColName"] };
+  //       var resURL = props.SiteURL + "/_api/web/lists/getbytitle('" + IListItem[listName]["ListName"] + "')/Views/getbyId('" + defaultView[listName] + "')/ViewFields/AddViewField";
+
+  //       await addDefaultViewColumn(resURL, obj).then((r: any) => {
+  //         columnCount++;
+  //         if (columnCount === ColumnsObj.length && listCount === IListItem.length) {
+
+  //           // setShowLoader({ display: "none" });
+  //           // fetchData();
+  //           // setIsPanelOpen(false);
+  //           // setAlertMsg(DisplayLabel?.SubmitMsg || "");
+  //           // setisPopupVisible(true);
+  //           setShowLoader({ display: "none" });
+  //           fetchData();
+  //           setIsPanelOpen(false);
+
+
+  //           // navigate after 2 seconds
+  //           setTimeout(() => {
+
+  //             setAlertMsg(DisplayLabel?.SubmitMsg || "");
+  //             setisPopupVisible(true);
+  //             navigate(`/Master`);
+  //           }, 2000);
+
+  //         }
+  //       });
+  //     }
+  //   }
+  // }
+
+  // async function addDefaultViewColumn(resURL: string, obj: any) {
+  //   return await props.context.spHttpClient.post(resURL, SPHttpClient.configurations.v1,
+  //     {
+  //       headers: {
+  //         'Accept': 'application/json;odata=nometadata',
+  //         'Content-type': 'application/json;odata=nometadata',
+  //         'odata-version': '',
+  //       },
+  //       body: JSON.stringify(obj)
+  //     });
+  // }
+
+  //Original
+
+  // async function addColumnOnView(IListItem: [], defaultView: []) {
+  //   let listCount = 0;
+  //   for (let listName = 0; listName < IListItem.length; listName++) {
+  //     listCount++;
+  //     let columnCount = 0;
+  //     // let Count = 0;
+  //     let ColumnsObj: any = IListItem[listName]["Columns"];
+  //     for (let colName = 0; colName < ColumnsObj.length; colName++) {
+  //       // Count++;
+  //       let obj = { 'strField': ColumnsObj[colName]["ColName"] };
+  //       var resURL = props.SiteURL + "/_api/web/lists/getbytitle('" + IListItem[listName]["ListName"] + "')/Views/getbyId('" + defaultView[listName] + "')/ViewFields/AddViewField";
+
+  //       await addDefaultViewColumn(resURL, obj).then((r: any) => {
+  //         columnCount++;
+  //         if (columnCount === ColumnsObj.length && listCount === IListItem.length) {
+
+  //           setShowLoader({ display: "none" });
+  //           fetchData();
+  //           setAlertMsg(DisplayLabel?.SubmitMsg || "");
+  //           setisPopupVisible(true);
+  //         }
+  //       });
+  //     }
+  //   }
+  // }
+
+
 }
 
 

@@ -96,6 +96,7 @@ export default function SearchFilter({ props }: any): JSX.Element {
                                 isSearchable
                                 placeholder={DisplayLabel?.Selectanoption}
                             />
+                            <br />
                         </div>
                     );
 
@@ -130,6 +131,7 @@ export default function SearchFilter({ props }: any): JSX.Element {
                                 }}
                             // errorMessage={dynamicValuesErr[item.InternalTitleName]}
                             />
+                            <br />
                         </div>
                     );
 
@@ -145,23 +147,47 @@ export default function SearchFilter({ props }: any): JSX.Element {
                                 onChange={(ev, option) => handleInputChange(item.InternalTitleName, option?.key)}
                                 selectedKey={dynamicValues[item.InternalTitleName] || ""}
                                 label={item.Title}
-                                required={item.IsRequired}
+                            //equired={item.IsRequired}
                             />
+                            <br />
                         </div>
                     );
 
                 default:
                     return (
                         <div className={styles.col6} key={index}>
-                            <TextField
+                            {/* <TextField
                                 type={item.ColumnType === "Date and Time" ? "date" : "text"}
                                 label={item.Title}
                                 value={dynamicValues[item.InternalTitleName] || ""}
                                 onChange={(ev, value) => handleInputChange(item.InternalTitleName, removeSepcialCharacters(value))}
                                 multiline={item.ColumnType === "Multiple lines of Text"}
-                                required={item.IsRequired}
+                            //required={item.IsRequired}
                             //errorMessage={dynamicValuesErr[item.InternalTitleName]}
+                            /> */}
+
+                            <label>{item.Title}</label>
+                            <TextField
+                                type={item.ColumnType === "Date and Time" ? "date" : "text"}
+                                //label={item.Title}
+                                value={
+                                    item.ColumnType === "Date and Time"
+                                        ? (dynamicValues[item.InternalTitleName]
+                                            ? new Date(dynamicValues[item.InternalTitleName]).toISOString().split("T")[0]  // format YYYY-MM-DD
+                                            : "")
+                                        : (dynamicValues[item.InternalTitleName] || "")
+                                }
+                                onChange={(ev, value) =>
+                                    handleInputChange(
+                                        item.InternalTitleName,
+                                        item.ColumnType === "Date and Time" ? value : removeSepcialCharacters(value)
+                                    )
+                                }
+                                multiline={item.ColumnType === "Multiple lines of Text"}
                             />
+                            <br />
+
+                            {/* <br /> */}
                         </div>
                     );
             }

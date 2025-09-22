@@ -76,10 +76,10 @@ const SearchComponent: React.FC<ISearchProps> = ({ context }) => {
                     </div>
                 ))}
             </div>
-           
+
         </div>
     );
-    
+
 
 };
 

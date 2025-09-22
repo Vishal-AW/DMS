@@ -25,8 +25,17 @@ export async function TileSendMail(context: WebPartContext, docinfo: any) {
     MailBody += "<br><b>Uploaded By:</b> " + docinfo.AuthorTitle;
     MailBody += "<br><b>Tile Name:</b> " + docinfo.TileName;
     MailBody += "<br><b>Document Path:</b> " + docinfo.FolderPath;
-    const actionBy = (docinfo.Status === "Rejected") ? "Rejected By" : "Approved By";
-    MailBody += `<br><b>${actionBy}:</b> ${context.pageContext.user.displayName}`;
+
+    // const actionBy = (docinfo.Status === "Rejected") ? "Rejected By" : "Approved By";
+    // MailBody += `<br><b>${actionBy}:</b> ${context.pageContext.user.displayName}`;
+
+
+    if (docinfo.Status != "PendingWithPM") {
+        const actionBy = (docinfo.Status === "Rejected") ? "Rejected By" : "Approved By";
+        MailBody += `<br><b>${actionBy}:</b> ${context.pageContext.user.displayName}`;
+    }
+
+
     MailBody += "<br>";
 
     const subject = docinfo.Sub;
