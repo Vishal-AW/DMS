@@ -2134,7 +2134,7 @@ export default function Master({ props }: any): JSX.Element {
     // Run all requests in parallel
     await Promise.all(requests);
 
-    // ✅ Once all requests done → update UI
+    // sOnce all requests done → update UI
     setShowLoader({ display: "none" });
     fetchData();
     setIsPanelOpen(false);

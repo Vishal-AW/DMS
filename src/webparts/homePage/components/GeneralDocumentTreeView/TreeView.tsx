@@ -472,16 +472,17 @@ export default function TreeView({ props }: any) {
             const bindData =
                 HistoryData?.value.length > 0 ? (
                     HistoryData.value
-                        // ✅ sort descending by ActionDate
+                        // ✅ sort ascending by ActionDate
                         .sort((a: any, b: any) => {
-                            return new Date(b.ActionDate).getTime() - new Date(a.ActionDate).getTime();
+                            return new Date(a.ActionDate).getTime() - new Date(b.ActionDate).getTime();
                         })
                         .map((el: any, index: number) => (
                             <tr key={index}>
                                 <td>{index + 1}</td>
                                 <td>{el.Action}</td>
                                 <td>{el.Author.Title}</td>
-                                <td>{el.ActionDate ? moment(el.ActionDate).format("DD-MM-YYYY") : ""}</td>
+                                {/* <td>{el.ActionDate ? moment(el.ActionDate).format("DD-MM-YYYY") : ""}</td> */}
+                                <td>{el.ActionDate ? moment(el.ActionDate).format("DD-MM-YYYY hh:mm:ss A") : ""}</td>
                                 <td>{el.InternalComment}</td>
                             </tr>
                         ))
@@ -616,16 +617,20 @@ export default function TreeView({ props }: any) {
             case 'pptx':
             case 'xls':
             case 'xlsx':
-            case 'pdf':
-                return <iframe src={`${props.SiteURL}/_layouts/15/WopiFrame.aspx?sourcedoc=${filePath}&action=interactivepreview`} style={{ width: "100%", height: "80vh" }}></iframe>;
+                // return <iframe src={`${props.SiteURL}/_layouts/15/WopiFrame.aspx?sourcedoc=${filePath}&action=interactivepreview`} style={{ width: "100%", height: "80vh" }}></iframe>;
+                return <iframe src={`${props.SiteURL}/_layouts/15/WopiFrame.aspx?sourcedoc=${filePath}&action=embedview`} style={{ width: "100%", height: "80vh" }}></iframe>;
+
             case 'txt':
                 return <iframe src={`${filePath}`} style={{ width: "100%", height: "80vh" }}></iframe>;
             case 'jpg':
             case 'jpeg':
             case 'png':
             case 'gif':
+
             case 'bmp':
                 return <img src={`${filePath}`} alt={DisplayLabel.Preview} />;
+            case 'pdf':
+                return <iframe src={`${filePath}`} style={{ width: "100%", height: "80vh" }}></iframe>;
         }
     };
     const renameTheFile = (id: number) => {
