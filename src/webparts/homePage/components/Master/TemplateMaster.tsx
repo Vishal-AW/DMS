@@ -24,6 +24,7 @@ export default function TemplateMaster({ props }: any): JSX.Element {
     const [TemplateCurrentEditID, setTemplateCurrentEditID] = useState<number>(0);
     const [isPopupVisible, setisPopupVisible] = useState(false);
     const [alertMsg, setAlertMsg] = useState("");
+    const [searchText, setSearchText] = useState<string>("");
 
     useEffect(() => {
         let DisplayLabel: ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}');
@@ -218,6 +219,19 @@ export default function TemplateMaster({ props }: any): JSX.Element {
     };
 
 
+    //SearchData
+    const FilterMainTableSetdata = MainTableSetdata.filter((items) => {
+        const terms = searchText.toLowerCase().split(' ').filter(Boolean);
+
+        const searchableString = [
+            items.Name,
+            items.Active ? "Yes" : "No",
+        ]
+            .map(val => (val ? String(val).toLowerCase() : ''))
+            .join(' ');
+
+        return terms.every(term => searchableString.includes(String(term).toLowerCase()));
+    });
 
 
 
@@ -251,14 +265,37 @@ export default function TemplateMaster({ props }: any): JSX.Element {
 
             <Stack horizontal styles={stackStyles} tokens={stackTokens}>
                 <Stack.Item grow={2} styles={stackItemStyles}>
+
+
+                    <div style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                        float: "right",
+                        paddingTop: "20px",
+                        paddingRight: "10px",
+                        paddingBottom: "20px"
+                    }}>
+                        <TextField
+                            placeholder="Search..."
+                            value={searchText}
+                            onChange={(_, val) => setSearchText(val || "")}
+                            styles={{ root: { width: 300 } }}
+                        />
+                    </div>
+                    <br>
+                    </br>
+                    <br>
+                    </br>
                     <ReactTableComponent
                         TableClassName={styles.ReactTables}
                         Tablecolumns={TemplateTablecolumns}
-                        Tabledata={MainTableSetdata}
+                        // Tabledata={MainTableSetdata}
+                        Tabledata={FilterMainTableSetdata}
                         PagedefaultSize={10}
                         TableRows={1}
                         TableshowPagination={MainTableSetdata.length > 10}
-                        TableshowFilter={true}
+                    // TableshowFilter={true}
                     />
                 </Stack.Item>
             </Stack>

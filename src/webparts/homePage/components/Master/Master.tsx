@@ -92,6 +92,7 @@ export default function Master({ props }: any): JSX.Element {
   const [tableData, setTableData] = useState<any[]>([]);
   const [permission, setPermission] = useState<any[]>([]);
   const [admin, setAdmin] = useState<any[]>([]);
+  const [searchText, setSearchText] = useState<string>("");
 
   const navigate = useNavigate();
 
@@ -1294,11 +1295,50 @@ export default function Master({ props }: any): JSX.Element {
       setShowLoader({ display: "none" });
     }
 
-
-
-
-
   };
+
+
+  const FilterMainTableSetdata = MainTableSetdata.filter((items) => {
+    const terms = searchText.toLowerCase().split(' ').filter(Boolean);
+
+    // Build date string if available
+    const date = items.Created ? new Date(items.Created) : null;
+    let formattedDate = "";
+    if (date) {
+      const day = ("0" + date.getDate()).slice(-2);
+      const month = ("0" + (date.getMonth() + 1)).slice(-2);
+      const year = date.getFullYear();
+
+      // Time parts
+      let hours = date.getHours();
+      const minutes = ("0" + date.getMinutes()).slice(-2);
+      const ampm = hours >= 12 ? "PM" : "AM";
+      hours = hours % 12;
+      hours = hours ? hours : 12; // 0 => 12
+
+      formattedDate = `${day}/${month}/${year} at ${hours}:${minutes} ${ampm}`;
+    }
+
+    const searchableString = [
+      items.TileName,
+      items.Editor?.Title,
+      items.AllowApprover ? "Yes" : "No",
+      items.Active ? "Yes" : "No",
+
+      formattedDate,
+      // fallback variations
+      formattedDate.replace(/\//g, "-"),
+      formattedDate.replace(" at ", " "),
+    ]
+      .map(val => (val ? String(val).toLowerCase() : ''))
+      .join(' ');
+
+    return terms.every(term => searchableString.includes(String(term).toLowerCase()));
+  });
+
+
+
+
 
   let ListGuid: any = [];
   let defaulttViewID: any;
@@ -1342,14 +1382,35 @@ export default function Master({ props }: any): JSX.Element {
 
         <Stack horizontal styles={stackStyles} tokens={stackTokens}>
           <Stack.Item grow={2} styles={stackItemStyles}>
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              float: "right",
+              paddingTop: "20px",
+              paddingRight: "10px",
+              paddingBottom: "20px"
+            }}>
+              <TextField
+                placeholder="Search..."
+                value={searchText}
+                onChange={(_, val) => setSearchText(val || "")}
+                styles={{ root: { width: 300 } }}
+              />
+            </div>
+            <br>
+            </br>
+            <br>
+            </br>
             <ReactTableComponent
               TableClassName={styles.ReactTables}
               Tablecolumns={Tablecolumns}
-              Tabledata={MainTableSetdata}
+              //Tabledata={MainTableSetdata}
+              Tabledata={FilterMainTableSetdata}
               PagedefaultSize={10}
               TableRows={1}
               TableshowPagination={MainTableSetdata.length > 10}
-              TableshowFilter
+            // TableshowFilter
             />
           </Stack.Item>
         </Stack>
