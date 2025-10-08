@@ -104,63 +104,63 @@ const breakRoleInheritance = async (context: WebPartContext, folderUrl: string, 
 const grantPermissions = async (context: WebPartContext, folderUrl: string, userIds: any[]) => {
     try {
         for (const userId of userIds) {
-           if(userId.type==="FolderAccess"){
-            const permissionUrl = `${context.pageContext.web.absoluteUrl}/_api/web/GetFolderByServerRelativeUrl('${folderUrl}')/ListItemAllFields/roleassignments/addroleassignment(principalid=${userId.id},roleDefId=1073741827)`;
-            const response = await context.spHttpClient.post(
-                permissionUrl,
-                SPHttpClient.configurations.v1,
-                {
-                    headers: {
-                        Accept: 'application/json;odata=verbose',
-                        'Content-Type': 'application/json;odata=verbose',
-                    },
-                }
-            );
+            if (userId.type === "FolderAccess") {
+                const permissionUrl = `${context.pageContext.web.absoluteUrl}/_api/web/GetFolderByServerRelativeUrl('${folderUrl}')/ListItemAllFields/roleassignments/addroleassignment(principalid=${userId.id},roleDefId=1073741827)`;
+                const response = await context.spHttpClient.post(
+                    permissionUrl,
+                    SPHttpClient.configurations.v1,
+                    {
+                        headers: {
+                            Accept: 'application/json;odata=verbose',
+                            'Content-Type': 'application/json;odata=verbose',
+                        },
+                    }
+                );
 
-            if (!response.ok) {
-                console.error('Failed to grant permission for user ID:', userId);
-            }
-        }
-        else if(userId.type==="Admin" || userId.type==="TileAdmin"){
-             const permissionUrl = `${context.pageContext.web.absoluteUrl}/_api/web/GetFolderByServerRelativeUrl('${folderUrl}')/ListItemAllFields/roleassignments/addroleassignment(principalid=${userId.id},roleDefId=1073741829)`;
-            const response = await context.spHttpClient.post(
-                permissionUrl,
-                SPHttpClient.configurations.v1,
-                {
-                    headers: {
-                        Accept: 'application/json;odata=verbose',
-                        'Content-Type': 'application/json;odata=verbose',
-                    },
+                if (!response.ok) {
+                    console.error('Failed to grant permission for user ID:', userId);
                 }
-            );
-
-            if (!response.ok) {
-                console.error('Failed to grant permission for user ID:', userId);
             }
-            else{
-               
-             const permissionUrl = `${context.pageContext.web.absoluteUrl}/_api/web/GetFolderByServerRelativeUrl('${folderUrl}')/ListItemAllFields/roleassignments/addroleassignment(principalid=${userId},roleDefId=1073741827)`;
-            const response = await context.spHttpClient.post(
-                permissionUrl,
-                SPHttpClient.configurations.v1,
-                {
-                    headers: {
-                        Accept: 'application/json;odata=verbose',
-                        'Content-Type': 'application/json;odata=verbose',
-                    },
+            else if (userId.type === "Admin" || userId.type === "TileAdmin") {
+                const permissionUrl = `${context.pageContext.web.absoluteUrl}/_api/web/GetFolderByServerRelativeUrl('${folderUrl}')/ListItemAllFields/roleassignments/addroleassignment(principalid=${userId.id},roleDefId=1073741829)`;
+                const response = await context.spHttpClient.post(
+                    permissionUrl,
+                    SPHttpClient.configurations.v1,
+                    {
+                        headers: {
+                            Accept: 'application/json;odata=verbose',
+                            'Content-Type': 'application/json;odata=verbose',
+                        },
+                    }
+                );
+
+                if (!response.ok) {
+                    console.error('Failed to grant permission for user ID:', userId);
                 }
-            );
+                else {
 
-            if (!response.ok) {
-                console.error('Failed to grant permission for user ID:', userId);
+                    const permissionUrl = `${context.pageContext.web.absoluteUrl}/_api/web/GetFolderByServerRelativeUrl('${folderUrl}')/ListItemAllFields/roleassignments/addroleassignment(principalid=${userId},roleDefId=1073741827)`;
+                    const response = await context.spHttpClient.post(
+                        permissionUrl,
+                        SPHttpClient.configurations.v1,
+                        {
+                            headers: {
+                                Accept: 'application/json;odata=verbose',
+                                'Content-Type': 'application/json;odata=verbose',
+                            },
+                        }
+                    );
+
+                    if (!response.ok) {
+                        console.error('Failed to grant permission for user ID:', userId);
+                    }
+                }
             }
-            }
-        }
         }
     } catch (error) {
         console.error(error);
     }
-};const removeAllPermissions = async (context: WebPartContext, folderUrl: string, userIds: any[]) => {
+}; const removeAllPermissions = async (context: WebPartContext, folderUrl: string, userIds: any[]) => {
     const roleAssignmentsUrl = `${context.pageContext.web.absoluteUrl}/_api/web/GetFolderByServerRelativeUrl('${folderUrl}')/ListItemAllFields/roleassignments`;
 
     try {
@@ -185,12 +185,12 @@ const grantPermissions = async (context: WebPartContext, folderUrl: string, user
 
         // Filter only the roles where PrincipalId is in the userIds array
         //const rolesToRemove = roleAssignments.filter((role: any) => userIds.id.includes(role.PrincipalId));
-const userIds1 = (userIds as any[]).map(role => role.id);
-const filtered = valuedata.filter(
-                        (role: any) => !userIds1.includes(role.PrincipalId)
-                    );
+        const userIds1 = (userIds as any[]).map(role => role.id);
+        const filtered = valuedata.filter(
+            (role: any) => !userIds1.includes(role.PrincipalId)
+        );
 
-                    console.log(filtered);
+        console.log(filtered);
         for (const role of filtered) {
             const deleteUrl = `${roleAssignmentsUrl}/removeroleassignment(principalid=${role.PrincipalId})`;
 

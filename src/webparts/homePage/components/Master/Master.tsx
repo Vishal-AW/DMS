@@ -4,13 +4,23 @@ import * as moment from "moment";
 import styles from '../Master/Master.module.scss';
 import cls from '../HomePage.module.scss';
 
+// import {
+//   DefaultButton, Panel, PanelType, TextField, Toggle, Dropdown, Checkbox, ChoiceGroup,
+//   // IIconProps,
+//   // IconButton,
+//   FontIcon,
+// } from 'office-ui-fabric-react';
+// import { PeoplePicker, PrincipalType, IPeoplePickerContext } from "@pnp/spfx-controls-react/lib/PeoplePicker";
+
+
 import {
-  DefaultButton, Panel, PanelType, TextField, Toggle, Dropdown, Checkbox, ChoiceGroup,
-  // IIconProps,
-  // IconButton,
+  TextField, Toggle, Dropdown, Checkbox, ChoiceGroup,
   FontIcon,
 } from 'office-ui-fabric-react';
+import { Panel, PanelType, DefaultButton } from '@fluentui/react';
 import { PeoplePicker, PrincipalType, IPeoplePickerContext } from "@pnp/spfx-controls-react/lib/PeoplePicker";
+
+
 import ReactTableComponent from '../ResuableComponents/ReusableDataTable';
 import { IStackItemStyles, IStackStyles, IStackTokens, Stack } from 'office-ui-fabric-react';
 import { getDataById, getTileAllData, SaveTileSetting, UpdateTileSetting } from "../../../../Services/MasTileService";
@@ -632,7 +642,7 @@ export default function Master({ props }: any): JSX.Element {
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-
+    setAttachmentErr("");
     const file = event.target.files?.[0];
 
     if (file) {
@@ -652,30 +662,71 @@ export default function Master({ props }: any): JSX.Element {
 
 
 
-  const onPeoplePickerChange = (items: any[]) => {
+  // const onPeoplePickerChange = (items: any[]) => {
 
-    setSelectedUsers(items);
+  //   setSelectedUsers(items);
+
+  //   console.log("Users to process:", selectedUsers);
+  //   const Users: any = items.map((item: any) => item.id);
+  //   const Emails: any = items.map((item: any) => item.secondaryText);
+  //   setAssignID(Users);
+  //   setAssignEmail(Emails);
+
+  // };
+
+  const onPeoplePickerChange = (items: any[]) => {
+    setAccessTileUserErr("");
+    setAccessTileUserErr("");
+    const users = items || [];
+    setSelectedUsers(users);
 
     console.log("Users to process:", selectedUsers);
+
     const Users: any = items.map((item: any) => item.id);
     const Emails: any = items.map((item: any) => item.secondaryText);
     setAssignID(Users);
     setAssignEmail(Emails);
+    console.log("Users to process:", assignID);
 
   };
 
+  //Original Code 7 October
+  // const onTilePeoplePickerChange = (items: any[]) => {
+  //   setTileAdminUserErr("");
+  //   //console.log("Selected users:", items);
+  //   setTileAdminSelectedUsers(items);
+  //   console.log("Users to process:", TileAdminselectedUsers);
+  //   let TileUsers = Array.prototype.map.call(items, (item: any) => {
+  //     return item.id;
+  //   });
+
+  //   if (items.length > 0) {
+  //     setTileAdminName(items[0].text);
+  //     setTileAdminID(TileUsers);
+  //   } else {
+  //     setTileAdminName("");
+  //     setTileAdminID([]);
+
+  //     console.log(TileAdminName);
+  //     console.log(TileAdminID);
+  //   }
+  // };
 
   const onTilePeoplePickerChange = (items: any[]) => {
     //console.log("Selected users:", items);
     setTileAdminSelectedUsers(items);
+
     console.log("Users to process:", TileAdminselectedUsers);
-    let TileUsers = Array.prototype.map.call(items, (item: any) => {
-      return item.id;
-    });
+    // let TileUsers = Array.prototype.map.call(items, (item: any) => {
+    //   return item.id;
+    // });
+
+    const Emails: any = items.map((item: any) => item.secondaryText);
 
     if (items.length > 0) {
+      // setTileAdminName(items[0]);
       setTileAdminName(items[0].text);
-      setTileAdminID(TileUsers);
+      setTileAdminID(Emails);
     } else {
       setTileAdminName("");
       setTileAdminID([]);
@@ -685,10 +736,16 @@ export default function Master({ props }: any): JSX.Element {
     }
   };
 
+  // const peoplePickerContext: IPeoplePickerContext = {
+  //   absoluteUrl: props.context.pageContext.web.absoluteUrl,
+  //   msGraphClientFactory: props.context.msGraphClientFactory,
+  //   spHttpClient: props.context.spHttpClient
+  // };
+
   const peoplePickerContext: IPeoplePickerContext = {
     absoluteUrl: props.context.pageContext.web.absoluteUrl,
-    msGraphClientFactory: props.context.msGraphClientFactory,
-    spHttpClient: props.context.spHttpClient
+    msGraphClientFactory: (null as any), // If your SPFx version doesn't support msGraphClientFactory
+    spHttpClient: (props.context as any).spHttpClient // cast to any
   };
 
 
@@ -926,9 +983,6 @@ export default function Master({ props }: any): JSX.Element {
 
     return isValidForm;
   };
-
-
-
 
 
 
@@ -1302,7 +1356,7 @@ export default function Master({ props }: any): JSX.Element {
     const terms = searchText.toLowerCase().split(' ').filter(Boolean);
 
     // Build date string if available
-    const date = items.Created ? new Date(items.Created) : null;
+    const date = items.Modified ? new Date(items.Modified) : null;
     let formattedDate = "";
     if (date) {
       const day = ("0" + date.getDate()).slice(-2);
@@ -1437,13 +1491,27 @@ export default function Master({ props }: any): JSX.Element {
                     <div className="column4">
                       <div className="form-group">
                         <label className={styles.Headerlabel}>{DisplayLabel?.TileName}<span style={{ color: "red" }}>*</span></label>
-                        <TextField
+                        {/* <TextField
                           placeholder="Enter Tile Name"
                           errorMessage={TileError}
                           value={TileName}
                           onChange={(el: React.ChangeEvent<HTMLInputElement>) => setTileName(el.target.value)}
                           componentRef={(input: any) => (inputRefs.current["TileName"] = input)}
+                        /> */}
+
+
+                        <TextField
+                          placeholder="Enter Tile Name"
+                          errorMessage={TileError}
+                          value={TileName}
+                          onChange={(el: React.ChangeEvent<HTMLInputElement>) => {
+                            setTileName(el.target.value);
+                            setTileErr("");
+                          }}
+                          componentRef={(input: any) => (inputRefs.current["TileName"] = input)}
                         />
+
+
                       </div>
                     </div>
                     <div className="column4">

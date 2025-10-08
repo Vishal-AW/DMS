@@ -19,9 +19,9 @@ export interface IAdvanceProps {
 }
 
 const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, context, folderId, LibraryName }) => {
-  //  const [option, setOption] = useState<string>("");
-   // const [option, setOption] = useState<any>(null);
-   const [option, setOption] = useState<string | null>(null);
+    //  const [option, setOption] = useState<string>("");
+    // const [option, setOption] = useState<any>(null);
+    const [option, setOption] = useState<string | null>(null);
     const [hasUniquePermission, setHasUniquePermission] = useState<boolean>(false);
     const [userData, setUserData] = useState<any[]>([]);
     const [hideDialog, setHideDialog] = useState<boolean>(false);
@@ -30,14 +30,14 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
     const [message, setMessage] = useState<string>("");
     const [selectedUser, setSelectedUser] = useState<number[]>([]);
     const [selectedUserError, setSelectedUserError] = useState("");
-    
-const [peoplePickerKey, setPeoplePickerKey] = useState(0);
 
-   // const [peoplePickerKey, setpeoplePickerKey] = useState("");
+    const [peoplePickerKey, setPeoplePickerKey] = useState(0);
+
+    // const [peoplePickerKey, setpeoplePickerKey] = useState("");
     const [selectedPermissionError, setSelectedPermissionError] = useState("");
     const DisplayLabel: ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}');
     const [alertMsg, setAlertMsg] = useState("");
-const peoplePickerRef = React.useRef<any>(null);
+    const peoplePickerRef = React.useRef<any>(null);
     const peoplePickerContext: IPeoplePickerContext = {
         absoluteUrl: context.pageContext.web.absoluteUrl,
         msGraphClientFactory: context.msGraphClientFactory,
@@ -59,7 +59,7 @@ const peoplePickerRef = React.useRef<any>(null);
 
     useEffect(() => {
         if (isOpen) bindPermission();
-       
+
     }, [isOpen]);
 
     const bindPermission = async () => {
@@ -77,13 +77,13 @@ const peoplePickerRef = React.useRef<any>(null);
                 setUserData(memberDataResponse?.value || []);
                 setPeoplePickerKey(prev => prev + 1);
                 setOption(null);
-             
+
             } catch (error) {
                 console.error("Error binding permissions: ", error);
             }
         }
         //  setSelectedUser([]);
-      //  setOption("null");
+        //  setOption("null");
     };
 
     const handleSelectAllChange = () => {
@@ -105,10 +105,10 @@ const peoplePickerRef = React.useRef<any>(null);
     const closeDialog = useCallback(() => setHideDialog(false), []);
 
     const handleConfirm = useCallback(
-       
+
         async (value: boolean) => {
             if (value) {
-                
+
                 setHideDialog(false);
                 const requestUri = `${context.pageContext.web.absoluteUrl}/_api/web/lists/getbytitle('${LibraryName}')/items(${folderId})/breakroleinheritance(true)`;
                 try {
@@ -142,7 +142,7 @@ const peoplePickerRef = React.useRef<any>(null);
         }
     };
     const grantPermission = () => {
-        
+
         setSelectedPermissionError("");
         setSelectedUserError("");
         if (selectedUser.length === 0)
@@ -160,18 +160,18 @@ const peoplePickerRef = React.useRef<any>(null);
                     // showAlert("Access has been successfully granted.");
 
                     bindPermission();
-                   
-          
-          
-   
 
-  // ✅ Clear picker visually
 
-       
+
+
+
+                    // ✅ Clear picker visually
+
+
                 });
             });
         }
-         setOption(null);
+        setOption(null);
     };
 
 
@@ -245,7 +245,7 @@ const peoplePickerRef = React.useRef<any>(null);
                                 onClick={() => {
                                     setMessage(DisplayLabel.StopInheritingConfirmMsg);
                                     setHideDialog(true);
-                                     dismissPanel();
+                                    dismissPanel();
                                 }}
                             />
                         </div>
@@ -273,37 +273,37 @@ const peoplePickerRef = React.useRef<any>(null);
                             <label className={styles.Headerlabel}>{DisplayLabel?.EnterName}<span style={{ color: "red" }}>*</span></label>
 
                             <PeoplePicker
-                              key={peoplePickerKey}
+                                key={peoplePickerKey}
                                 // titleText={DisplayLabel.EnterName}
                                 context={peoplePickerContext}
                                 personSelectionLimit={20}
                                 showtooltip={true}
                                 required={true}
                                 errorMessage={selectedUserError}
-                              //  onChange={handelPeoplePicker}
-                              onChange={
-                                
-                                async (items) => {
-                                                                    try {
-                                                                        const userIds = await Promise.all(
-                                                                            items.map(async (item: any) => {
-                                                                                const data = await getUserIdFromLoginName(context, item.id);
-                                                                                return data.Id;
-                                                                            })
-                                                                        );
-                                                                          setSelectedUser(userIds);
-                                                                     //  handelPeoplePicker(userIds)
-                                                                       // setUsersIds((prev) => [...prev, ...userIds]);
-                                                                    } catch (error) {
-                                                                        console.error("Error fetching user IDs:", error);
-                                                                    }
-                                                                }}
+                                //  onChange={handelPeoplePicker}
+                                onChange={
 
-                               ref={peoplePickerRef.current?.clear()}
-                               // showHiddenInUI={false}
+                                    async (items) => {
+                                        try {
+                                            const userIds = await Promise.all(
+                                                items.map(async (item: any) => {
+                                                    const data = await getUserIdFromLoginName(context, item.id);
+                                                    return data.Id;
+                                                })
+                                            );
+                                            setSelectedUser(userIds);
+                                            //  handelPeoplePicker(userIds)
+                                            // setUsersIds((prev) => [...prev, ...userIds]);
+                                        } catch (error) {
+                                            console.error("Error fetching user IDs:", error);
+                                        }
+                                    }}
+
+                                ref={peoplePickerRef.current?.clear()}
+                                // showHiddenInUI={false}
                                 principalTypes={[PrincipalType.User, PrincipalType.SharePointGroup, PrincipalType.SecurityGroup]}
                             />
-                             
+
                         </div>
                         <div className="col-md-6">
 
@@ -311,15 +311,15 @@ const peoplePickerRef = React.useRef<any>(null);
                             <Select
                                 required
                                 options={otions}
-                               // value={option}
-                               value={otions.find((item: any) => item.value === option)|| null}
+                                // value={option}
+                                value={otions.find((item: any) => item.value === option) || null}
                                 //  value={options.find((o) => o.value === dropdown2) || null}
                                 onChange={(opt: any) => setOption(opt?.value as string ?? null)}
 
-                              //  onChange={(opt: any) => setOption(opt?.value as string)}
-                            //  onChange={(opt: any) => setOption(opt?.value || null)}
+                                //  onChange={(opt: any) => setOption(opt?.value as string)}
+                                //  onChange={(opt: any) => setOption(opt?.value || null)}
                                 isSearchable
-                                 isClearable
+                                isClearable
                                 placeholder={DisplayLabel?.Selectanoption}
                                 style={{ margintop: "7px" }}
                             />

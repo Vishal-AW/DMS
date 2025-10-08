@@ -451,50 +451,50 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
     //         folders.Folders.map((folder: any) => { updateFolderMetaData(folder.ListItemAllFields.Id); });
     //     }
     // };
- const createFolder = async () => {
+    const createFolder = async () => {
         setShowLoader({ display: "block" });
         if (FormType === "EntryForm") {
-// const users = [...folderAccess, ...usersIds, ...publisher, ...approver, ...admin, LibraryDetails.TileAdminId];
+            // const users = [...folderAccess, ...usersIds, ...publisher, ...approver, ...admin, LibraryDetails.TileAdminId];
 
-//const users = [...folderAccess, ...usersIds, ...publisher, ...approver, ...admin, LibraryDetails.TileAdminId];
+            //const users = [...folderAccess, ...usersIds, ...publisher, ...approver, ...admin, LibraryDetails.TileAdminId];
 
-// const users = [
-//   ...folderAccess.map(id => ({ id, type: 'FolderAccess' })),
- 
-//   ...usersIds,
-//   ...publisher,
-//     ...approver,
-//   ...admin.map((id:any)=> ({ id, type: 'Admin' })),
-//   ...(LibraryDetails.TileAdminId
-//     ? [{ id: LibraryDetails.TileAdminId, type: 'TileAdmin' }]
-//     : []),
-// ];
-const users = [
-  ...folderAccess.map(id => ({ id, type: 'FolderAccess' })),
-  
-  // Ensure all user IDs are properly handled
-  ...usersIds.map(id => ({ id, type: 'User' })), 
-  
-  // Publisher with a default 'Publisher' type
-  ...publisher.map(id => ({ id, type: 'Publisher' })),
-  
-  // Approver with a default 'Approver' type
-  ...approver.map(id => ({ id, type: 'Approver' })),
-  
-  // Admin users with 'Admin' type
-  ...admin.map((id: any) => ({ id, type: 'Admin' })),
-  
-  // Conditional TileAdminId with 'TileAdmin' type if it exists
-  ...(LibraryDetails.TileAdminId
-    ? [{ id: LibraryDetails.TileAdminId, type: 'TileAdmin' }]
-    : []),
-];
+            // const users = [
+            //   ...folderAccess.map(id => ({ id, type: 'FolderAccess' })),
+
+            //   ...usersIds,
+            //   ...publisher,
+            //     ...approver,
+            //   ...admin.map((id:any)=> ({ id, type: 'Admin' })),
+            //   ...(LibraryDetails.TileAdminId
+            //     ? [{ id: LibraryDetails.TileAdminId, type: 'TileAdmin' }]
+            //     : []),
+            // ];
+            const users = [
+                ...folderAccess.map(id => ({ id, type: 'FolderAccess' })),
+
+                // Ensure all user IDs are properly handled
+                ...usersIds.map(id => ({ id, type: 'User' })),
+
+                // Publisher with a default 'Publisher' type
+                ...publisher.map(id => ({ id, type: 'Publisher' })),
+
+                // Approver with a default 'Approver' type
+                ...approver.map(id => ({ id, type: 'Approver' })),
+
+                // Admin users with 'Admin' type
+                ...admin.map((id: any) => ({ id, type: 'Admin' })),
+
+                // Conditional TileAdminId with 'TileAdmin' type if it exists
+                ...(LibraryDetails.TileAdminId
+                    ? [{ id: LibraryDetails.TileAdminId, type: 'TileAdmin' }]
+                    : []),
+            ];
 
 
 
-console.log(users);
+            console.log(users);
 
-          FolderStructure(context, `${LibraryDetails.LibraryName}/${folderName}`, users, LibraryDetails.LibraryName).then(async (response) => {
+            FolderStructure(context, `${LibraryDetails.LibraryName}/${folderName}`, users, LibraryDetails.LibraryName).then(async (response) => {
                 console.log(response);
                 await updateFolderMetaData(response);
                 if (createStructure) {
