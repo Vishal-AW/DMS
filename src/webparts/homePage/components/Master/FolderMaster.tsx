@@ -499,6 +499,7 @@ export default function FolderMaster({ props }: any): JSX.Element {
                                 onChange={(el: React.ChangeEvent<HTMLInputElement>) => SetFolderName(el.target.value)}
                                 errorMessage={FolderNameErr}
                                 placeholder={DisplayLabel?.EnterFolderName}
+
                             />
                         </div>
                     </div>

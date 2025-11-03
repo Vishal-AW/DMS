@@ -391,6 +391,17 @@ export default function TreeView({ props }: any) {
                 onClick: () => commonFunction("DiscardCheckOut", item),
             });
         }
+        if (libDetails.TileAdminId === props.userID || isValidUser) {
+            menuItems.push({
+                key: 'share',
+                text: DisplayLabel.Share,
+                onClick: () => {
+                    setShareURL(`${props.SiteURL}/_layouts/15/sharedialog.aspx?listId=${libDetails.LibGuidName}&listItemId=${item._original.ListItemAllFields.Id}&clientId=sharePoint&policyTip=0&folderColor=undefined&ma=0&fullScreenMode=true&itemName=${item._original.ListItemAllFields.ActualName}&origin=${portalUrl}`);
+                    setIFrameDialogOpened(true);
+                }
+            });
+        }
+
         if (isValidUser || libDetails.TileAdminId === props.userID) {
             menuItems.push({
                 key: 'advancePermission',

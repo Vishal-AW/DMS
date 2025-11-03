@@ -1508,6 +1508,7 @@ export default function Master({ props }: any): JSX.Element {
                             setTileName(el.target.value);
                             setTileErr("");
                           }}
+                          disabled={isEditMode ? true : false}
                           componentRef={(input: any) => (inputRefs.current["TileName"] = input)}
                         />
 

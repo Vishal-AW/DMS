@@ -29,6 +29,8 @@ import Select from 'react-select';
 import { getTemplateActive } from "../../../../Services/TemplateService";
 import { getActiveFolder } from "../../../../Services/FolderMasterService";
 import moment from "moment";
+import { SPHttpClient, SPHttpClientResponse } from "@microsoft/sp-http";
+
 
 export interface IProjectEntryProps {
     isOpen: boolean;
@@ -451,6 +453,64 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
     //         folders.Folders.map((folder: any) => { updateFolderMetaData(folder.ListItemAllFields.Id); });
     //     }
     // };
+
+
+
+    const renameFolderById = async (
+        context: any,
+        libraryName: string,
+        itemId: number,
+        newFolderName: string
+    ) => {
+        try {
+            const siteUrl = context.pageContext.web.absoluteUrl;
+
+            const getItemUrl = `${siteUrl}/_api/web/lists/getbytitle('${libraryName}')/items(${itemId})?$select=FileRef,FileLeafRef`;
+            const itemResponse: SPHttpClientResponse = await context.spHttpClient.get(
+                getItemUrl,
+                SPHttpClient.configurations.v1
+            );
+
+            if (!itemResponse.ok) {
+                console.error("❌ Failed to get folder info");
+                return;
+            }
+
+            const itemData = await itemResponse.json();
+            const oldFolderUrl = itemData.FileRef;
+            const oldFolderName = itemData.FileLeafRef;
+
+            if (oldFolderName === newFolderName) {
+                console.log("⚠️ Folder name is same — no rename needed.");
+                return;
+            }
+
+            const parentFolderPath = oldFolderUrl.substring(0, oldFolderUrl.lastIndexOf("/"));
+            const newFolderUrl = `${parentFolderPath}/${newFolderName}`;
+
+            const moveApiUrl = `${siteUrl}/_api/web/getfolderbyserverrelativeurl('${oldFolderUrl}')/moveto(newurl='${newFolderUrl}')`;
+
+            const moveResponse = await context.spHttpClient.post(
+                moveApiUrl,
+                SPHttpClient.configurations.v1,
+                {
+                    headers: {
+                        Accept: "application/json;odata=nometadata",
+                        "Content-Type": "application/json;odata=nometadata",
+                    },
+                }
+            );
+
+            if (moveResponse.ok) {
+                console.log(`✅ Folder renamed successfully to '${newFolderName}'`);
+            } else {
+                console.error("❌ Rename failed:", await moveResponse.text());
+            }
+        } catch (error) {
+            console.error("❌ Error renaming folder:", error);
+        }
+    };
+
     const createFolder = async () => {
         setShowLoader({ display: "block" });
         if (FormType === "EntryForm") {
@@ -508,7 +568,8 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
             folders.Folders.map((folder: any) => { updateFolderMetaData(folder.ListItemAllFields.Id); });
         }
     };
-    const updateFolderMetaData = (id: number) => {
+    const updateFolderMetaData = async (id: number) => {
+        await renameFolderById(context, LibraryDetails.LibraryName, id, folderName);
         let obj: any = {
             ...dynamicValues,
             DocumentSuffix: Suffix || "",
@@ -657,7 +718,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                                     setFolderName(validName);
                                 }}
                                 errorMessage={folderNameErr}
-                                disabled={isDisabled || FormType === "EditForm"}
+                                disabled={isDisabled}
                                 componentRef={(input: any) => (inputRefs.current["FolderName"] = input)}
                             />
                         </div>
