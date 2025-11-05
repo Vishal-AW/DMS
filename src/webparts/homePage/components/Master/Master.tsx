@@ -986,23 +986,68 @@ export default function Master({ props }: any): JSX.Element {
 
 
 
-  const saveAttachment = async (LID: any, fileID: any) => {
+  // const saveAttachment = async (LID: any, fileID: any) => {
 
+  //   if (!selectedFile) {
+  //     console.error("No files selected for upload.");
+  //     return;
+  //   }
+  //   let obj = {
+  //     __metadata: { type: "SP.Data.DMS_x005f_TileDocumentItem" },
+  //     TileLID: LID,
+  //     Documentpath: selectedFile.name
+  //   };
+  //   const backImageActualName = selectedFile.name.split(".")[0].replace(/[^a-zA-Z0-9]/g, "");
+  //   const backImageName = `${backImageActualName}.${selectedFile.name.split(".")[1]}`;
+  //   let displayName = fileID + '-' + backImageName;
+  //   await UploadDocument(props.SiteURL, props.spHttpClient, selectedFile, displayName, obj);
+  // };
+
+
+  const saveAttachment = async (LID: any, fileID: any) => {
     if (!selectedFile) {
       console.error("No files selected for upload.");
       return;
     }
-    let obj = {
-      __metadata: { type: "SP.Data.DMS_x005f_TileDocumentItem" },
-      TileLID: LID,
-      Documentpath: selectedFile.name
-    };
+
+    // ✅ 1. Delete existing attachments for this TileLID
+    const existingFiles = await getExistingTileDocs(props.SiteURL, props.spHttpClient, LID);
+    if (existingFiles?.value?.length > 0) {
+      for (const file of existingFiles.value) {
+        await deleteTileDoc(props.SiteURL, props.spHttpClient, file.Id);
+      }
+    }
+
+    // ✅ 2. Upload new one
     const backImageActualName = selectedFile.name.split(".")[0].replace(/[^a-zA-Z0-9]/g, "");
     const backImageName = `${backImageActualName}.${selectedFile.name.split(".")[1]}`;
-    let displayName = fileID + '-' + backImageName;
+    const displayName = `${fileID}-${backImageName}`;
+
+    const obj = {
+      __metadata: { type: "SP.Data.DMS_x005f_TileDocumentItem" },
+      TileLID: LID,
+      Documentpath: selectedFile.name,
+    };
+
     await UploadDocument(props.SiteURL, props.spHttpClient, selectedFile, displayName, obj);
   };
 
+
+  const getExistingTileDocs = async (siteUrl: string, spHttpClient: SPHttpClient, tileId: number) => {
+    const endpoint = `${siteUrl}/_api/web/lists/getbytitle('DMS_TileDocument')/items?$filter=TileLID eq ${tileId}`;
+    const response = await spHttpClient.get(endpoint, SPHttpClient.configurations.v1);
+    return response.json();
+  };
+
+  const deleteTileDoc = async (siteUrl: string, spHttpClient: SPHttpClient, itemId: number) => {
+    const endpoint = `${siteUrl}/_api/web/lists/getbytitle('DMS_TileDocument')/items(${itemId})`;
+    await spHttpClient.post(endpoint, SPHttpClient.configurations.v1, {
+      headers: {
+        'IF-MATCH': '*',
+        'X-HTTP-Method': 'DELETE'
+      }
+    });
+  };
 
   const saveData = async () => {
 
@@ -1236,13 +1281,23 @@ export default function Master({ props }: any): JSX.Element {
         console.log(NewSequencedata);
       }
 
-      if (selectedFile) {
+      // if (selectedFile) {
+      //   const backImageActualName = selectedFile.name.split(".")[0].replace(/[^a-zA-Z0-9]/g, "");
+      //   const backImageName = `${backImageActualName}.${selectedFile.name.split(".")[1]}`;
+      //   siteurl = `${props.SiteURL}/DMS_TileDocument/${uniqueid}-${backImageName}`;
+      //   console.log(siteurl);
+      // } else {
+      //   console.log("No file selected.");
+      // }
+
+
+      if (uploadfile.length > 0 && selectedFile) {
         const backImageActualName = selectedFile.name.split(".")[0].replace(/[^a-zA-Z0-9]/g, "");
         const backImageName = `${backImageActualName}.${selectedFile.name.split(".")[1]}`;
         siteurl = `${props.SiteURL}/DMS_TileDocument/${uniqueid}-${backImageName}`;
-        console.log(siteurl);
       } else {
-        console.log("No file selected.");
+        const existingData = await getDataById(props.SiteURL, props.spHttpClient, CurrentEditID);
+        siteurl = existingData.value[0]?.Documentpath || "";
       }
 
       let str = TileName;
@@ -1286,6 +1341,7 @@ export default function Master({ props }: any): JSX.Element {
         Separator: separator,
         DynamicControl: JSON.stringify(tableData),
         IsArchiveRequired: IsArchiveAllowed,
+        Documentpath: siteurl,
         //LibraryName: Internal
 
       };
@@ -1293,14 +1349,18 @@ export default function Master({ props }: any): JSX.Element {
       let UpdateData = await getDataById(props.SiteURL, props.spHttpClient, CurrentEditID);
       let UpdateTileID = UpdateData.value;
       if (UpdateTileID != null) {
-        if (uploadfile.length > 0) {
-          var obj = {
-            Documentpath: siteurl
-          };
-          await UpdateTileSetting(props.SiteURL, props.spHttpClient, obj, CurrentEditID);
-          saveAttachment(UpdateTileID[0].ID, uniqueid);
+        // if (uploadfile.length > 0) {
+        //   var obj = {
+        //     Documentpath: siteurl
+        //   };
+        //   await UpdateTileSetting(props.SiteURL, props.spHttpClient, obj, CurrentEditID);
+        //   saveAttachment(UpdateTileID[0].ID, uniqueid);
+        // }
+        if (uploadfile.length > 0 && selectedFile) {
+          await saveAttachment(UpdateTileID[0].ID, uniqueid);
+          SetuploadFile([]);
+          setSelectedFile(null);
         }
-
         if (Sequencedata[0].Order0 !== TileSequence) {
           if (NewSequencedata.length > 0) {
             await UpdateTileSequence(NewSequencedata);

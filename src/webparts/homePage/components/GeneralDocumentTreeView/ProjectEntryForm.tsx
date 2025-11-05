@@ -29,7 +29,7 @@ import Select from 'react-select';
 import { getTemplateActive } from "../../../../Services/TemplateService";
 import { getActiveFolder } from "../../../../Services/FolderMasterService";
 import moment from "moment";
-import { SPHttpClient, SPHttpClientResponse } from "@microsoft/sp-http";
+//import { SPHttpClient } from "@microsoft/sp-http";
 
 
 export interface IProjectEntryProps {
@@ -456,60 +456,126 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
 
 
 
-    const renameFolderById = async (
-        context: any,
-        libraryName: string,
-        itemId: number,
-        newFolderName: string
-    ) => {
-        try {
-            const siteUrl = context.pageContext.web.absoluteUrl;
+    // const renameFolderById = async (
+    //     context: any,
+    //     libraryName: string,
+    //     itemId: number,
+    //     newFolderName: string
+    // ) => {
+    //     try {
+    //         const siteUrl = context.pageContext.web.absoluteUrl;
 
-            const getItemUrl = `${siteUrl}/_api/web/lists/getbytitle('${libraryName}')/items(${itemId})?$select=FileRef,FileLeafRef`;
-            const itemResponse: SPHttpClientResponse = await context.spHttpClient.get(
-                getItemUrl,
-                SPHttpClient.configurations.v1
-            );
+    //         const getItemUrl = `${siteUrl}/_api/web/lists/getbytitle('${libraryName}')/items(${itemId})?$select=FileRef,FileLeafRef`;
+    //         const itemResponse: SPHttpClientResponse = await context.spHttpClient.get(
+    //             getItemUrl,
+    //             SPHttpClient.configurations.v1
+    //         );
 
-            if (!itemResponse.ok) {
-                console.error("❌ Failed to get folder info");
-                return;
-            }
+    //         if (!itemResponse.ok) {
+    //             console.error("❌ Failed to get folder info");
+    //             return;
+    //         }
 
-            const itemData = await itemResponse.json();
-            const oldFolderUrl = itemData.FileRef;
-            const oldFolderName = itemData.FileLeafRef;
+    //         const itemData = await itemResponse.json();
+    //         const oldFolderUrl = itemData.FileRef;
+    //         const oldFolderName = itemData.FileLeafRef;
 
-            if (oldFolderName === newFolderName) {
-                console.log("⚠️ Folder name is same — no rename needed.");
-                return;
-            }
+    //         if (oldFolderName === newFolderName) {
+    //             console.log("⚠️ Folder name is same — no rename needed.");
+    //             return;
+    //         }
 
-            const parentFolderPath = oldFolderUrl.substring(0, oldFolderUrl.lastIndexOf("/"));
-            const newFolderUrl = `${parentFolderPath}/${newFolderName}`;
+    //         const parentFolderPath = oldFolderUrl.substring(0, oldFolderUrl.lastIndexOf("/"));
+    //         const newFolderUrl = `${parentFolderPath}/${newFolderName}`;
 
-            const moveApiUrl = `${siteUrl}/_api/web/getfolderbyserverrelativeurl('${oldFolderUrl}')/moveto(newurl='${newFolderUrl}')`;
+    //         const moveApiUrl = `${siteUrl}/_api/web/getfolderbyserverrelativeurl('${oldFolderUrl}')/moveto(newurl='${newFolderUrl}')`;
 
-            const moveResponse = await context.spHttpClient.post(
-                moveApiUrl,
-                SPHttpClient.configurations.v1,
-                {
-                    headers: {
-                        Accept: "application/json;odata=nometadata",
-                        "Content-Type": "application/json;odata=nometadata",
-                    },
-                }
-            );
+    //         const moveResponse = await context.spHttpClient.post(
+    //             moveApiUrl,
+    //             SPHttpClient.configurations.v1,
+    //             {
+    //                 headers: {
+    //                     Accept: "application/json;odata=nometadata",
+    //                     "Content-Type": "application/json;odata=nometadata",
+    //                 },
+    //             }
+    //         );
 
-            if (moveResponse.ok) {
-                console.log(`✅ Folder renamed successfully to '${newFolderName}'`);
-            } else {
-                console.error("❌ Rename failed:", await moveResponse.text());
-            }
-        } catch (error) {
-            console.error("❌ Error renaming folder:", error);
-        }
-    };
+    //         if (moveResponse.ok) {
+    //             console.log(`✅ Folder renamed successfully to '${newFolderName}'`);
+    //         } else {
+    //             console.error("❌ Rename failed:", await moveResponse.text());
+    //         }
+    //     } catch (error) {
+    //         console.error("❌ Error renaming folder:", error);
+    //     }
+    // };
+
+
+    // const renameFolder = async (
+    //     context: WebPartContext,
+    //     libraryName: string,
+    //     oldFolderName: string,
+    //     newFolderName: string
+    // ): Promise<boolean> => {
+    //     try {
+    //         if (oldFolderName === newFolderName) {
+    //             console.log("⚠️ Folder name is same — no rename needed.");
+    //             return true;
+    //         }
+
+    //         const siteUrl = context.pageContext.web.absoluteUrl;
+    //         const webServerRelativeUrl = context.pageContext.web.serverRelativeUrl;
+
+    //         // Build server-relative paths (not absolute)
+    //         const oldFolderServerRelativeUrl = `${webServerRelativeUrl}/${libraryName}/${oldFolderName}`;
+    //         const newFolderServerRelativeUrl = `${webServerRelativeUrl}/${libraryName}/${newFolderName}`;
+
+    //         // Proper REST API call (server-relative only)
+    //         const moveApiUrl = `${siteUrl}/_api/web/getfolderbyserverrelativeurl('${oldFolderServerRelativeUrl}')/moveto(newurl='${newFolderServerRelativeUrl}')`;
+
+    //         const response = await context.spHttpClient.post(
+    //             moveApiUrl,
+    //             SPHttpClient.configurations.v1,
+    //             {
+    //                 headers: {
+    //                     Accept: "application/json;odata=nometadata",
+    //                     "Content-Type": "application/json;odata=nometadata",
+    //                 },
+    //             }
+    //         );
+
+    //         if (response.ok) {
+    //             console.log(`✅ Folder renamed from '${oldFolderName}' → '${newFolderName}'`);
+    //             return true;
+    //         } else {
+    //             console.error("❌ Rename failed:", await response.text());
+    //             return false;
+    //         }
+    //     } catch (error) {
+    //         console.error("❌ Error renaming folder:", error);
+    //         return false;
+    //     }
+    // };
+
+
+    // const getItemByTitle = async (
+    //     context: WebPartContext,
+    //     libraryName: string,
+    //     folderTitle: string
+    // ): Promise<any> => {
+    //     try {
+    //         const response = await context.spHttpClient.get(
+    //             `${context.pageContext.web.absoluteUrl}/_api/web/lists/getbytitle('${libraryName}')/items?$filter=FileLeafRef eq '${folderTitle}'`,
+    //             SPHttpClient.configurations.v1
+    //         );
+    //         const data = await response.json();
+    //         return data.value.length > 0 ? data.value[0] : null;
+    //     } catch (error) {
+    //         console.error("Error fetching item by title:", error);
+    //         return null;
+    //     }
+    // };
 
     const createFolder = async () => {
         setShowLoader({ display: "block" });
@@ -563,13 +629,64 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
             });
         }
         else {
+
+            // let currentFolderPath = folderPath;
+            // if (folderObject.Name !== folderName) {
+            //     const renamed = await renameFolder(
+            //         context,
+            //         LibraryDetails.LibraryName,
+            //         folderObject.Name,
+            //         folderName
+            //     );
+            //     if (!renamed) {
+            //         console.error("Folder rename failed — skipping metadata update");
+            //         return;
+            //     }
+
+            //     console.log(`Folder renamed from '${folderObject.Name}' → '${folderName}'`);
+
+            //     currentFolderPath = currentFolderPath.replace(folderObject.Name, folderName);
+
+
+            //     await new Promise((r) => setTimeout(r, 1500));
+
+            //     const updatedItem = await getItemByTitle(
+            //         context,
+            //         LibraryDetails.LibraryName,
+            //         folderName
+            //     );
+
+            //     if (updatedItem) {
+            //         console.log("Fetched updated folder item:", updatedItem);
+            //         await updateFolderMetaData(updatedItem.Id);
+            //     } else {
+            //         console.error("Could not find folder after rename!");
+            //     }
+            // } else {
+            //     await updateFolderMetaData(folderObject.ListItemAllFields.Id);
+            // }
             await updateFolderMetaData(folderObject.ListItemAllFields.Id);
             const folders = await getAllFolder(context.pageContext.web.absoluteUrl, context, folderPath);
             folders.Folders.map((folder: any) => { updateFolderMetaData(folder.ListItemAllFields.Id); });
+            // const folders = await getAllFolder(context.pageContext.web.absoluteUrl, context, currentFolderPath);
+
+            // if (folders?.Folders?.length > 0) {
+            //     console.log(`Found ${folders.Folders.length} child folders to update.`);
+            //     for (const folder of folders.Folders) {
+            //         await updateFolderMetaData(folder.ListItemAllFields.Id);
+            //     }
+            // } else {
+            //     console.log("No child folders found under updated path:", currentFolderPath);
+            // }
+
+            // dismissPanel(false);
+            // setShowLoader({ display: "none" });
+            // setAlertMsg(DisplayLabel.FolderUpdatedMsg);
+            // setIsPopupBoxVisible(true);
         }
     };
     const updateFolderMetaData = async (id: number) => {
-        await renameFolderById(context, LibraryDetails.LibraryName, id, folderName);
+        // await renameFolderById(context, LibraryDetails.LibraryName, id, folderName);
         let obj: any = {
             ...dynamicValues,
             DocumentSuffix: Suffix || "",
@@ -602,7 +719,10 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
     };
 
     const createFolderStructure = async (users: any) => {
-        const filterFolders = folderStructure.filter((el: any) => el.TemplateName.Name === folderTemplate);
+        //  const filterFolders = folderStructure.filter((el: any) => el.TemplateName.Name === folderTemplate);
+        const filterFolders = folderStructure.filter(
+            (el: any) => el.TemplateName?.Name === folderTemplate
+        );
         const firstlevel = getFirstLevel(filterFolders);
         let count = 0;
         firstlevel.map(async (folder: any) => {

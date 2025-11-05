@@ -139,7 +139,7 @@ const grantPermissions = async (context: WebPartContext, folderUrl: string, user
                 }
                 else {
 
-                    const permissionUrl = `${context.pageContext.web.absoluteUrl}/_api/web/GetFolderByServerRelativeUrl('${folderUrl}')/ListItemAllFields/roleassignments/addroleassignment(principalid=${userId},roleDefId=1073741827)`;
+                    const permissionUrl = `${context.pageContext.web.absoluteUrl}/_api/web/GetFolderByServerRelativeUrl('${folderUrl}')/ListItemAllFields/roleassignments/addroleassignment(principalid=${userId.id},roleDefId=1073741827)`;
                     const response = await context.spHttpClient.post(
                         permissionUrl,
                         SPHttpClient.configurations.v1,
@@ -298,7 +298,7 @@ const removeAllPermissionsForLib = async (context: WebPartContext, libName: stri
             }).then(async (response: SPHttpClientResponse) => {
                 if (response.ok) {
                     const data = await response.json();
-                    const valuedata = data.value
+                    const valuedata = data.value;
 
                     const userIds1 = (userIds as any[]).map(role => role.IDs);
 
