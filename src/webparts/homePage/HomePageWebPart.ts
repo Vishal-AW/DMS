@@ -11,6 +11,7 @@ import { IReadonlyTheme } from '@microsoft/sp-component-base';
 import * as strings from 'HomePageWebPartStrings';
 import HomePage from './components/HomePage';
 import { IHomePageProps } from './components/IHomePageProps';
+import { SPHttpClient } from '@microsoft/sp-http';
 
 export interface IHomePageWebPartProps {
   description: string;
@@ -20,8 +21,32 @@ export default class HomePageWebPart extends BaseClientSideWebPart<IHomePageWebP
 
   private _isDarkTheme: boolean = false;
   private _environmentMessage: string = '';
+  private isSuperAdmin: boolean = false;
+
+
+  public async onInit(): Promise<void> {
+    this._environmentMessage = await this._getEnvironmentMessage();
+    await this._checkSuperAdminAccess();
+  }
 
   public render(): void {
+
+    const restrictedPaths = [
+      "/_layouts/15/viewlsts.aspx",
+      "_layouts/15/viewlsts.aspx?view=14",
+      "/_layouts/15/settings.aspx",
+      "/_layouts/15/user.aspx",
+      "/lists/"
+    ];
+
+    const currentUrl = window.location.href.toLowerCase();
+    const isRestricted = restrictedPaths.some(path => currentUrl.includes(path));
+
+    if (!this.isSuperAdmin && isRestricted) {
+      alert("You don't have permission to access this page.");
+      window.location.href = this.context.pageContext.web.absoluteUrl; // redirect to home
+      return;
+    }
     const element: React.ReactElement<IHomePageProps> = React.createElement(
       HomePage,
       {
@@ -46,12 +71,63 @@ export default class HomePageWebPart extends BaseClientSideWebPart<IHomePageWebP
     ReactDom.render(element, this.domElement);
   }
 
-  protected onInit(): Promise<void> {
-    return this._getEnvironmentMessage().then(message => {
-      this._environmentMessage = message;
-    });
-  }
+  // protected onInit(): Promise<void> {
+  //   return this._getEnvironmentMessage().then(async message => {
+  //     this._environmentMessage = message;
+  //     await this._checkSuperAdminAccess();
+  //   });
+  // }
 
+  private async _checkSuperAdminAccess(): Promise<void> {
+    try {
+      const context = this.context;
+      const userId = context.pageContext.legacyPageContext.userId;
+      const superAdminGroup = "SuperAdmin";
+
+      const res = await context.spHttpClient.get(
+        `${context.pageContext.web.absoluteUrl}/_api/web/sitegroups/getbyname('${superAdminGroup}')/users?$filter=Id eq ${userId}`,
+        SPHttpClient.configurations.v1
+      );
+
+      const data = await res.json();
+      this.isSuperAdmin = data.value && data.value.length > 0;
+
+      console.log("✅ SuperAdmin:", this.isSuperAdmin);
+
+      // Hide gear/settings if not SuperAdmin
+      if (!this.isSuperAdmin) {
+        const style = document.createElement("style");
+        style.innerHTML = `
+          #O365_MainLink_Settings,
+          div[data-automationid="SiteActionsButton"],
+          button[title="Settings"],
+          #O365_MainLink_Help ~ #O365_MainLink_Settings {
+            display: none !important;
+          }
+        `;
+        document.head.appendChild(style);
+      }
+
+      const restrictedPaths = [
+        "/_layouts/15/viewlsts.aspx",
+        "_layouts/15/viewlsts.aspx?view=14",
+        "/_layouts/15/settings.aspx",
+        "/_layouts/15/user.aspx",
+        "/lists/"
+      ];
+
+      const currentUrl = window.location.href.toLowerCase();
+      const isRestricted = restrictedPaths.some(path => currentUrl.includes(path));
+
+      if (!this.isSuperAdmin && isRestricted) {
+        alert("🚫 You don't have permission to access this page.");
+        window.location.href = context.pageContext.web.absoluteUrl;
+      }
+
+    } catch (err) {
+      console.error("Error verifying SuperAdmin access:", err);
+    }
+  }
 
 
   private _getEnvironmentMessage(): Promise<string> {

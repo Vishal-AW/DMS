@@ -23,7 +23,7 @@ import TemplateMaster from './Master/TemplateMaster';
 import FolderMaster from './Master/FolderMaster';
 import Navigation from "./Master/Navigation";
 import DynamicFooter from '../components/ResuableComponents/Footer';
-
+//import { SPHttpClient } from "@microsoft/sp-http";
 
 
 
@@ -37,7 +37,89 @@ export default function HomePage(props: IHomePageProps): JSX.Element {
     document.body.style.visibility = "visible";
     document.documentElement.style.setProperty("--loader-url", `url(${props.SiteURL}/SiteAssets/Loader.gif)`);
     getAllData();
+    //checkSuperAdminAndHideGear();
   }, []);
+
+
+
+  // const checkSuperAdminAndHideGear = async () => {
+  //   const superAdminGroup = "SuperAdmin";
+  //   const userId = props.context.pageContext.legacyPageContext.userId;
+
+  //   try {
+  //     const res = await props.context.spHttpClient.get(
+  //       `${props.context.pageContext.web.absoluteUrl}/_api/web/sitegroups/getbyname('${superAdminGroup}')/users?$filter=Id eq ${userId}`,
+  //       SPHttpClient.configurations.v1
+  //     );
+
+  //     const data = await res.json();
+
+  //     if (!data.value || data.value.length === 0) {
+  //       const style = document.createElement("style");
+  //       style.innerHTML = `
+  //       #O365_MainLink_Settings,
+  //       div[data-automationid="SiteActionsButton"],
+  //       button[title="Settings"],
+  //       #O365_MainLink_Help ~ #O365_MainLink_Settings {
+  //         display: none !important;
+  //       }
+  //     `;
+  //       document.head.appendChild(style);
+  //     }
+  //   } catch (err) {
+  //     console.error("Error hiding gear icon:", err);
+  //   }
+  // };
+
+
+  // const checkSuperAdminAndHideGear = async () => {
+  //   const superAdminGroup = "SuperAdmin";
+  //   const userId = props.context.pageContext.legacyPageContext.userId;
+
+  //   try {
+  //     const res = await props.context.spHttpClient.get(
+  //       `${props.context.pageContext.web.absoluteUrl}/_api/web/sitegroups/getbyname('${superAdminGroup}')/users?$filter=Id eq ${userId}`,
+  //       SPHttpClient.configurations.v1
+  //     );
+
+  //     const data = await res.json();
+  //     const isSuperAdmin = data.value && data.value.length > 0;
+
+  //     if (!isSuperAdmin) {
+  //       const style = document.createElement("style");
+  //       style.innerHTML = `
+  //       #O365_MainLink_Settings,
+  //       div[data-automationid="SiteActionsButton"],
+  //       button[title="Settings"],
+  //       #O365_MainLink_Help ~ #O365_MainLink_Settings {
+  //         display: none !important;
+  //       }
+  //     `;
+  //       document.head.appendChild(style);
+  //     }
+
+  //     const restrictedPaths = [
+  //       "/_layouts/15/viewlsts.aspx",
+  //       "_layouts/15/viewlsts.aspx?view=14",
+  //       "/_layouts/15/settings.aspx",
+  //       "/_layouts/15/user.aspx",
+  //       "/Lists/",
+  //     ];
+
+  //     const currentUrl = window.location.href.toLowerCase();
+  //     const isRestricted = restrictedPaths.some(path =>
+  //       currentUrl.includes(path.toLowerCase())
+  //     );
+
+  //     if (!isSuperAdmin && isRestricted) {
+  //       alert("You don't have permission to access this page.");
+  //       window.location.href = props.context.pageContext.web.absoluteUrl;
+  //     }
+
+  //   } catch (err) {
+  //     console.error("Error checking SuperAdmin or hiding gear icon:", err);
+  //   }
+  // };
 
 
   const getAllData = async () => {
