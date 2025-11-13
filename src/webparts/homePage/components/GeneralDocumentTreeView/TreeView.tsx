@@ -9,7 +9,7 @@ import { ContextualMenu, ContextualMenuItemType, IContextualMenuProps } from '@f
 import IFrameDialog from "./IFrameDialog";
 import AdvancePermission from "./AdvancePermission";
 import ProjectEntryForm from "./ProjectEntryForm";
-import { TextField } from "office-ui-fabric-react";
+import { IconButton, TextField } from "office-ui-fabric-react";
 import { FolderStructure } from "../../../../Services/FolderStructure";
 import PopupBox, { ConfirmationDialog } from "../ResuableComponents/PopupBox";
 import UploadFiles from "./UploadFile";
@@ -73,6 +73,12 @@ export default function TreeView({ props }: any) {
     // const [itemIds, setItemIds] = useState<number | null>(null);
     // const [isHovering, setIsHovering] = useState(false);
     // const hoverRef = React.useRef<Record<string, HTMLDivElement | null>>({});
+
+    const [menuVisible, setMenuVisible] = React.useState(false);
+    const buttonRef = React.useRef(null);
+    const onDismissSetting = () => setMenuVisible(false);
+    const [viewListSetting, setViewListSetting] = useState("");
+    const [isShowviewListSetting, setIsShowviewListSetting] = useState(false);
 
     const invalidCharsRegex = /["*:<>?/\\|]/;
 
@@ -155,6 +161,16 @@ export default function TreeView({ props }: any) {
 
     const fetchFolders = async (folderPath: string, nodeName: string) => {
         try {
+
+            if (viewListSetting === "List View") {
+                setIsShowviewListSetting(false);
+                setViewListSetting("List View");
+            }
+            else if (viewListSetting === "Tiles View") {
+                setIsShowviewListSetting(true);
+                setViewListSetting("Tiles View");
+            }
+
             setFolderPath(folderPath);
             const bread = folderPath.split("/").map((el, index) => ({ name: el, displayname: (index == 0 ? libtitlename : el), path: folderPath.split("/").slice(0, index + 1).join("/") }));
             setBreadcrumb(bread);
@@ -345,6 +361,61 @@ export default function TreeView({ props }: any) {
             className: 'text-center',
         }
     ];
+
+    const ListViewcolumns = [
+        {
+            Header: DisplayLabel.SrNo, accessor: "Id",
+            Cell: ({ row }: { row: any; }) => { return <span>{row._index + 1}</span>; },
+            width: 65
+        },
+        {
+            Header: DisplayLabel.FileName,
+            accessor: "ListItemAllFields.ActualName",
+            width: 278,
+            Cell: ({ row }: { row: any; }) => {
+                // const item = row._original?.ListItemAllFields;
+                //const checkedOutUser = row._original?.CheckedOutByUser;
+                // const isCheckedOut = row._original?.CheckOutType === 0;
+                // const isCheckedOutByCurrentUser = checkedOutUser?.Id === props.userID;
+                const item = row._original;
+
+                return (
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                        {item.Name !== "Forms" && (
+                            <a
+                                style={{
+                                    color: "#009ef7",
+                                    display: "inline-block",
+                                    inlineSize: "150px",
+                                    overflowWrap: "break-word",
+                                    wordBreak: "break-word",
+                                    whiteSpace: "normal",
+                                }}
+                                href="javascript:void(0)"
+                                // onClick={() => {
+                                //     if (row._original.LinkingUrl === "")
+                                //         window.open(row._original.ServerRelativeUrl, "_blank");
+                                //     else
+                                //         window.open(row._original.LinkingUrl, "_blank");
+                                // }}
+                                onClick={() => toggleNode(item.Name, `${item.folderPath}`, item)}
+                            >
+                                {/* {item?.ActualName} */}
+                                {/* {item?.Name} */}
+                                <span className={styles["node-name"]}>{item?.Name}</span>
+
+                            </a>
+                        )}
+                    </div>
+                );
+            }
+        },
+        // { Header: DisplayLabel.ReferenceNo, accessor: 'ListItemAllFields.ReferenceNo', width: 120, },
+
+
+    ];
+
+
     const createMenuProps = (item: any): IContextualMenuProps => {
         const button = libDetails.ShowMoreActions ? libDetails.ShowMoreActions.split(";") : [];
         const menuItems: any = [
@@ -736,6 +807,29 @@ export default function TreeView({ props }: any) {
         });
     };
 
+    //Oroginal Code
+
+    // const renderRightFolder = (nodes: Folder[]) => {
+    //     return nodes.map((node: any) => (
+    //         node.Name !== "Forms" && (
+    //             <div key={node.Id} className="col-md-2">
+    //                 <div
+    //                     onClick={() => toggleNode(node.Name, `${node.folderPath}`, node)}
+    //                     style={{ cursor: "pointer" }}
+    //                     className={styles["folderTile"]}
+    //                 >
+    //                     <Icon
+    //                         iconName="FabricFolderFill"
+    //                         className={styles["folder-icon"]}
+    //                         style={{ marginRight: "5px", color: "#009ef7", fontSize: "50px", height: "50px" }}
+    //                     />
+    //                     <span className={styles["folderLabel"]}>{node.Name}</span>
+    //                 </div>
+    //             </div>
+    //         )
+    //     ));
+    // };
+
     const renderRightFolder = (nodes: Folder[]) => {
         return nodes.map((node: any) => (
             node.Name !== "Forms" && (
@@ -866,6 +960,36 @@ export default function TreeView({ props }: any) {
 
     const hidePopup = useCallback(() => { setIsPopupBoxVisible(false); }, [isPopupBoxVisible]);
 
+    //Original Code
+    // const bindTable = () => {
+
+    //     if (tables === "Approver") {
+    //         return <ApprovalFlow context={props.context} libraryName={libName} userEmail={props.UserEmailID} action="Approver" />;
+    //     }
+    //     else if (tables === "Recycle") {
+    //         return <ApprovalFlow context={props.context} libraryName={libName} userEmail={props.UserEmailID} action="Recycle" />;
+    //     }
+    //     else if (tables === "Archive") {
+    //         return <ApprovalFlow context={props.context} libraryName={libName} userEmail={props.UserEmailID} action="Archive" />;
+    //     }
+    //     else {
+
+    //         return rightFolders.length === 0 ? <ReactTableComponent
+    //             TableClassName="ReactTables"
+    //             Tablecolumns={columns}
+    //             Tabledata={files}
+    //             PagedefaultSize={10}
+    //             TableRows={1}
+    //             TableshowPagination={files.length > 10}
+    //         /> : <div className="grid" style={{ height: "832px", overflow: "auto" }}>
+    //             <div className="row">
+    //                 {renderRightFolder(rightFolders)}
+    //             </div>
+    //         </div>;
+    //     }
+
+    // };
+
     const bindTable = () => {
 
         if (tables === "Approver") {
@@ -879,6 +1003,23 @@ export default function TreeView({ props }: any) {
         }
         else {
 
+
+
+            // return rightFolders.length === 0 ? <ReactTableComponent
+            //     TableClassName="ReactTables"
+            //     Tablecolumns={columns}
+            //     Tabledata={files}
+            //     PagedefaultSize={10}
+            //     TableRows={1}
+            //     TableshowPagination={files.length > 10}
+            // /> : <div className="grid" style={{ height: "832px", overflow: "auto" }}>
+            //     <div className="row">
+            //         {renderRightFolder(rightFolders)}
+            //     </div>
+            // </div>;
+
+            const filteredFiles = rightFolders.filter((f: any) => f.Name !== "Forms");
+
             return rightFolders.length === 0 ? <ReactTableComponent
                 TableClassName="ReactTables"
                 Tablecolumns={columns}
@@ -887,13 +1028,33 @@ export default function TreeView({ props }: any) {
                 TableRows={1}
                 TableshowPagination={files.length > 10}
             /> : <div className="grid" style={{ height: "832px", overflow: "auto" }}>
-                <div className="row">
-                    {renderRightFolder(rightFolders)}
-                </div>
+                {/* <div className="row">
+                   {renderRightFolder(rightFolders)}
+                </div> */}
+                {viewListSetting === "List View" ? (
+
+                    <ReactTableComponent
+                        TableClassName="ReactTables"
+                        Tablecolumns={ListViewcolumns}
+                        Tabledata={filteredFiles}
+                        PagedefaultSize={10}
+                        TableRows={1}
+                        TableshowPagination={rightFolders.length > 10}
+                    />
+                ) : (
+                    <div className="grid" style={{ height: "832px", overflow: "auto" }}>
+                        <div className="row">
+                            {renderRightFolder(rightFolders)}
+                        </div>
+                    </div>
+                )}
             </div>;
+
         }
 
     };
+
+
     const advancedSearch = () => {
         sessionStorage.setItem("LibName", libName);
         location.href = "#/SearchFilter";
@@ -1008,6 +1169,86 @@ export default function TreeView({ props }: any) {
                 </Stack.Item>
                 <Stack.Item grow styles={stackItemStyles} className="col-md-9">
                     <div className="card" style={{ border: "none", padding: "18px 25px" }}>
+
+                        <div className="row" style={{ marginBottom: 5 }}>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'flex-end',
+                                    alignItems: 'center',
+                                    // padding: '8px 16px',
+                                }}
+                            >
+                                {/* Folder/Tree icon on the left */}
+                                <span style={{ marginRight: 8 }}>
+                                    <i
+                                        className="ms-Icon ms-Icon--FolderList"
+                                        aria-hidden="true"
+                                        style={{ fontSize: 20, color: '#0078d4', cursor: 'pointer' }}
+                                    ></i>
+                                </span>
+
+                                {/* Menu hover area */}
+                                <div
+                                    ref={buttonRef}
+                                    onMouseEnter={() => setMenuVisible(true)}
+                                    onMouseLeave={onDismiss} // 👈 hides menu when mouse leaves the area
+                                    style={{ position: 'relative' }}
+                                >
+                                    <IconButton
+                                        iconProps={{ iconName: 'BulletedTreeList' }}
+                                        title="View Options"
+                                    />
+
+                                    {menuVisible && (
+                                        <div
+                                            onMouseLeave={onDismiss} // 👈 ensures menu also closes when leaving the dropdown
+                                            style={{ position: 'absolute', right: 0, top: '40px' }}
+                                        >
+                                            <ContextualMenu
+                                                items={[
+                                                    {
+                                                        key: 'list',
+                                                        text: 'List',
+                                                        iconProps: { iconName: 'List' },
+                                                        // onClick: () => alert('List View'),
+                                                        // onClick: () => setViewListSetting('List View'),
+                                                        onClick: () => {
+                                                            setViewListSetting('List View');
+                                                            setIsShowviewListSetting(false); // or false depending on your need
+                                                            console.log(viewListSetting);
+                                                        }
+
+
+                                                    },
+                                                    {
+                                                        key: 'tiles',
+                                                        text: 'Tiles',
+                                                        iconProps: { iconName: 'Tiles' },
+                                                        // onClick: () => alert('Tiles View'),
+                                                        // onClick: () => setViewListSetting('Tiles View'),
+                                                        onClick: () => {
+                                                            setViewListSetting('Tiles View');
+                                                            setIsShowviewListSetting(true); // or false depending on your need
+                                                            console.log(isShowviewListSetting);
+                                                        }
+                                                    },
+                                                ]}
+                                                target={buttonRef}
+                                                onDismiss={onDismissSetting}
+                                                directionalHint={DirectionalHint.bottomRightEdge}
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+
+                        </div>
+
+
+
+
                         <div className="grid" style={{ alignItems: "center", display: "flex", justifyContent: "space-between" }}>
                             <div className="row">
                                 <nav aria-label="breadcrumb">
