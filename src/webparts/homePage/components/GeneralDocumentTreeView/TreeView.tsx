@@ -170,7 +170,6 @@ export default function TreeView({ props }: any) {
                 setIsShowviewListSetting(true);
                 setViewListSetting("Tiles View");
             }
-
             setFolderPath(folderPath);
             const bread = folderPath.split("/").map((el, index) => ({ name: el, displayname: (index == 0 ? libtitlename : el), path: folderPath.split("/").slice(0, index + 1).join("/") }));
             setBreadcrumb(bread);
@@ -361,7 +360,6 @@ export default function TreeView({ props }: any) {
             className: 'text-center',
         }
     ];
-
     const ListViewcolumns = [
         {
             Header: DisplayLabel.SrNo, accessor: "Id",
@@ -378,7 +376,6 @@ export default function TreeView({ props }: any) {
                 // const isCheckedOut = row._original?.CheckOutType === 0;
                 // const isCheckedOutByCurrentUser = checkedOutUser?.Id === props.userID;
                 const item = row._original;
-
                 return (
                     <div style={{ display: "flex", alignItems: "center" }}>
                         {item.Name !== "Forms" && (
@@ -403,7 +400,6 @@ export default function TreeView({ props }: any) {
                                 {/* {item?.ActualName} */}
                                 {/* {item?.Name} */}
                                 <span className={styles["node-name"]}>{item?.Name}</span>
-
                             </a>
                         )}
                     </div>
@@ -411,8 +407,6 @@ export default function TreeView({ props }: any) {
             }
         },
         // { Header: DisplayLabel.ReferenceNo, accessor: 'ListItemAllFields.ReferenceNo', width: 120, },
-
-
     ];
 
 
@@ -462,6 +456,17 @@ export default function TreeView({ props }: any) {
                 onClick: () => commonFunction("DiscardCheckOut", item),
             });
         }
+        if (libDetails.TileAdminId === props.userID || isValidUser) {
+            menuItems.push({
+                key: 'share',
+                text: DisplayLabel.Share,
+                onClick: () => {
+                    setShareURL(`${props.SiteURL}/_layouts/15/sharedialog.aspx?listId=${libDetails.LibGuidName}&listItemId=${item._original.ListItemAllFields.Id}&clientId=sharePoint&policyTip=0&folderColor=undefined&ma=0&fullScreenMode=true&itemName=${item._original.ListItemAllFields.ActualName}&origin=${portalUrl}`);
+                    setIFrameDialogOpened(true);
+                }
+            });
+        }
+
         if (isValidUser || libDetails.TileAdminId === props.userID) {
             menuItems.push({
                 key: 'advancePermission',
@@ -808,7 +813,6 @@ export default function TreeView({ props }: any) {
     };
 
     //Oroginal Code
-
     // const renderRightFolder = (nodes: Folder[]) => {
     //     return nodes.map((node: any) => (
     //         node.Name !== "Forms" && (
@@ -829,7 +833,6 @@ export default function TreeView({ props }: any) {
     //         )
     //     ));
     // };
-
     const renderRightFolder = (nodes: Folder[]) => {
         return nodes.map((node: any) => (
             node.Name !== "Forms" && (
@@ -962,7 +965,6 @@ export default function TreeView({ props }: any) {
 
     //Original Code
     // const bindTable = () => {
-
     //     if (tables === "Approver") {
     //         return <ApprovalFlow context={props.context} libraryName={libName} userEmail={props.UserEmailID} action="Approver" />;
     //     }
@@ -973,7 +975,6 @@ export default function TreeView({ props }: any) {
     //         return <ApprovalFlow context={props.context} libraryName={libName} userEmail={props.UserEmailID} action="Archive" />;
     //     }
     //     else {
-
     //         return rightFolders.length === 0 ? <ReactTableComponent
     //             TableClassName="ReactTables"
     //             Tablecolumns={columns}
@@ -987,7 +988,6 @@ export default function TreeView({ props }: any) {
     //             </div>
     //         </div>;
     //     }
-
     // };
 
     const bindTable = () => {
@@ -1002,24 +1002,7 @@ export default function TreeView({ props }: any) {
             return <ApprovalFlow context={props.context} libraryName={libName} userEmail={props.UserEmailID} action="Archive" />;
         }
         else {
-
-
-
-            // return rightFolders.length === 0 ? <ReactTableComponent
-            //     TableClassName="ReactTables"
-            //     Tablecolumns={columns}
-            //     Tabledata={files}
-            //     PagedefaultSize={10}
-            //     TableRows={1}
-            //     TableshowPagination={files.length > 10}
-            // /> : <div className="grid" style={{ height: "832px", overflow: "auto" }}>
-            //     <div className="row">
-            //         {renderRightFolder(rightFolders)}
-            //     </div>
-            // </div>;
-
             const filteredFiles = rightFolders.filter((f: any) => f.Name !== "Forms");
-
             return rightFolders.length === 0 ? <ReactTableComponent
                 TableClassName="ReactTables"
                 Tablecolumns={columns}
@@ -1029,10 +1012,9 @@ export default function TreeView({ props }: any) {
                 TableshowPagination={files.length > 10}
             /> : <div className="grid" style={{ height: "832px", overflow: "auto" }}>
                 {/* <div className="row">
-                   {renderRightFolder(rightFolders)}
+                    {renderRightFolder(rightFolders)}
                 </div> */}
                 {viewListSetting === "List View" ? (
-
                     <ReactTableComponent
                         TableClassName="ReactTables"
                         Tablecolumns={ListViewcolumns}
@@ -1170,6 +1152,7 @@ export default function TreeView({ props }: any) {
                 <Stack.Item grow styles={stackItemStyles} className="col-md-9">
                     <div className="card" style={{ border: "none", padding: "18px 25px" }}>
 
+
                         <div className="row" style={{ marginBottom: 5 }}>
                             <div
                                 style={{
@@ -1187,7 +1170,6 @@ export default function TreeView({ props }: any) {
                                         style={{ fontSize: 20, color: '#0078d4', cursor: 'pointer' }}
                                     ></i>
                                 </span>
-
                                 {/* Menu hover area */}
                                 <div
                                     ref={buttonRef}
@@ -1199,7 +1181,6 @@ export default function TreeView({ props }: any) {
                                         iconProps={{ iconName: 'BulletedTreeList' }}
                                         title="View Options"
                                     />
-
                                     {menuVisible && (
                                         <div
                                             onMouseLeave={onDismiss} // 👈 ensures menu also closes when leaving the dropdown
@@ -1218,8 +1199,6 @@ export default function TreeView({ props }: any) {
                                                             setIsShowviewListSetting(false); // or false depending on your need
                                                             console.log(viewListSetting);
                                                         }
-
-
                                                     },
                                                     {
                                                         key: 'tiles',
@@ -1242,12 +1221,7 @@ export default function TreeView({ props }: any) {
                                     )}
                                 </div>
                             </div>
-
-
                         </div>
-
-
-
 
                         <div className="grid" style={{ alignItems: "center", display: "flex", justifyContent: "space-between" }}>
                             <div className="row">

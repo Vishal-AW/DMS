@@ -285,46 +285,93 @@ export default function FolderMaster({ props }: any): JSX.Element {
         setParentropdownErr("");
     };
 
+    // const validation = () => {
+    //     let isValidForm = true;
+
+    //     if (FolderName === "" || FolderName === undefined || FolderName === null) {
+    //         setFolderNameErr(DisplayLabel?.ThisFieldisRequired as string);
+    //         isValidForm = false;
+    //     }
+    //     else if (!TemplatedropdownID) {
+    //         setTemplatedropdownErr(DisplayLabel?.ThisFieldisRequired as string);
+    //         isValidForm = false;
+    //     }
+    //     else if (isChildFolderStatus) {
+    //         if (!ParentropdownID) {
+    //             setParentropdownErr(DisplayLabel?.ThisFieldisRequired as string);
+    //             isValidForm = false;
+    //         }
+    //     }
+    //     // const isDuplicate = MainTableSetdata.some(
+    //     //     (Data) => Data.FolderName.toLowerCase() === FolderName.toLowerCase().trim() && Data.TemplateNameId === TemplatedropdownID.value
+    //     // );
+
+    //     const isDuplicate = MainTableSetdata.some(
+    //         (Data) =>
+    //             Data.Id !== FolderCurrentEditID && // exclude the record being edited
+    //             Data.FolderName.toLowerCase().trim() === FolderName.toLowerCase().trim() &&
+    //             Data.TemplateNameId === TemplatedropdownID.value
+    //     );
+
+    //     if (isDuplicate && !isFolderEditMode) {
+    //         setFolderNameErr(DisplayLabel?.FolderTemplateCombination as string);
+    //         isValidForm = false;
+    //     }
+
+    //     if (isDuplicate && isFolderEditMode) {
+    //         MainTableSetdata.map((Data) => {
+    //             if (Data.FolderName.toLowerCase() === FolderName.toLowerCase().trim() && Data.ID !== FolderCurrentEditID) {
+    //                 setFolderNameErr(DisplayLabel?.FolderTemplateCombination as string);
+    //                 isValidForm = false;
+    //             }
+    //         });
+    //     }
+
+    //     return isValidForm;
+    // };
+
     const validation = () => {
         let isValidForm = true;
+        clearError();
 
-        if (FolderName === "" || FolderName === undefined || FolderName === null) {
+        if (!FolderName?.trim()) {
             setFolderNameErr(DisplayLabel?.ThisFieldisRequired as string);
             isValidForm = false;
         }
-        else if (!TemplatedropdownID) {
+
+        if (!TemplatedropdownID) {
             setTemplatedropdownErr(DisplayLabel?.ThisFieldisRequired as string);
             isValidForm = false;
         }
-        else if (isChildFolderStatus) {
-            if (!ParentropdownID) {
-                setParentropdownErr(DisplayLabel?.ThisFieldisRequired as string);
-                isValidForm = false;
-            }
-        }
-        // const isDuplicate = MainTableSetdata.some(
-        //     (Data) => Data.FolderName.toLowerCase() === FolderName.toLowerCase().trim() && Data.TemplateNameId === TemplatedropdownID.value
-        // );
 
-        const isDuplicate = MainTableSetdata.some(
-            (Data) =>
-                Data.Id !== FolderCurrentEditID && // exclude the record being edited
-                Data.FolderName.toLowerCase().trim() === FolderName.toLowerCase().trim() &&
-                Data.TemplateNameId === TemplatedropdownID.value
-        );
-
-        if (isDuplicate && !isFolderEditMode) {
-            setFolderNameErr(DisplayLabel?.FolderTemplateCombination as string);
+        if (isChildFolderStatus && !ParentropdownID) {
+            setParentropdownErr(DisplayLabel?.ThisFieldisRequired as string);
             isValidForm = false;
         }
 
-        if (isDuplicate && isFolderEditMode) {
-            MainTableSetdata.map((Data) => {
-                if (Data.FolderName.toLowerCase() === FolderName.toLowerCase().trim() && Data.ID !== FolderCurrentEditID) {
-                    setFolderNameErr(DisplayLabel?.FolderTemplateCombination as string);
-                    isValidForm = false;
-                }
-            });
+        if (!isValidForm) return false;
+
+        const currentTemplateId = TemplatedropdownID?.value;
+        const currentParentId = ParentropdownID?.value || null;
+        const currentFolderName = FolderName.trim().toLowerCase();
+
+        const isDuplicate = MainTableSetdata.some((data) => {
+            const dataFolderName = data.FolderName?.trim().toLowerCase();
+            const dataTemplateId = data.TemplateNameId;
+            const dataParentId = data.ParentFolderId?.Id || null;
+
+            if (isFolderEditMode && data.Id === FolderCurrentEditID) return false;
+
+            return (
+                dataFolderName === currentFolderName &&
+                dataTemplateId === currentTemplateId &&
+                dataParentId === currentParentId
+            );
+        });
+
+        if (isDuplicate) {
+            setFolderNameErr(DisplayLabel?.FolderTemplateCombination || "Folder name already exists in this Template and Parent Folder.");
+            isValidForm = false;
         }
 
         return isValidForm;
@@ -499,6 +546,7 @@ export default function FolderMaster({ props }: any): JSX.Element {
                                 onChange={(el: React.ChangeEvent<HTMLInputElement>) => SetFolderName(el.target.value)}
                                 errorMessage={FolderNameErr}
                                 placeholder={DisplayLabel?.EnterFolderName}
+
                             />
                         </div>
                     </div>

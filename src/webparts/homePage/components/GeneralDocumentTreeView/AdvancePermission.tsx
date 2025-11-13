@@ -356,10 +356,12 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
                                     {userData.map((el: any) => (
                                         <tr key={el.Id}>
                                             <td>
-                                                <Checkbox
-                                                    checked={isCheckedUser.includes(el.Member.Id)}
-                                                    onChange={() => handleCheckboxChange(el.Member.Id)}
-                                                />
+                                                {el.Member.Title !== "ProjectAdmin" && (
+                                                    <Checkbox
+                                                        checked={isCheckedUser.includes(el.Member.Id)}
+                                                        onChange={() => handleCheckboxChange(el.Member.Id)}
+                                                    />
+                                                )}
                                             </td>
                                             <td>{el.Member.Title}</td>
                                             <td>
