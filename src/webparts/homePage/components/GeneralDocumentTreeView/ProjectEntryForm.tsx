@@ -838,7 +838,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                                     setFolderName(validName);
                                 }}
                                 errorMessage={folderNameErr}
-                                disabled={isDisabled}
+                                disabled={isDisabled || FormType === "EditForm"}
                                 componentRef={(input: any) => (inputRefs.current["FolderName"] = input)}
                             />
                         </div>
