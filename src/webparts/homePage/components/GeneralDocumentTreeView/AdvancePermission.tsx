@@ -145,33 +145,48 @@ const AdvancePermission: React.FC<IAdvanceProps> = ({ isOpen, dismissPanel, cont
 
         setSelectedPermissionError("");
         setSelectedUserError("");
-        if (selectedUser.length === 0)
+        // if (selectedUser.length === 0)
+        //     setSelectedUserError(DisplayLabel.ThisFieldisRequired);
+        // else if (option === "")
+        //     setSelectedPermissionError(DisplayLabel.ThisFieldisRequired);
+        // else {
+
+        if (!selectedUser || selectedUser.length === 0 || selectedUser === null) {
             setSelectedUserError(DisplayLabel.ThisFieldisRequired);
-        else if (option === "")
-            setSelectedPermissionError(DisplayLabel.ThisFieldisRequired);
-        else {
-            let count = 0;
-            selectedUser.map((el: any) => {
-                setAlertMsg(DisplayLabel.AccessHasGranted);
-                var requestUri = `${context.pageContext.web.absoluteUrl}/_api/web/lists/getbytitle('${LibraryName}')/items(${folderId})/roleassignments/addroleassignment(principalid=${el},roledefid=${option})`;
-                commonPostMethod(requestUri, context).then(function () {
-                    count++;
-                    if (count === selectedUser.length) setIsPopupBoxVisible(true);
-                    // showAlert("Access has been successfully granted.");
-
-                    bindPermission();
-
-
-
-
-
-                    // ✅ Clear picker visually
-
-
-                });
-            });
+            return;
         }
+
+        if (!option || option === "" || option === null) {
+            setSelectedPermissionError(DisplayLabel.ThisFieldisRequired);
+            return;
+        }
+        let count = 0;
+        selectedUser.map((el: any) => {
+            setAlertMsg(DisplayLabel.AccessHasGranted);
+            var requestUri = `${context.pageContext.web.absoluteUrl}/_api/web/lists/getbytitle('${LibraryName}')/items(${folderId})/roleassignments/addroleassignment(principalid=${el},roledefid=${option})`;
+            commonPostMethod(requestUri, context).then(function () {
+                count++;
+                if (count === selectedUser.length) setIsPopupBoxVisible(true);
+                // showAlert("Access has been successfully granted.");
+
+                bindPermission();
+
+
+
+
+
+                // ✅ Clear picker visually
+
+
+            });
+        });
+        //}
         setOption(null);
+        setSelectedUser([]);
+        if (peoplePickerRef.current) {
+            peoplePickerRef.current.clear();
+        }
+
     };
 
 
