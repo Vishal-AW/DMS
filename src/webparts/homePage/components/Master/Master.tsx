@@ -39,6 +39,10 @@ import { breakRoleInheritanceForLib, grantPermissionsForLib } from "../../../../
 import { getListData } from "../../../../Services/GeneralDocument";
 import Select from "react-select";
 import { Link, useNavigate } from "react-router-dom";
+import { getRoles } from "../../../../Services/Role";
+import { getAllButtons } from "../../../../Services/Buttons";
+import { IButtonsProps, IRolePermission } from "../Interface/IButtonInterface";
+// import RolesPermissionsMatrix from "./RolesPermissionsMatrix";
 // import { wrap } from "lodash";
 
 
@@ -85,10 +89,10 @@ export default function Master({ props }: any): JSX.Element {
   const [selectedcheckboxActions, setSelectedcheckboxActions] = useState<string[]>([]);
   const actions = ["Preview", "Download", "Rename", "Versions"];
   const inputRefs = useRef<{ [key: string]: HTMLInputElement | null; }>({});
-  //const addIcon: IIconProps = { iconName: 'Add' };
-  //const saveIcon: IIconProps = { iconName: 'Save' };
-  // const editIcon: IIconProps = { iconName: 'Edit' };
-  // const deleteIcon: IIconProps = { iconName: 'Delete' };
+  const [roles, setRoles] = useState<any[]>([]);
+  const [allButtons, setAllButtons] = useState<IButtonsProps[]>([]);
+  const [groupByButtons, setGroupByButtons] = useState<any[]>([]);
+
   const [alertMsg, setAlertMsg] = useState("");
 
   const [refFormatData, setRefFormatData] = useState<string[]>([]);
@@ -105,6 +109,8 @@ export default function Master({ props }: any): JSX.Element {
   const [searchText, setSearchText] = useState<string>("");
 
   const navigate = useNavigate();
+  const [allButtonsWithPermissions, setAllButtonsWithPermissions] = useState<IRolePermission[]>([]);
+
 
   const [formData, setFormData] = useState<any>({
     field: null,
@@ -156,6 +162,8 @@ export default function Master({ props }: any): JSX.Element {
     setRefExample(RefrenceNOData);
     setisPopupVisible(false);
     getAdmin();
+    getAllRoles();
+    getAllButton();
   }, []);
 
   const getAdmin = async () => {
@@ -306,7 +314,7 @@ export default function Master({ props }: any): JSX.Element {
     await setTableData(EditSettingData[0].DynamicControl === null ? [] : JSON.parse(EditSettingData[0].DynamicControl));
 
     await setArchiveAllowed(EditSettingData[0].IsArchiveRequired);
-
+    setAllButtonsWithPermissions(EditSettingData[0].CustomPermission ? JSON.parse(EditSettingData[0].CustomPermission) : []);
     if (EditSettingData[0].IsArchiveRequired === true) {
       let ActiveRedundancyDaysData: any = await getActiveRedundancyDays(props.SiteURL, props.spHttpClient);
       let ActiveRedundancyDaysvalueData = ActiveRedundancyDaysData.value;
@@ -893,6 +901,7 @@ export default function Master({ props }: any): JSX.Element {
     setAssignID([]);
     setAssignEmail([]);
     setTileAdminID([]);
+    bindAllButtons();
     clearError();
 
   };
@@ -1141,7 +1150,8 @@ export default function Master({ props }: any): JSX.Element {
         ArchiveLibraryName: ArchiveInternal,
         RetentionDays: RedundancyDataText === null ? null : parseInt(RedundancyDataText),
         ArchiveVersionCount: ArchiveVersions === null ? null : parseInt(ArchiveVersions),
-        LibraryName: Internal
+        LibraryName: Internal,
+        CustomPermission: JSON.stringify(allButtonsWithPermissions),
       };
 
       let LID = await SaveTileSetting(props.SiteURL, props.spHttpClient, option);
@@ -1247,8 +1257,57 @@ export default function Master({ props }: any): JSX.Element {
     }
   };
 
+  const getAllRoles = () => {
+    getRoles(props.SiteURL, props.spHttpClient).then((response: any) => {
+      const roleData = response.value;
+      setRoles(roleData);
+    });
+  };
+  const getAllButton = () => {
+    getAllButtons(props.SiteURL, props.spHttpClient).then((response: any) => {
+      const buttonData = response.value;
+      const buttonsList: IButtonsProps[] = buttonData.map(convertToButtonProps);
+      const grouped = buttonsList.reduce((acc: any, item: any) => {
+        (acc[item.ButtonType] = acc[item.ButtonType] || []).push(item);
+        return acc;
+      }, {} as { [key: string]: any[]; });
+
+      setGroupByButtons(grouped);
+      setAllButtons(buttonsList);
+    });
+  };
+
+  const convertToButtonProps = (backendData: any): IButtonsProps => {
+    return {
+      Id: backendData.Id,
+      ButtonDisplayName: backendData.ButtonDisplayName,
+      ButtonType: backendData.ButtonType,
+      Title: backendData.Title,
+      key: backendData.InternalName,
+      value: false,
+      Active: backendData.Active,
+      InternalName: backendData.InternalName,
+
+    };
+  };
 
 
+  useEffect(() => {
+    if (allButtons.length > 0 && roles.length > 0) {
+      bindAllButtons();
+    }
+  }, [allButtons, roles]);
+
+  const bindAllButtons = () => {
+    let buttonObj: IRolePermission = { Role: "", Permission: [], UsersId: [] };
+    const roleD = roles.map((role: any) => {
+
+      buttonObj = { Role: role.Title, Permission: allButtons, UsersId: [] };
+      return buttonObj;
+    });
+
+    setAllButtonsWithPermissions(roleD);
+  };
 
   const UpdateData = async () => {
 
@@ -1343,6 +1402,7 @@ export default function Master({ props }: any): JSX.Element {
         IsArchiveRequired: IsArchiveAllowed,
         Documentpath: siteurl,
         //LibraryName: Internal
+        CustomPermission: JSON.stringify(allButtonsWithPermissions),
 
       };
       await UpdateTileSetting(props.SiteURL, props.spHttpClient, option, CurrentEditID);
@@ -1456,6 +1516,44 @@ export default function Master({ props }: any): JSX.Element {
 
   let ListGuid: any = [];
   let defaulttViewID: any;
+
+  const handleCheckboxChangeButton = (role: string, key: Number, val: boolean) => {
+    setAllButtonsWithPermissions((prev: IRolePermission[]) =>
+      prev.map((r) =>
+        r.Role === role
+          ? {
+            ...r,
+            Permission: r.Permission.map((p: any) =>
+              p.Id === key ? { ...p, value: val } : p
+            ),
+          }
+          : r
+      )
+    );
+  };
+
+  const grantButtonPermission = (role: string, permission: any) => {
+    setAllButtonsWithPermissions((prev: IRolePermission[]) =>
+      prev.map((r) =>
+        r.Role === role
+          ? {
+            ...r,
+            UsersId: permission,
+          }
+          : r
+      )
+    );
+  };
+
+  const bindPermission = (role: string) => {
+    const foundRole = allButtonsWithPermissions.find((r) => r.Role === role);
+    const userEMail = foundRole ? foundRole.UsersId.map((item: any) => (item.Email === undefined ? item.loginName : item.Email)) : [];
+    return userEMail;
+  };
+
+  const isValidNumberString = (value: string): boolean => {
+    return !isNaN(Number(value)) && value.trim() !== "";
+  };
 
   return (
 
@@ -1678,6 +1776,93 @@ export default function Master({ props }: any): JSX.Element {
             </Accordion.Item>
             <br />
             <Accordion.Item eventKey="1">
+              <Accordion.Header className={styles.Accodordianherder}>{DisplayLabel?.Role} </Accordion.Header>
+              <Accordion.Body>
+
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th></th>
+                      <th>{DisplayLabel?.Role}</th>
+                      {roles && roles.map((role: any) => (<th>{role.Title}</th>))}
+                    </tr>
+                    <tr>
+                      <th></th>
+                      <th></th>
+                      {roles && roles.map((role: any) => (
+                        <th>
+                          <PeoplePicker context={peoplePickerContext}
+                            personSelectionLimit={20}
+                            showtooltip={true}
+                            required={true}
+                            errorMessage={AccessTileUserErr}
+                            onChange={async (items: any[]) => {
+                              const userIds = await Promise.all(
+                                items.map(async (item: any) => {
+                                  let userid: number = 0;
+                                  if (isValidNumberString(item.id)) {
+                                    userid = item;
+                                  } else {
+                                    const data = await getUserIdFromLoginName(props.context, item.id);
+                                    userid = data;
+                                  };
+                                  return userid;
+                                  // const data = await getUserIdFromLoginName(props.context, item.id);
+                                  // return data;
+                                })
+                              );
+                              grantButtonPermission(role.Title, userIds);
+                            }}
+                            showHiddenInUI={false}
+                            principalTypes={[PrincipalType.User, PrincipalType.SharePointGroup, PrincipalType.SecurityGroup]}
+                            defaultSelectedUsers={isEditMode ? bindPermission(role.Title) : undefined}
+                            // ref={(input: any) => (inputRefs.current["AccessTileUser"] = input)}
+                            styles={{ root: { order: -1 } }}
+                          />
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {Object.keys(groupByButtons).map((group: any) => (
+                      <React.Fragment key={group}>
+                        {groupByButtons[group].map((item: any, index: number) => (
+                          <tr key={item.Id} style={{ borderBottom: "1px solid #eee" }}>
+                            <th>{index === 0 ? group : ""}</th>
+                            <td style={{ padding: "8px 12px" }}>{item.Title}</td>
+                            {roles.map((role: any) => {
+                              const foundRole = allButtonsWithPermissions.find(
+                                (r) => r.Role === role.Title
+                              );
+                              const foundPerm = foundRole?.Permission?.find(
+                                (p: any) => p.Id === item.Id
+                              );
+
+                              return (
+                                <td key={`${role.Id}_${item.Id}`}>
+                                  <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
+                                    <Checkbox
+                                      checked={!!foundPerm?.value}
+                                      onChange={(_, val) =>
+                                        handleCheckboxChangeButton(role.Title, item.Id, !!val)
+                                      }
+                                    />
+                                  </div>
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        ))}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+
+                </table>
+              </Accordion.Body>
+            </Accordion.Item>
+            <br />
+            <Accordion.Item eventKey="2">
               <Accordion.Header className={styles.Accodordianherder}>{DisplayLabel?.Fields}</Accordion.Header>
               <Accordion.Body>
 
@@ -1808,7 +1993,7 @@ export default function Master({ props }: any): JSX.Element {
             </Accordion.Item>
 
             <br />
-            <Accordion.Item eventKey="2">
+            <Accordion.Item eventKey="3">
               <Accordion.Header className={styles.Accodordianherder}>{DisplayLabel?.ReferenceNoDetails}</Accordion.Header>
               <Accordion.Body>
                 <Form>
@@ -2007,7 +2192,7 @@ export default function Master({ props }: any): JSX.Element {
               </Accordion.Body>
             </Accordion.Item>
             <br />
-            <Accordion.Item eventKey="3">
+            <Accordion.Item eventKey="4">
               <Accordion.Header className={styles.Accodordianherder}>{DisplayLabel?.ArchiveSection}</Accordion.Header>
               <Accordion.Body>
                 <Form>
@@ -2279,9 +2464,10 @@ export default function Master({ props }: any): JSX.Element {
   }
 
 
-  //New Code
 
-  async function getDefaultView(IListItem: any[]) {
+
+
+  async function getDefaultView(IListItem: []) {
     console.log(IListItem);
     defaulttViewID = [];
 

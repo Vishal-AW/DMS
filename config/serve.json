@@ -2,5 +2,5 @@
   "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/spfx-serve.schema.json",
   "port": 4321,
   "https": true,
-  "initialPage": "https://trenchless2000.sharepoint.com/sites/DMS-UAT/_layouts/workbench.aspx"
+  "initialPage": "https://ascenworktech.sharepoint.com/sites/SPFXDMS/SitePages/TopicHome.aspx?debug=true&noredir=true&loadSPFX=true&debugManifestsFile=https://localhost:4321/temp/manifests.js"
 }

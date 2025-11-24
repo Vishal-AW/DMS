@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./TreeView.module.scss";
 import { CommandBarButton, DefaultButton, DialogType, Icon, IStackItemStyles, IStackStyles, IStackTokens, Panel, PanelType, PrimaryButton, Stack, DirectionalHint } from "@fluentui/react";
 import ReactTableComponent from '../ResuableComponents/ReusableDataTable';
-import { ContextualMenu, ContextualMenuItemType, IContextualMenuProps } from '@fluentui/react/lib/ContextualMenu';
+import { ContextualMenu, IContextualMenuProps } from '@fluentui/react/lib/ContextualMenu';
 // import { SPComponentLoader } from "@microsoft/sp-loader";
 import IFrameDialog from "./IFrameDialog";
 import AdvancePermission from "./AdvancePermission";
@@ -25,6 +25,9 @@ import { getHistoryByID } from "../../../../Services/GeneralDocHistoryService";
 import { getConfigActive } from "../../../../Services/ConfigService";
 import { getDataByLibraryName } from "../../../../Services/MasTileService";
 import moment from "moment";
+import { getAllButtons } from "../../../../Services/Buttons";
+import { IButtonsProps, IRolePermission } from "../Interface/IButtonInterface";
+import { SPHttpClientResponse, SPHttpClient } from '@microsoft/sp-http';
 
 
 interface Folder {
@@ -70,10 +73,6 @@ export default function TreeView({ props }: any) {
     const [comment, setComment] = useState("");
     const [alertMsg, setAlertMsg] = useState("");
 
-    // const [itemIds, setItemIds] = useState<number | null>(null);
-    // const [isHovering, setIsHovering] = useState(false);
-    // const hoverRef = React.useRef<Record<string, HTMLDivElement | null>>({});
-
     const invalidCharsRegex = /["*:<>?/\\|]/;
 
 
@@ -108,6 +107,7 @@ export default function TreeView({ props }: any) {
     const [deletedData, setDeletedData] = useState<any>([]);
     const [archiveData, setArchiveData] = useState<any>([]);
     const [approvalData, setApprovalData] = useState<any>([]);
+    const [buttons, setButtons] = useState<any[]>([]);
 
     useEffect(() => {
         fetchFolders(libName, "");
@@ -121,37 +121,6 @@ export default function TreeView({ props }: any) {
         fetchFolders(folderPath, folderName);
     }, [isOpenUploadPanel]);
 
-    // const fetchFolders = async (folderPath: string, nodeName: string) => {
-    //     try {
-    //         setFolderPath(folderPath);
-    //         const bread = folderPath.split("/").map((el, index) => ({ name: el, displayname: (index == 0 ? libtitlename : el), path: folderPath.split("/").slice(0, index + 1).join("/") }));
-    //         setBreadcrumb(bread);
-    //         const data: any = await getAllFolder(props.SiteURL, props.context, folderPath);
-    //         if (data && data.Folders) {
-    //             const updatedFolders = data.Folders.map((folder: any) => {
-    //                 const updatedFolder = { ...folder };
-    //                 updatedFolder.folderPath = `${folderPath}/${folder.Name}`;
-
-    //                 return updatedFolder;
-    //             });
-    //             setRightFolders(updatedFolders);
-    //             if (folderPath === libName) {
-    //                 setFolders(data.Folders);
-    //             } else {
-    //                 setChildFolders((prev) => ({
-    //                     ...prev,
-    //                     [folderPath]: data.Folders,
-    //                 }));
-    //                 setFiles(data.Files.filter((el: any) => (el.ListItemAllFields.Active && (el.ListItemAllFields.InternalStatus === "Published" || el.ListItemAllFields.AuthorId === props.userID))) || []);
-    //             }
-    //             data.Folders.length === 0 ? setExpandedNodes(expandedNodes.filter((name) => name !== nodeName)) : "";
-    //         } else {
-    //             console.error("Unexpected response format", data);
-    //         }
-    //     } catch (error) {
-    //         console.error("Error fetching folders:", error);
-    //     }
-    // };
 
     const fetchFolders = async (folderPath: string, nodeName: string) => {
         try {
@@ -346,255 +315,248 @@ export default function TreeView({ props }: any) {
         }
     ];
     const createMenuProps = (item: any): IContextualMenuProps => {
-        const button = libDetails.ShowMoreActions ? libDetails.ShowMoreActions.split(";") : [];
-        const menuItems: any = [
-            {
-                key: 'docDetails',
-                text: DisplayLabel.History,
-                onClick: () => commonFunction("History", item)
-            },
-            {
-                key: 'view',
-                text: DisplayLabel.View,
-                onClick: () => commonFunction("View", item)
-            }
-        ];
-        if ((libDetails.TileAdminId === props.userID || item._original.ListItemAllFields.AuthorId === props.userID) && !libDetails.IsArchiveRequired) {
-            menuItems.push({
-                key: 'deleteDocument',
-                text: DisplayLabel.Delete,
-                onClick: () => commonFunction("Delete", item),
-            });
-        }
-        button.map((el: string) => {
-            menuItems.push({
-                key: el,
-                text: DisplayLabel[el],
-                onClick: () => commonFunction(el, item),
-            });
-        });
-        if (item._original.CheckOutType === 2) {
-            menuItems.push({
-                key: 'checkOut',
-                text: DisplayLabel.Checkout,
-                onClick: () => commonFunction("Checkout", item),
-            });
-        }
-        if (item._original.CheckOutType === 0) {
-            menuItems.push({
-                key: 'CheckIn',
-                text: DisplayLabel.CheckIn,
-                onClick: () => commonFunction("CheckIn", item),
-            }, {
-                key: 'DiscardCheckOut',
-                text: DisplayLabel.DiscardCheckOut,
-                onClick: () => commonFunction("DiscardCheckOut", item),
-            });
-        }
-        if (libDetails.TileAdminId === props.userID || isValidUser) {
-            menuItems.push({
-                key: 'share',
-                text: DisplayLabel.Share,
-                onClick: () => {
-                    setShareURL(`${props.SiteURL}/_layouts/15/sharedialog.aspx?listId=${libDetails.LibGuidName}&listItemId=${item._original.ListItemAllFields.Id}&clientId=sharePoint&policyTip=0&folderColor=undefined&ma=0&fullScreenMode=true&itemName=${item._original.ListItemAllFields.ActualName}&origin=${portalUrl}`);
-                    setIFrameDialogOpened(true);
+
+        const button: any = buttons.filter((btn) => btn.ButtonType === "Document")
+            .filter((btn) => {
+                switch (btn.key) {
+                    case "OpenInApp":
+                        const isCheck = checkExtension(item._original.Name);
+                        return isCheck;
+                    case "CheckIn":
+                        return item._original.CheckOutType === 0 && item._original.CheckedOutByUser?.Id === props.userID;
+                    case "DiscardCheckOut":
+                        return item._original.CheckOutType === 0 && item._original.CheckedOutByUser?.Id === props.userID;
+                    case "CheckOut":
+                        return item._original.CheckOutType === 2;
+                    case "Preview":
+                        return !checkExtension(item._original.Name);
+                    default:
+                        return checkButtons(btn.key);
                 }
-            });
-        }
-
-        if (isValidUser || libDetails.TileAdminId === props.userID) {
-            menuItems.push({
-                key: 'advancePermission',
-                text: DisplayLabel.AdvancePermission,
-                onClick: () => { setItemId(item._original.ListItemAllFields.Id); setIsPanelOpen(true); },
-            });
-        }
-
+            })
+            .map((btn) => ({
+                key: btn.key,
+                text: btn.ButtonDisplayName,
+                onClick: () => commonFunction(btn.key, item),
+            }));
         return {
             shouldFocusOnMount: true,
-            items: menuItems
+            items: button
         };
     };
     const commonFunction = async (action: string, item: any) => {
-        if (action === "Delete") {
-            setMessage(DisplayLabel.DeleteConfirmMsg);
-            setItemId(item._original.ListItemAllFields.Id);
-            setHideDialog(true);
-        }
-        else if (action === "Versions") {
-            setActionButton(null);
-            const url = `${props.SiteURL}/_layouts/15/Versions.aspx?list=${libName}&FileName=${item._original.ServerRelativeUrl}&IsDlg=${item._original.ListItemAllFields.Id}`;
-            setPanelForm(<iframe id="frame" src={url} style={{ width: "100%", height: "80vh" }}></iframe>);
-            setPanelTitle(DisplayLabel.Versions);
-            setIsOpenCommonPanel(true);
-        }
-        else if (action === "Rename") {
-            setFileNameErr("");
-            setItemId(item._original.ListItemAllFields.Id);
-            setPanelTitle(DisplayLabel.Rename);
-            const fileDetails = item._original.ListItemAllFields.ActualName.split(".");
-            setExtension(fileDetails[1]);
-            setFileName(fileDetails[0]);
-            setIsOpenCommonPanel(true);
-        }
-        else if (action === "Download") { location.href = `${props.SiteURL}/_layouts/15/download.aspx?SourceUrl=${item._original.ServerRelativeUrl}`; }
-        else if (action === "Preview") {
-            setActionButton(null);
-            setPanelSize(PanelType.smallFluid);
-            setPanelTitle(DisplayLabel.Preview);
-            const previewData = getPreviewUrl(item._original.ServerRelativeUrl);
-            setPanelForm(previewData);
-            setIsOpenCommonPanel(true);
-        }
-        else if (action === "Checkout") {
-            await commonPostMethod(`${props.SiteURL}/_api/web/GetFileByServerRelativeUrl('${item._original.ServerRelativeUrl}')/checkout`, props.context);
-            setAlertMsg(DisplayLabel.CheckoutSuccess);
-            setIsPopupBoxVisible(true);
-            fetchFolders(folderPath, folderName);
-        }
-        else if (action === "CheckIn") {
-            setActionButton(<PrimaryButton text={DisplayLabel.CheckIn} style={{ marginRight: "10px" }} onClick={async () => {
-                await commonPostMethod(`${props.SiteURL}/_api/web/GetFileByServerRelativeUrl('${item._original.ServerRelativeUrl}')/checkin(comment='${comment}',checkintype=0)`, props.context);
-                setAlertMsg(DisplayLabel.CheckInSuccess);
+        switch (action) {
+            case "OpenInApp":
+                getOpenAppURL(item._original.ServerRelativeUrl);
+                break;
+            case "Delete":
+                setMessage(DisplayLabel.DeleteConfirmMsg);
+                setItemId(item._original.ListItemAllFields.Id);
+                setHideDialog(true);
+                break;
+            case "Versions":
+                setActionButton(null);
+                const url = `${props.SiteURL}/_layouts/15/Versions.aspx?list=${libName}&FileName=${item._original.ServerRelativeUrl}&IsDlg=${item._original.ListItemAllFields.Id}`;
+                setPanelForm(<iframe id="frame" src={url} style={{ width: "100%", height: "80vh" }}></iframe>);
+                setPanelTitle(DisplayLabel.Versions);
+                setIsOpenCommonPanel(true);
+                break;
+            case "Rename":
+                setFileNameErr("");
+                setItemId(item._original.ListItemAllFields.Id);
+                setPanelTitle(DisplayLabel.Rename);
+                const fileDetails = item._original.ListItemAllFields.ActualName.split(".");
+                setExtension(fileDetails[1]);
+                setFileName(fileDetails[0]);
+                setIsOpenCommonPanel(true);
+                break;
+            case "Download":
+                location.href = `${props.SiteURL}/_layouts/15/download.aspx?SourceUrl=${item._original.ServerRelativeUrl}`;
+                break;
+            case "Preview":
+                setActionButton(null);
+                setPanelSize(PanelType.smallFluid);
+                setPanelTitle(DisplayLabel.Preview);
+                const previewData = getPreviewUrl(item._original.ServerRelativeUrl);
+                setPanelForm(previewData);
+                setIsOpenCommonPanel(true);
+                break;
+            case "CheckOut":
+                await commonPostMethod(`${props.SiteURL}/_api/web/GetFileByServerRelativeUrl('${item._original.ServerRelativeUrl}')/checkout`, props.context);
+                setAlertMsg(DisplayLabel.CheckoutSuccess);
                 setIsPopupBoxVisible(true);
                 fetchFolders(folderPath, folderName);
-            }} />);
-            setIsOpenCommonPanel(true);
-        }
-        else if (action === "DiscardCheckOut") {
-            setMessage(DisplayLabel.CheckoutConfirm);
-            setServerRelativeUrl(item._original.ServerRelativeUrl);
-            setHideDialogCheckOut(true);
-        }
-        else if (action === "History") {
-            setActionButton(null);
-            const HistoryData = await getHistoryByID(props.SiteURL, props.spHttpClient, item._original.ListItemAllFields.Id, libName);
-
-            // const bindData = HistoryData?.value.length > 0 ? HistoryData.value.map((el: any, index: number) =>
-            //     <tr><td>{index + 1}</td>
-            //         <td>{el.Action}</td>
-            //         <td> {el.Author.Title}</td>
-            //         <td>
-            //             {el.ActionDate ? moment(el.ActionDate).format("DD-MM-YYYY") : ""}
-            //         </td>
-            //         <td>{el.InternalComment}</td>
-            //     </tr>) : <tr><td>No Data</td></tr>;
-
-            const bindData =
-                HistoryData?.value.length > 0 ? (
-                    HistoryData.value
-                        // ✅ sort ascending by ActionDate
-                        .sort((a: any, b: any) => {
-                            return new Date(a.ActionDate).getTime() - new Date(b.ActionDate).getTime();
-                        })
-                        .map((el: any, index: number) => (
-                            <tr key={index}>
-                                <td>{index + 1}</td>
-                                <td>{el.Action}</td>
-                                <td>{el.Author.Title}</td>
-                                {/* <td>{el.ActionDate ? moment(el.ActionDate).format("DD-MM-YYYY") : ""}</td> */}
-                                <td>{el.ActionDate ? moment(el.ActionDate).format("DD-MM-YYYY hh:mm:ss A") : ""}</td>
-                                <td>{el.InternalComment}</td>
-                            </tr>
-                        ))
-                ) : (
-                    <tr>
-                        <td colSpan={5}>No Data</td>
-                    </tr>
-                );
-            setPanelForm(<table className="addoption" style={{ width: '100%', marginTop: '20px', borderCollapse: 'collapse' }}>
-                <thead>
-                    <tr>
-                        <th>{DisplayLabel?.SrNo}</th>
-                        <th>{DisplayLabel?.Action}</th>
-                        <th>{DisplayLabel?.ActionBy}</th>
-                        <th>{DisplayLabel?.ActionDate}</th>
-                        <th>{DisplayLabel?.Comments}</th>
-                    </tr>
-                </thead>
-                <tbody>{bindData}</tbody>
-            </table>);
-            setPanelTitle(DisplayLabel.History);
-            setIsOpenCommonPanel(true);
-        }
-        else if (action === "View") {
-            setActionButton(null);
-            const dataConfig = await getConfigActive(props.context.pageContext.web.absoluteUrl, props.context.spHttpClient);
-            const libraryData = await getDataByLibraryName(props.context.pageContext.web.absoluteUrl, props.context.spHttpClient, libName);
-            let jsonData = JSON.parse(libraryData.value[0].DynamicControl);
-            jsonData = jsonData.filter((ele: any) => ele.IsActiveControl);
-            //setPanelSize(PanelType.large);
-            const htm = <>
-                <div className="grid">
-                    <div className="row">
-                        <div className="col-md-12">
-                            <label>{DisplayLabel.Path}: <b>{folderPath}</b></label>
+                break;
+            case "CheckIn":
+                setActionButton(<PrimaryButton text={DisplayLabel.CheckIn} style={{ marginRight: "10px" }} onClick={async () => {
+                    await commonPostMethod(`${props.SiteURL}/_api/web/GetFileByServerRelativeUrl('${item._original.ServerRelativeUrl}')/checkin(comment='${comment}',checkintype=0)`, props.context);
+                    setAlertMsg(DisplayLabel.CheckInSuccess);
+                    setIsPopupBoxVisible(true);
+                    fetchFolders(folderPath, folderName);
+                }} />);
+                setIsOpenCommonPanel(true);
+                break;
+            case "DiscardCheckOut":
+                setMessage(DisplayLabel.CheckoutConfirm);
+                setServerRelativeUrl(item._original.ServerRelativeUrl);
+                setHideDialogCheckOut(true);
+                break;
+            case "History":
+                setActionButton(null);
+                const HistoryData = await getHistoryByID(props.SiteURL, props.spHttpClient, item._original.ListItemAllFields.Id, libName);
+                const bindData =
+                    HistoryData?.value.length > 0 ? (
+                        HistoryData.value
+                            // ✅ sort ascending by ActionDate
+                            .sort((a: any, b: any) => {
+                                return new Date(a.ActionDate).getTime() - new Date(b.ActionDate).getTime();
+                            })
+                            .map((el: any, index: number) => (
+                                <tr key={index}>
+                                    <td>{index + 1}</td>
+                                    <td>{el.Action}</td>
+                                    <td>{el.Author.Title}</td>
+                                    {/* <td>{el.ActionDate ? moment(el.ActionDate).format("DD-MM-YYYY") : ""}</td> */}
+                                    <td>{el.ActionDate ? moment(el.ActionDate).format("DD-MM-YYYY hh:mm:ss A") : ""}</td>
+                                    <td>{el.InternalComment}</td>
+                                </tr>
+                            ))
+                    ) : (
+                        <tr>
+                            <td colSpan={5}>No Data</td>
+                        </tr>
+                    );
+                setPanelForm(<table className="addoption" style={{ width: '100%', marginTop: '20px', borderCollapse: 'collapse' }}>
+                    <thead>
+                        <tr>
+                            <th>{DisplayLabel?.SrNo}</th>
+                            <th>{DisplayLabel?.Action}</th>
+                            <th>{DisplayLabel?.ActionBy}</th>
+                            <th>{DisplayLabel?.ActionDate}</th>
+                            <th>{DisplayLabel?.Comments}</th>
+                        </tr>
+                    </thead>
+                    <tbody>{bindData}</tbody>
+                </table>);
+                setPanelTitle(DisplayLabel.History);
+                setIsOpenCommonPanel(true);
+                break;
+            case "View":
+                setActionButton(null);
+                const dataConfig = await getConfigActive(props.context.pageContext.web.absoluteUrl, props.context.spHttpClient);
+                const libraryData = await getDataByLibraryName(props.context.pageContext.web.absoluteUrl, props.context.spHttpClient, libName);
+                let jsonData = JSON.parse(libraryData.value[0].DynamicControl);
+                jsonData = jsonData.filter((ele: any) => ele.IsActiveControl);
+                //setPanelSize(PanelType.large);
+                const htm = <>
+                    <div className="grid">
+                        <div className="row">
+                            <div className="col-md-12">
+                                <label>{DisplayLabel.Path}: <b>{folderPath}</b></label>
+                            </div>
                         </div>
-                    </div>
-                    <div className="row">
-                        <div className="col-md-6">
-                            <label className={styles.Headerlabel}>{DisplayLabel.TileName}</label>
-                            <TextField
-                                value={libDetails.TileName}
-                                //disabled={true}
-                                readOnly
-                            />
-                        </div>
-                        <div className="col-md-6">
-                            <label className={styles.Headerlabel}>{DisplayLabel.FolderName}</label>
-                            <TextField
-                                value={folderName}
-                                // disabled={true}
-                                readOnly
-                            />
-                        </div>
-                        {item._original.ListItemAllFields.IsSuffixRequired ? <>
+                        <div className="row">
                             <div className="col-md-6">
-                                <label className={styles.Headerlabel}>{DisplayLabel.DocumentSuffix}</label>
+                                <label className={styles.Headerlabel}>{DisplayLabel.TileName}</label>
                                 <TextField
-                                    value={item._original.ListItemAllFields.DocumentSuffix}
+                                    value={libDetails.TileName}
                                     //disabled={true}
                                     readOnly
                                 />
                             </div>
-
-
-                            {item._original.ListItemAllFields.DocumentSuffix === "Other" && (
+                            <div className="col-md-6">
+                                <label className={styles.Headerlabel}>{DisplayLabel.FolderName}</label>
+                                <TextField
+                                    value={folderName}
+                                    // disabled={true}
+                                    readOnly
+                                />
+                            </div>
+                            {item._original.ListItemAllFields.IsSuffixRequired ? <>
                                 <div className="col-md-6">
-                                    <label className={styles.Headerlabel}>{DisplayLabel.OtherSuffixName}</label>
+                                    <label className={styles.Headerlabel}>{DisplayLabel.DocumentSuffix}</label>
                                     <TextField
-                                        value={item._original.ListItemAllFields.OtherSuffix}
+                                        value={item._original.ListItemAllFields.DocumentSuffix}
                                         //disabled={true}
                                         readOnly
                                     />
                                 </div>
-                            )}</> : <></>
-                        }
-                        {
-                            jsonData.map((el: any, index: number) => {
-                                const filterObj = dataConfig?.value.find((ele: any) => ele.Id === el.Id);
-                                if (!filterObj) return null;
-                                return <div className="col-md-6">
-                                    <label className={styles.Headerlabel}>{el.Title}</label>
-                                    {filterObj.ColumnType === "Date and Time" ? <TextField
-                                        value={item._original.ListItemAllFields.hasOwnProperty(el.InternalTitleName) ? moment(item._original.ListItemAllFields[el.InternalTitleName]).format("DD/MM/YYYY") : ""}
-                                        disabled={true}
-                                    /> : <TextField
-                                        value={item._original.ListItemAllFields.hasOwnProperty(el.InternalTitleName) ? (el.ColumnType === "Person or Group" ? item._original.ListItemAllFields[el.InternalTitleName].Title : item._original.ListItemAllFields[el.InternalTitleName]) : ""}
-                                        //disabled={true}
-                                        readOnly
-                                    />}
-                                </div>;
 
-                            })
-                        }
+
+                                {item._original.ListItemAllFields.DocumentSuffix === "Other" && (
+                                    <div className="col-md-6">
+                                        <label className={styles.Headerlabel}>{DisplayLabel.OtherSuffixName}</label>
+                                        <TextField
+                                            value={item._original.ListItemAllFields.OtherSuffix}
+                                            //disabled={true}
+                                            readOnly
+                                        />
+                                    </div>
+                                )}</> : <></>
+                            }
+                            {
+                                jsonData.map((el: any, index: number) => {
+                                    const filterObj = dataConfig?.value.find((ele: any) => ele.Id === el.Id);
+                                    if (!filterObj) return null;
+                                    return <div className="col-md-6">
+                                        <label className={styles.Headerlabel}>{el.Title}</label>
+                                        {filterObj.ColumnType === "Date and Time" ? <TextField
+                                            value={item._original.ListItemAllFields.hasOwnProperty(el.InternalTitleName) ? moment(item._original.ListItemAllFields[el.InternalTitleName]).format("DD/MM/YYYY") : ""}
+                                            disabled={true}
+                                        /> : <TextField
+                                            value={item._original.ListItemAllFields.hasOwnProperty(el.InternalTitleName) ? (el.ColumnType === "Person or Group" ? item._original.ListItemAllFields[el.InternalTitleName].Title : item._original.ListItemAllFields[el.InternalTitleName]) : ""}
+                                            //disabled={true}
+                                            readOnly
+                                        />}
+                                    </div>;
+
+                                })
+                            }
+                        </div>
                     </div>
-                </div>
-            </>;
-            setPanelForm(htm);
-            setPanelTitle(DisplayLabel.View);
-            setIsOpenCommonPanel(true);
+                </>;
+                setPanelForm(htm);
+                setPanelTitle(DisplayLabel.View);
+                setIsOpenCommonPanel(true);
+                break;
+            case "AdvancePermission":
+                setItemId(item._original.ListItemAllFields.Id);
+                setIsPanelOpen(true);
+                break;
+            case "Share":
+                setShareURL(`${props.SiteURL}/_layouts/15/sharedialog.aspx?listId=${libDetails.LibGuidName}&listItemId=${item._original.ListItemAllFields.Id}&clientId=sharePoint&policyTip=0&folderColor=undefined&ma=0&fullScreenMode=true&itemName=${item._original.ListItemAllFields.ActualName}&origin=${portalUrl}`);
+                setIFrameDialogOpened(true);
+                break;
+            case "OpenInBrowser":
+                const urls = item._original.LinkingUri === null ? item._original.ServerRelativeUrl : item._original.LinkingUri;
+                window.open(urls, '_blank');
+                break;
+        }
+    };
 
+    const getOpenAppURL = (filePath: string) => {
+        if (!filePath) return;
+        const extension = filePath.split('.').pop()?.toLowerCase();
+        if (!extension) return;
+
+        let appUrl: string | null = null;
+        switch (extension) {
+            case 'xls':
+            case 'xlsx':
+                appUrl = `ms-excel:ofe|u|${portalUrl}${filePath}`;
+                break;
+            case 'doc':
+            case 'docx':
+                appUrl = `ms-word:ofe|u|${portalUrl}${filePath}`;
+                break;
+            case 'ppt':
+            case 'pptx':
+                appUrl = `ms-powerpoint:ofe|u|${portalUrl}${filePath}`;
+                break;
+        }
+
+        if (appUrl) {
+            window.open(appUrl, '_blank');
         }
     };
     useEffect(() => {
@@ -770,42 +732,35 @@ export default function TreeView({ props }: any) {
 
     const bindMenu = (node: any, afolderPath: string) => {
 
+        const filterMenu = buttons.filter((btn) => btn.ButtonType === "Folder").map((el: IButtonsProps) => {
+            return {
+                key: el.key,
+                text: el.ButtonDisplayName,
+                onClick: () => { moreAction(el.key, afolderPath, node); },
+            };
+        });
 
-
-        const menuItems: any = [];
-        if (isValidUser || libDetails.TileAdminId === props.userID) {
-            menuItems.push({
-                key: 'advancePermission',
-                text: DisplayLabel.AdvancePermission,
-                onClick: () => { setItemId(node.ListItemAllFields.Id); setIsPanelOpen(true); },
-            });
-        }
-        menuItems.push(
-            {
-                key: 'divider_1',
-                itemType: ContextualMenuItemType.Divider,
-            },
-            {
-                key: 'share',
-                text: DisplayLabel.Share,
-                onClick: () => {
-                    setShareURL(`${props.SiteURL}/_layouts/15/sharedialog.aspx?listId=${libDetails.LibGuidName}&listItemId=${node.ListItemAllFields.Id}&clientId=sharePoint&policyTip=0&folderColor=undefined&ma=0&fullScreenMode=true&itemName=${node.Name}&origin=${portalUrl}`);
-                    setIFrameDialogOpened(true);
-                }
-            },
-            {
-                key: "view",
-                text: DisplayLabel.View,
-                onClick: () => { setActionFolderPath(afolderPath); setProjectUpdateData(node); setIsCreateProjectPopupOpen(true); setFormType("ViewForm"); },
-            },
-            {
-                key: 'edit',
-                text: DisplayLabel.Edit,
-                onClick: () => { setActionFolderPath(afolderPath); setProjectUpdateData(node); setIsCreateProjectPopupOpen(true); setFormType("EditForm"); },
-            },
-        );
-        return menuItems;
+        return filterMenu;
     };
+
+    const moreAction = (action: string, folderPath: string, node: any) => {
+        switch (action) {
+            case "FView":
+                setActionFolderPath(folderPath); setProjectUpdateData(node); setIsCreateProjectPopupOpen(true); setFormType("ViewForm");
+                break;
+            case "FEdit":
+                setActionFolderPath(folderPath); setProjectUpdateData(node); setIsCreateProjectPopupOpen(true); setFormType("EditForm");
+                break;
+            case "AdvancePermission":
+                setItemId(node.ListItemAllFields.Id); setIsPanelOpen(true);
+                break;
+            case "Share":
+                setShareURL(`${props.SiteURL}/_layouts/15/sharedialog.aspx?listId=${libDetails.LibGuidName}&listItemId=${node.ListItemAllFields.Id}&clientId=sharePoint&policyTip=0&folderColor=undefined&ma=0&fullScreenMode=true&itemName=${node.Name}&origin=${portalUrl}`);
+                setIFrameDialogOpened(true);
+                break;
+        }
+    };
+
     const onShowContextualMenu = useCallback((ev: React.MouseEvent<HTMLElement>, nodeId: string) => {
         ev.preventDefault(); // don't navigate
         setNodeId(Number(nodeId));
@@ -863,6 +818,64 @@ export default function TreeView({ props }: any) {
                 fetchFolders(folderPath, `${folderName}`);
             });
         });
+    };
+
+    useEffect(() => {
+        getUserGroups();
+    }, [props.context]);
+
+    const getUserGroups = async () => {
+        let allGroupCurrentUser: number[] = [];
+        let filterData: any[] = [];
+
+        try {
+
+            const groupsResponse: SPHttpClientResponse = await props.context.spHttpClient.get(`${props.SiteURL}/_api/web/GetUserById(${props.userID})/Groups`, SPHttpClient.configurations.v1);
+
+            const groupsData = await groupsResponse.json();
+            allGroupCurrentUser = groupsData.value.map((g: any) => g.Id);
+
+            const buttonsResponse = await getAllButtons(props.SiteURL, props.spHttpClient);
+            const allButtons: IButtonsProps[] = await buttonsResponse.value;
+
+
+            const data: IRolePermission[] = JSON.parse(libDetails.CustomPermission);
+
+            for (let i = 0; i < data.length; i++) {
+                const filterData1 = data[i].UsersId.filter((u: any) => u.Id === props.userID);
+                if (filterData1.length > 0) {
+                    filterData = filterData.concat(data[i]);
+                }
+
+                const filterData2 = data[i].UsersId.filter((u: any) => allGroupCurrentUser.includes(Number(u)));
+                if (filterData2.length > 0) {
+                    filterData = filterData.concat(data[i]);
+                }
+            }
+
+            let filterData3: any[] = [];
+
+            if (libDetails.TileAdminId === props.userID) {
+                filterData3 = allButtons.map((btn) => ({
+                    ...btn,
+                    key: btn.InternalName
+                }));
+            } else {
+                filterData.forEach((el) => {
+                    allButtons.forEach((btn) => {
+                        const match = el.Permission.filter((perm: any) => perm.value && btn.Id === perm.Id);
+                        filterData3 = filterData3.concat(match);
+                    });
+                });
+            }
+
+            const unique = filterData3.filter((el, index, self) => index === self.findIndex((p) => p.Title === el.Title));
+
+            setButtons(unique);
+            console.log('All Buttons:', buttons);
+        } catch (err) {
+            console.error('Error in getUserGroups:', err);
+        }
     };
 
     const getRecycleData = () => {
@@ -1126,3 +1139,15 @@ export default function TreeView({ props }: any) {
 }
 
 
+export const checkExtension = (fileName: string): boolean => {
+    if (!fileName) return false;
+    const extension = fileName.split(".").pop()?.toLowerCase();
+    const allowedExtensions = ["pdf", "txt", "jpg", "jpeg", "png", "gif", "bmp"];
+    return !allowedExtensions.includes(extension || "");
+};
+
+export const checkButtons = (input: string): boolean => {
+    if (!input) return false;
+    const buttonTypes = ["OpenInApp", "CheckIn", "DiscardCheckOut", "CheckOut", "Preview"];
+    return !buttonTypes.includes(input);
+};

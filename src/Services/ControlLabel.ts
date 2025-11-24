@@ -214,6 +214,7 @@ export async function GetAllLabel(WebUrl: string, spHttpClient: SPHttpClient, La
       FolderSpecialCharacterValidation: getValue("FolderSpecialCharacterValidation", data, Language),
       ActionDate: getValue("ActionDate", data, Language),
 
+      Role: getValue("Role", data, Language),
 
 
     };

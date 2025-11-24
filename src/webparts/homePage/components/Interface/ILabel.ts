@@ -198,4 +198,5 @@ export interface ILabel {
     FolderSpecialCharacterValidation: string;
     ActionDate: string;
 
+    Role: string;
 }
