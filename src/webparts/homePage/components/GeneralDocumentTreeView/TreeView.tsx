@@ -1031,9 +1031,12 @@ export default function TreeView({ props }: any) {
                     </div>
                 )}
             </div>;
+
         }
 
     };
+
+
     const advancedSearch = () => {
         sessionStorage.setItem("LibName", libName);
         location.href = "#/SearchFilter";
