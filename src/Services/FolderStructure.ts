@@ -28,7 +28,7 @@ import { WebPartContext } from "@microsoft/sp-webpart-base";
 //     });
 // };
 
-export const FolderStructure = async (context: WebPartContext, FolderPath: string, uid: number[], LibraryName: string) => {
+export const FolderStructure = async (context: WebPartContext, FolderPath: string, uid: number[], LibraryName: string, ChildFolderRoleInheritance: boolean) => {
 
     const folderUrl = `${context.pageContext.web.absoluteUrl}/${FolderPath}`;
     return await context.spHttpClient.post(
@@ -46,7 +46,9 @@ export const FolderStructure = async (context: WebPartContext, FolderPath: strin
     ).then(async (response: SPHttpClientResponse) => {
         if (response.ok) {
             const data = await response.json();
-            await breakRoleInheritance(context, FolderPath, uid, LibraryName, data.ListItemAllFields.ID);
+            if (ChildFolderRoleInheritance) {
+                await breakRoleInheritance(context, FolderPath, uid, LibraryName, data.ListItemAllFields.ID);
+            }
             return data.ListItemAllFields.ID;
         }
     }).catch((error) => {

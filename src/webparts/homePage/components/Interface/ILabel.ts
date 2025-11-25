@@ -197,5 +197,6 @@ export interface ILabel {
     FileAttachmentNote: string;
     FolderSpecialCharacterValidation: string;
     ActionDate: string;
+    AllowChildInheritance: string;
 
 }

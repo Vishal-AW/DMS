@@ -41,6 +41,7 @@ export interface IProjectEntryProps {
     FormType: string;
     folderObject: any;
     folderPath: string;
+    ChildFolderRoleInheritance: boolean;
 }
 
 
@@ -52,7 +53,8 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
     admin,
     FormType,
     folderObject,
-    folderPath
+    folderPath,
+    ChildFolderRoleInheritance
 }) => {
     const DisplayLabel: ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}');
     const [folderName, setFolderName] = useState<string>("");
@@ -94,6 +96,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
     const [folderTemplateErr, setFolderTemplateErr] = useState<any>("");
     const [folderStructure, setFolderStructure] = useState<any>([]);
     const inputRefs = useRef<{ [key: string]: HTMLInputElement | null; }>({});
+    const [TemFolderName, setTemFolderName] = useState<string>("");
     const meargestyles = mergeStyleSets({
         root: { selectors: { '> *': { marginBottom: 15 } } },
         control: { maxWidth: "100%", marginBottom: 15 },
@@ -620,11 +623,19 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
 
             console.log(users);
 
-            FolderStructure(context, `${LibraryDetails.LibraryName}/${folderName}`, users, LibraryDetails.LibraryName).then(async (response) => {
+            FolderStructure(context, `${LibraryDetails.LibraryName}/${folderName}`, users, LibraryDetails.LibraryName, true).then(async (response) => {
                 console.log(response);
                 await updateFolderMetaData(response);
                 if (createStructure) {
-                    createFolderStructure(users);
+                    if (TemFolderName === "") {
+                        createFolderStructure(users);
+                    }
+                    else {
+                        FolderStructure(context, `${LibraryDetails.LibraryName}/${folderName}/${TemFolderName}`, users, LibraryDetails.LibraryName, ChildFolderRoleInheritance).then(async (response) => {
+                            await updateFolderMetaData(response);
+                            createFolderStructure(users);
+                        });
+                    }
                 }
             });
         }
@@ -725,8 +736,9 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
         );
         const firstlevel = getFirstLevel(filterFolders);
         let count = 0;
+        const Updatedfolderpath = TemFolderName ? `${folderName}/${TemFolderName}` : folderName;
         firstlevel.map(async (folder: any) => {
-            const response = await FolderStructure(context, `${LibraryDetails.LibraryName}/${folderName}/${folder.FolderName}`, users, LibraryDetails.LibraryName);
+            const response = await FolderStructure(context, `${LibraryDetails.LibraryName}/${Updatedfolderpath}/${folder.FolderName}`, users, LibraryDetails.LibraryName, true);
             await updateFolderMetaData(response);
             const ChildLevel = getEqualToData(filterFolders, folder.Id);
             await createChildFolder(ChildLevel, folder.FolderName, users);
@@ -741,15 +753,16 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
     };
 
     const createChildFolder = async (folder: any, Name: any, users: any) => {
+        const basePath = TemFolderName ? `${folderName}/${TemFolderName}` : folderName;
         folder.map(async (folder: any) => {
             const ChildLevel = getEqualToData(folderStructure, folder.Id);
             if (ChildLevel.length > 0) {
-                const response = await FolderStructure(context, `${LibraryDetails.LibraryName}/${folderName}/${Name}/${folder.FolderName}`, users, LibraryDetails.LibraryName);
+                const response = await FolderStructure(context, `${LibraryDetails.LibraryName}/${basePath}/${Name}/${folder.FolderName}`, users, LibraryDetails.LibraryName, ChildFolderRoleInheritance);
                 await updateFolderMetaData(response);
                 await createChildFolder(ChildLevel, `${Name}/${folder.FolderName}`, users);
             }
             else {
-                const response = await FolderStructure(context, `${LibraryDetails.LibraryName}/${folderName}/${Name}/${folder.FolderName}`, users, LibraryDetails.LibraryName);
+                const response = await FolderStructure(context, `${LibraryDetails.LibraryName}/${basePath}/${Name}/${folder.FolderName}`, users, LibraryDetails.LibraryName, ChildFolderRoleInheritance);
                 await updateFolderMetaData(response);
             }
         });
@@ -765,6 +778,9 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
 
     const bindFormData = () => {
         setFolderName(folderObject.Name);
+        if (folderObject.ListItemAllFields.CreateFolder === true) {
+            setTemFolderName(folderObject.ListItemAllFields.TemFolderName);
+        }
         setIsSuffixRequired(folderObject.ListItemAllFields.IsSuffixRequired);
         if (folderObject.ListItemAllFields.IsSuffixRequired) {
             setSuffix(folderObject.ListItemAllFields.DocumentSuffix);
@@ -803,6 +819,9 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
         return !isNaN(Number(value)) && value.trim() !== "";
     };
     const removeSepcialCharacters = (newValue?: string) => newValue?.replace(/[^a-zA-Z0-9\s]/g, '') || '';
+    const removeFolderSepcialCharacters = (newValue?: string) =>
+        newValue?.replace(/[^a-zA-Z0-9_\-\s]/g, '') || '';
+
     return (
         <>
             <Panel
@@ -834,7 +853,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                                 value={folderName}
                                 required
                                 onChange={(el: React.ChangeEvent<HTMLInputElement>, newValue?: string) => {
-                                    const validName = removeSepcialCharacters(newValue);
+                                    const validName = removeFolderSepcialCharacters(newValue);
                                     setFolderName(validName);
                                 }}
                                 errorMessage={folderNameErr}
@@ -1014,6 +1033,23 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                         </div>
                         {
                             createStructure ? <div className="col-md-6">
+
+                                <label className={styles.Headerlabel}>{DisplayLabel.FolderName} </label>
+
+                                <TextField
+                                    value={TemFolderName}
+                                    onChange={(ev, newValue) => setTemFolderName(newValue || "")}
+                                    disabled={isDisabled || FormType === "EditForm"}
+                                />
+                            </div> : <></>
+                        }
+                    </div>
+
+                    <div className="row">
+                        {
+                            createStructure ? <div className="col-md-6">
+
+
                                 <label className={styles.Headerlabel}>{DisplayLabel.TemplateName}<span style={{ color: "red" }}>*</span> </label>
                                 <Select
                                     options={allFolderTemplate}
@@ -1028,6 +1064,7 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
                             </div> : <></>
                         }
                     </div>
+
                 </div>
 
             </Panel>

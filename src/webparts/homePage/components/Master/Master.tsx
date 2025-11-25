@@ -102,6 +102,7 @@ export default function Master({ props }: any): JSX.Element {
   const [tableData, setTableData] = useState<any[]>([]);
   const [permission, setPermission] = useState<any[]>([]);
   const [admin, setAdmin] = useState<any[]>([]);
+  const [AllowChildInheritance, SetAllowChildInheritance] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>("");
 
   const navigate = useNavigate();
@@ -291,6 +292,7 @@ export default function Master({ props }: any): JSX.Element {
     await setIsTileStatus(EditSettingData[0].Active);
     await setIsAllowApprover(EditSettingData[0].AllowApprover);
     await setIsDropdownVisible(EditSettingData[0].AllowOrder);
+    await SetAllowChildInheritance(EditSettingData[0].AllowChildInheritance);
     if (EditSettingData[0].AllowOrder === true) {
       const EditOrder0Data = MainTableSetdata.filter((item: any) => item.Order0 === EditSettingData[0].Order0);
       await setorder0DataDataID({ value: EditOrder0Data[0]?.Order0, label: EditOrder0Data[0]?.Order0 });
@@ -621,6 +623,9 @@ export default function Master({ props }: any): JSX.Element {
     setIsDropdownVisible(checked);
   };
 
+  const handleAllowChildInheritanceChange = (checked: boolean): void => {
+    SetAllowChildInheritance(checked);
+  };
   const ToggleChangeforrefernceno = (checked: boolean): void => {
     setDynamicDataReference(checked);
     // setRefExample("");
@@ -882,6 +887,7 @@ export default function Master({ props }: any): JSX.Element {
     setIsTileStatus(true);
     setIsAllowApprover(false);
     setIsDropdownVisible(false);
+    SetAllowChildInheritance(false);
     setDynamicDataReference(false);
     setRefrenceNOData("");
     setArchiveVersions("");
@@ -1133,6 +1139,7 @@ export default function Master({ props }: any): JSX.Element {
         ShowMoreActions: selectedcheckboxActions.join(";"),
         Order0: orderData,
         AllowOrder: true,
+        AllowChildInheritance: AllowChildInheritance,
         Documentpath: siteurl,
         ReferenceFormula: refExample,
         Separator: separator,
@@ -1336,6 +1343,7 @@ export default function Master({ props }: any): JSX.Element {
         ShowMoreActions: selectedcheckboxActions.join(";"),
         // Order0: orderData,
         AllowOrder: isDropdownVisible,
+        AllowChildInheritance: AllowChildInheritance,
         SystemCreated: false,
         ReferenceFormula: refExample,
         Separator: separator,
@@ -1628,6 +1636,14 @@ export default function Master({ props }: any): JSX.Element {
                       <div className="form-group">
                         <label className={styles.Headerlabel}>{DisplayLabel?.Order}</label>
                         <Toggle checked={isDropdownVisible} onChange={(_, checked) => handleToggleChange(checked!)}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="column3">
+                      <div className="form-group">
+                        <label className={styles.Headerlabel}>{DisplayLabel?.AllowChildInheritance}</label>
+                        <Toggle checked={AllowChildInheritance} onChange={(_, checked) => handleAllowChildInheritanceChange(checked!)}
                         />
                       </div>
                     </div>

@@ -91,6 +91,7 @@ export default function TreeView({ props }: any) {
     const libDetails: any = JSON.parse(tileObject as string);
     const libName = libDetails.LibraryName;
     const libtitlename = libDetails.TileName;
+    const ChildFolderRoleInheritance = libDetails.AllowChildInheritance;
     //const archivelibName = libDetails.ArchiveLibraryName;
     const portalUrl = new URL(props.SiteURL).origin;
     const [isPanelOpen, setIsPanelOpen] = useState(false);
@@ -935,7 +936,7 @@ export default function TreeView({ props }: any) {
         }
         setShowLoader({ display: "block" });
         const users = [folderObject?.ListItemAllFields.ProjectmanagerId, folderObject?.ListItemAllFields.PublisherId, ...admin];
-        FolderStructure(props.context, `${folderPath}/${folderName}`, users, libName).then((response) => {
+        FolderStructure(props.context, `${folderPath}/${folderName}`, users, libName, ChildFolderRoleInheritance).then((response) => {
             const folderData = JSON.parse(JSON.stringify(folderObject?.ListItemAllFields, (key, value) => (value === null || (Array.isArray(value) && value.length === 0)) ? undefined : value));
             let obj: any = {
                 ...folderData
@@ -1275,7 +1276,7 @@ export default function TreeView({ props }: any) {
                 }}
             />
             <AdvancePermission isOpen={isPanelOpen} context={props.context} folderId={itemId} LibraryName={libName} dismissPanel={onDismiss} />
-            <ProjectEntryForm isOpen={isCreateProjectPopupOpen} dismissPanel={dissmissProjectCreationPanel} context={props.context} LibraryDetails={libDetails} admin={admin} FormType={formType} folderObject={projectUpdateData} folderPath={actionFolderPath} />
+            <ProjectEntryForm isOpen={isCreateProjectPopupOpen} dismissPanel={dissmissProjectCreationPanel} context={props.context} LibraryDetails={libDetails} admin={admin} FormType={formType} folderObject={projectUpdateData} folderPath={actionFolderPath} ChildFolderRoleInheritance={ChildFolderRoleInheritance} />
             <UploadFiles context={props.context} isOpenUploadPanel={isOpenUploadPanel} folderName={folderName} folderPath={folderPath} dismissUploadPanel={dismissUploadPanel} libName={libName} files={files} folderObject={folderObject?.ListItemAllFields} LibraryDetails={libDetails} />
             <Panel
                 headerText={DisplayLabel.AddNewFolder}
