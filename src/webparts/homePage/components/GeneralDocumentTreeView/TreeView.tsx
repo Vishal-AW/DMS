@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { checkPermissions, commonPostMethod, getAllFolder, getApprovalData, getArchiveData, getListData, updateLibrary } from "../../../../Services/GeneralDocument";
+import { checkPermissions, commonPostMethod, getAllFolder, getApprovalData, getArchiveData, getListData, updateLibrary, checkUserIsSiteAdminById, checkUserInProjectAdmin } from "../../../../Services/GeneralDocument";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./TreeView.module.scss";
 import { CommandBarButton, DefaultButton, DialogType, Icon, IStackItemStyles, IStackStyles, IStackTokens, Panel, PanelType, PrimaryButton, Stack, DirectionalHint } from "@fluentui/react";
@@ -68,7 +68,9 @@ export default function TreeView({ props }: any) {
     const [hideDialogCheckOut, setHideDialogCheckOut] = useState<boolean>(false);
     const [ServerRelativeUrl, setServerRelativeUrl] = useState("");
     const [comment, setComment] = useState("");
+    const [commentCheckIn, setCommentCheckIn] = useState("");
     const [alertMsg, setAlertMsg] = useState("");
+
 
     // const [itemIds, setItemIds] = useState<number | null>(null);
     // const [isHovering, setIsHovering] = useState(false);
@@ -116,9 +118,19 @@ export default function TreeView({ props }: any) {
     const [archiveData, setArchiveData] = useState<any>([]);
     const [approvalData, setApprovalData] = useState<any>([]);
 
+    const [showListGridSettingSection, setShowListGridSettingSection] = React.useState(false);
+    const [SiteCollectionUserFlag, setSiteCollectionUserFlag] = useState<boolean>(false);
+    const [projectAdminGroupUserFlag, setProjectAdminGroupUserFlag] = useState<boolean>(false);
+
+    const [selectedItem, setSelectedItem] = useState<any>(null);
+
     useEffect(() => {
+
+        getProjectAdminGroupUserData(props.context)
         fetchFolders(libName, "");
+        setShowListGridSettingSection(true);
         getAdmin();
+        getSiteCollectionUser(props.context);
         getDeletedData();
         getPendingApprovalData();
         getArchiveFile();
@@ -127,6 +139,8 @@ export default function TreeView({ props }: any) {
     useEffect(() => {
         fetchFolders(folderPath, folderName);
     }, [isOpenUploadPanel]);
+
+
 
     // const fetchFolders = async (folderPath: string, nodeName: string) => {
     //     try {
@@ -162,6 +176,8 @@ export default function TreeView({ props }: any) {
 
     const fetchFolders = async (folderPath: string, nodeName: string) => {
         try {
+
+            setShowListGridSettingSection(true);
 
             if (viewListSetting === "List View") {
                 setIsShowviewListSetting(false);
@@ -204,11 +220,50 @@ export default function TreeView({ props }: any) {
 
 
     const getAdmin = async () => {
+
         const data = await getListData(`${props.SiteURL}/_api/web/lists/getbytitle('DMS_GroupName')/items?`, props.context);
         setAdmin(data.value.map((el: any) => (el.GroupNameId)));
         const isMembers = await isMember(props.context, "ProjectAdmin");
         setIsValidUser(isMembers.value.length > 0);
     };
+
+    const getSiteCollectionUser = async (context: any) => {
+        try {
+            const isAdmin = await checkUserIsSiteAdminById(props.context, props.userID);
+
+            if (isAdmin) {
+                setSiteCollectionUserFlag(true);
+                console.log("User is site collection admin");
+            } else {
+                setSiteCollectionUserFlag(false);
+
+                console.log("User is NOT site collection admin");
+            }
+            console.log(SiteCollectionUserFlag)
+        } catch (error) {
+            console.error("Error:", error);
+            return false;
+        }
+    };
+
+    const getProjectAdminGroupUserData = async (context: any) => {
+        try {
+            const isProjectAdmin = await checkUserInProjectAdmin(props.context, props.userID);
+            if (isProjectAdmin) {
+                setProjectAdminGroupUserFlag(true);
+                console.log("User is site collection admin");
+            } else {
+                setProjectAdminGroupUserFlag(false);
+
+                console.log("User is NOT site collection admin");
+            }
+            console.log(SiteCollectionUserFlag)
+        } catch (error) {
+            console.error("Error:", error);
+            return false;
+        }
+    };
+
 
     const [expandedNodes, setExpandedNodes] = useState<string[]>([libName]);
 
@@ -446,17 +501,64 @@ export default function TreeView({ props }: any) {
                 onClick: () => commonFunction("Checkout", item),
             });
         }
-        if (item._original.CheckOutType === 0) {
-            menuItems.push({
-                key: 'CheckIn',
-                text: DisplayLabel.CheckIn,
-                onClick: () => commonFunction("CheckIn", item),
-            }, {
-                key: 'DiscardCheckOut',
-                text: DisplayLabel.DiscardCheckOut,
-                onClick: () => commonFunction("DiscardCheckOut", item),
-            });
+
+        // Only users with permission can see check-in/out options
+
+        const canSeeCheckInOut = (
+            item._original.CheckedOutByUser?.Id === props.userID ||
+            SiteCollectionUserFlag === true ||
+            projectAdminGroupUserFlag === true || libDetails.TileAdminId === props.userID
+        );
+
+        // if (item._original.CheckedOutByUser.Id === props.userID || SiteCollectionUserFlag === true) {
+        //     if (item._original.CheckOutType === 0) {
+        //         menuItems.push({
+        //             key: 'CheckIn',
+        //             text: DisplayLabel.CheckIn,
+        //             onClick: () => commonFunction("CheckIn", item),
+        //         }, {
+        //             key: 'DiscardCheckOut',
+        //             text: DisplayLabel.DiscardCheckOut,
+        //             onClick: () => commonFunction("DiscardCheckOut", item),
+        //         });
+        //     }
+        // }
+        // if (item._original.CheckOutType === 0) {
+        //     menuItems.push({
+        //         key: 'CheckIn',
+        //         text: DisplayLabel.CheckIn,
+        //         onClick: () => commonFunction("CheckIn", item),
+        //     }, {
+        //         key: 'DiscardCheckOut',
+        //         text: DisplayLabel.DiscardCheckOut,
+        //         onClick: () => commonFunction("DiscardCheckOut", item),
+        //     });
+        // }
+
+        // If user has permission
+        if (canSeeCheckInOut) {
+
+            // File is checked out (0 = something in your case)
+            if (item._original.CheckOutType === 0) {
+
+                menuItems.push(
+                    {
+                        key: 'CheckIn',
+                        text: DisplayLabel.CheckIn,
+                        onClick: () => commonFunction("CheckIn", item),
+                    },
+                    {
+                        key: 'DiscardCheckOut',
+                        text: DisplayLabel.DiscardCheckOut,
+                        onClick: () => commonFunction("DiscardCheckOut", item),
+                    }
+                );
+            }
         }
+
+        // Return menuItems
+        //return menuItems;
+
         if (libDetails.TileAdminId === props.userID || isValidUser) {
             menuItems.push({
                 key: 'share',
@@ -514,17 +616,25 @@ export default function TreeView({ props }: any) {
         }
         else if (action === "Checkout") {
             await commonPostMethod(`${props.SiteURL}/_api/web/GetFileByServerRelativeUrl('${item._original.ServerRelativeUrl}')/checkout`, props.context);
-            setAlertMsg(DisplayLabel.CheckoutSuccess);
+            // setAlertMsg(DisplayLabel.CheckoutSuccess);
+            setAlertMsg(DisplayLabel.CheckedOutSuccessfully);
             setIsPopupBoxVisible(true);
             fetchFolders(folderPath, folderName);
         }
+        // else if (action === "CheckIn") {
+
+        //     setActionButton(<PrimaryButton text={DisplayLabel.CheckIn} style={{ marginRight: "10px" }} onClick={async () => {
+        //         await commonPostMethod(`${props.SiteURL}/_api/web/GetFileByServerRelativeUrl('${item._original.ServerRelativeUrl}')/checkin(comment='${comment}',checkintype=0)`, props.context);
+        //         setAlertMsg(DisplayLabel.CheckInSuccess);
+        //         setIsPopupBoxVisible(true);
+        //         fetchFolders(folderPath, folderName);
+        //     }} />);
+        //     setIsOpenCommonPanel(true);
+        // }
+
         else if (action === "CheckIn") {
-            setActionButton(<PrimaryButton text={DisplayLabel.CheckIn} style={{ marginRight: "10px" }} onClick={async () => {
-                await commonPostMethod(`${props.SiteURL}/_api/web/GetFileByServerRelativeUrl('${item._original.ServerRelativeUrl}')/checkin(comment='${comment}',checkintype=0)`, props.context);
-                setAlertMsg(DisplayLabel.CheckInSuccess);
-                setIsPopupBoxVisible(true);
-                fetchFolders(folderPath, folderName);
-            }} />);
+            setSelectedItem(item);           // <-- IMPORTANT
+            setPanelTitle(DisplayLabel.CheckIn);
             setIsOpenCommonPanel(true);
         }
         else if (action === "DiscardCheckOut") {
@@ -605,6 +715,7 @@ export default function TreeView({ props }: any) {
                                 //disabled={true}
                                 readOnly
                             />
+                            <br></br>
                         </div>
                         <div className="col-md-6">
                             <label className={styles.Headerlabel}>{DisplayLabel.FolderName}</label>
@@ -613,6 +724,7 @@ export default function TreeView({ props }: any) {
                                 // disabled={true}
                                 readOnly
                             />
+                            <br></br>
                         </div>
                         {item._original.ListItemAllFields.IsSuffixRequired ? <>
                             <div className="col-md-6">
@@ -622,6 +734,7 @@ export default function TreeView({ props }: any) {
                                     //disabled={true}
                                     readOnly
                                 />
+                                <br></br>
                             </div>
 
 
@@ -633,6 +746,7 @@ export default function TreeView({ props }: any) {
                                         //disabled={true}
                                         readOnly
                                     />
+                                    <br></br>
                                 </div>
                             )}</> : <></>
                         }
@@ -650,6 +764,7 @@ export default function TreeView({ props }: any) {
                                         //disabled={true}
                                         readOnly
                                     />}
+                                    <br></br>
                                 </div>;
 
                             })
@@ -682,8 +797,27 @@ export default function TreeView({ props }: any) {
                 <TextField value={comment} onChange={(event: React.ChangeEvent<HTMLInputElement>) => setComment(event.target.value)} />
             </div>
         </>);
-
     }, [comment]);
+
+    const handleCheckIn = async () => {
+
+        if (!selectedItem) {
+            console.error("No item found for check-in");
+            return;
+        }
+
+        const fileUrl = selectedItem._original.ServerRelativeUrl;
+
+        await commonPostMethod(
+            `${props.SiteURL}/_api/web/GetFileByServerRelativeUrl('${fileUrl}')/checkin(comment='${commentCheckIn}',checkintype=0)`,
+            props.context
+        );
+
+        // setAlertMsg(DisplayLabel.CheckInSuccess);
+        setAlertMsg(DisplayLabel.CheckedInSuccessfully);
+        setIsPopupBoxVisible(true);
+        fetchFolders(folderPath, folderName);
+    };
 
     const getPreviewUrl = (filePath: string) => {
         const extension = filePath?.split('.').pop()?.toLowerCase();
@@ -741,14 +875,29 @@ export default function TreeView({ props }: any) {
         },
         [itemId]
     );
+
+    //comment by rupali
+    // const handleConfirmCheckOut = useCallback(async (value: boolean) => {
+    //     if (value) {
+    //         await commonPostMethod(`${props.SiteURL}/_api/web/GetFileByServerRelativeUrl('${ServerRelativeUrl}')/undocheckout()`, props.context);
+    //         setAlertMsg(DisplayLabel.DiscardedCheckOut);
+    //         setIsPopupBoxVisible(true);
+    //         fetchFolders(folderPath, folderName);
+    //     }
+    // }, [ServerRelativeUrl]);
+
     const handleConfirmCheckOut = useCallback(async (value: boolean) => {
         if (value) {
             await commonPostMethod(`${props.SiteURL}/_api/web/GetFileByServerRelativeUrl('${ServerRelativeUrl}')/undocheckout()`, props.context);
             setAlertMsg(DisplayLabel.DiscardedCheckOut);
+            // Show success popup
             setIsPopupBoxVisible(true);
+            // Close confirmation dialog
+            closeDialogCheckOut();
             fetchFolders(folderPath, folderName);
         }
     }, [ServerRelativeUrl]);
+
 
 
     const deleteDoc = async () => {
@@ -962,7 +1111,11 @@ export default function TreeView({ props }: any) {
 
     };
 
-    const hidePopup = useCallback(() => { setIsPopupBoxVisible(false); }, [isPopupBoxVisible]);
+    //Comment by rupali
+    // const hidePopup = useCallback(() => { setIsPopupBoxVisible(false); }, [isPopupBoxVisible]);
+    const hidePopup = useCallback(() => {
+        setIsPopupBoxVisible(false);
+    }, []);
 
     //Original Code
     // const bindTable = () => {
@@ -1113,12 +1266,39 @@ export default function TreeView({ props }: any) {
                         <div className="grid">
                             <div className="row">
                                 <div className="col-md-12">
-                                    {libDetails.IsArchiveRequired ? <CommandBarButton iconProps={{ iconName: "Archive", style: { color: "#f1416c" } }} text={`${DisplayLabel.Archive} (${archiveData.length || 0})`} onClick={getArchive} />
+                                    {/* {libDetails.IsArchiveRequired ? <CommandBarButton iconProps={{ iconName: "Archive", style: { color: "#f1416c" } }} text={`${DisplayLabel.Archive} (${archiveData.length || 0})`} onClick={getArchive} />
                                         : <CommandBarButton iconProps={{ iconName: "delete", style: { color: "#f1416c" } }} text={`${DisplayLabel.RecycleBin} (${deletedData.length || 0})`} onClick={getRecycleData} />
+                                    } */}
+
+                                    {libDetails.IsArchiveRequired ?
+                                        <CommandBarButton iconProps={{ iconName: "Archive", style: { color: "#f1416c" } }}
+                                            text={`${DisplayLabel.Archive} (${archiveData.length || 0})`}
+                                            //    onClick={getArchive}
+                                            onClick={() => {
+                                                getArchive();
+                                                setShowListGridSettingSection(false); // 👈 hide the menu section
+                                            }}
+                                        />
+                                        : <CommandBarButton iconProps={{ iconName: "delete", style: { color: "#f1416c" } }}
+                                            text={`${DisplayLabel.RecycleBin} (${deletedData.length || 0})`}
+                                            onClick={getRecycleData}
+                                        />
                                     }
                                 </div>
+                                {/* 
+                                <div className="col-md-12"><CommandBarButton iconProps={{ iconName: "DocumentApproval", style: { color: "#50cd89" } }} text={`${DisplayLabel.Approval} (${approvalData.length || 0})`} onClick={() => setTables("Approver")} /></div> */}
 
-                                <div className="col-md-12"><CommandBarButton iconProps={{ iconName: "DocumentApproval", style: { color: "#50cd89" } }} text={`${DisplayLabel.Approval} (${approvalData.length || 0})`} onClick={() => setTables("Approver")} /></div>
+
+                                <div className="col-md-12"><CommandBarButton iconProps={{
+                                    iconName: "DocumentApproval",
+                                    style: { color: "#50cd89" }
+                                }} text={`${DisplayLabel.Approval} (${approvalData.length || 0})`}
+                                    //  onClick={() => setTables("Approver")} 
+                                    onClick={() => {
+                                        setTables("Approver");
+                                        setShowListGridSettingSection(false); // 👈 hide the menu section
+                                    }}
+                                /></div>
 
                                 <div className="col-md-12"><CommandBarButton iconProps={{ iconName: "Search", style: { color: "#7239ea" } }} text={DisplayLabel.AdvancedSearch} onClick={advancedSearch} /></div>
                             </div>
@@ -1154,75 +1334,78 @@ export default function TreeView({ props }: any) {
                     <div className="card" style={{ border: "none", padding: "18px 25px" }}>
 
 
-                        <div className="row" style={{ marginBottom: 5 }}>
-                            <div
-                                style={{
-                                    display: 'flex',
-                                    justifyContent: 'flex-end',
-                                    alignItems: 'center',
-                                    // padding: '8px 16px',
-                                }}
-                            >
-                                {/* Folder/Tree icon on the left */}
-                                <span style={{ marginRight: 8 }}>
-                                    <i
-                                        className="ms-Icon ms-Icon--FolderList"
-                                        aria-hidden="true"
-                                        style={{ fontSize: 20, color: '#0078d4', cursor: 'pointer' }}
-                                    ></i>
-                                </span>
-                                {/* Menu hover area */}
+                        {showListGridSettingSection && (
+                            <div className="row" style={{ marginBottom: 5 }}>
                                 <div
-                                    ref={buttonRef}
-                                    onMouseEnter={() => setMenuVisible(true)}
-                                    onMouseLeave={onDismiss} // 👈 hides menu when mouse leaves the area
-                                    style={{ position: 'relative' }}
+                                    style={{
+                                        display: 'flex',
+                                        justifyContent: 'flex-end',
+                                        alignItems: 'center',
+                                        // padding: '8px 16px',
+                                    }}
                                 >
-                                    <IconButton
-                                        iconProps={{ iconName: 'BulletedTreeList' }}
-                                        title="View Options"
-                                    />
-                                    {menuVisible && (
-                                        <div
-                                            onMouseLeave={onDismiss} // 👈 ensures menu also closes when leaving the dropdown
-                                            style={{ position: 'absolute', right: 0, top: '40px' }}
-                                        >
-                                            <ContextualMenu
-                                                items={[
-                                                    {
-                                                        key: 'list',
-                                                        text: 'List',
-                                                        iconProps: { iconName: 'List' },
-                                                        // onClick: () => alert('List View'),
-                                                        // onClick: () => setViewListSetting('List View'),
-                                                        onClick: () => {
-                                                            setViewListSetting('List View');
-                                                            setIsShowviewListSetting(false); // or false depending on your need
-                                                            console.log(viewListSetting);
-                                                        }
-                                                    },
-                                                    {
-                                                        key: 'tiles',
-                                                        text: 'Tiles',
-                                                        iconProps: { iconName: 'Tiles' },
-                                                        // onClick: () => alert('Tiles View'),
-                                                        // onClick: () => setViewListSetting('Tiles View'),
-                                                        onClick: () => {
-                                                            setViewListSetting('Tiles View');
-                                                            setIsShowviewListSetting(true); // or false depending on your need
-                                                            console.log(isShowviewListSetting);
-                                                        }
-                                                    },
-                                                ]}
-                                                target={buttonRef}
-                                                onDismiss={onDismissSetting}
-                                                directionalHint={DirectionalHint.bottomRightEdge}
-                                            />
-                                        </div>
-                                    )}
+                                    {/* Folder/Tree icon on the left */}
+                                    <span style={{ marginRight: 8 }}>
+                                        <i
+                                            className="ms-Icon ms-Icon--FolderList"
+                                            aria-hidden="true"
+                                            style={{ fontSize: 20, color: '#0078d4', cursor: 'pointer' }}
+                                        ></i>
+                                    </span>
+                                    {/* Menu hover area */}
+                                    <div
+                                        ref={buttonRef}
+                                        onMouseEnter={() => setMenuVisible(true)}
+                                        onMouseLeave={onDismiss} // 👈 hides menu when mouse leaves the area
+                                        style={{ position: 'relative' }}
+                                    >
+                                        <IconButton
+                                            iconProps={{ iconName: 'BulletedTreeList' }}
+                                            title="View Options"
+                                        />
+                                        {menuVisible && (
+                                            <div
+                                                onMouseLeave={onDismiss} // 👈 ensures menu also closes when leaving the dropdown
+                                                style={{ position: 'absolute', right: 0, top: '40px' }}
+                                            >
+                                                <ContextualMenu
+                                                    items={[
+                                                        {
+                                                            key: 'list',
+                                                            text: 'List',
+                                                            iconProps: { iconName: 'List' },
+                                                            // onClick: () => alert('List View'),
+                                                            // onClick: () => setViewListSetting('List View'),
+                                                            onClick: () => {
+                                                                setViewListSetting('List View');
+                                                                setIsShowviewListSetting(false); // or false depending on your need
+                                                                console.log(viewListSetting);
+                                                            }
+                                                        },
+                                                        {
+                                                            key: 'tiles',
+                                                            text: 'Tiles',
+                                                            iconProps: { iconName: 'Tiles' },
+                                                            // onClick: () => alert('Tiles View'),
+                                                            // onClick: () => setViewListSetting('Tiles View'),
+                                                            onClick: () => {
+                                                                setViewListSetting('Tiles View');
+                                                                setIsShowviewListSetting(true); // or false depending on your need
+                                                                console.log(isShowviewListSetting);
+                                                            }
+                                                        },
+                                                    ]}
+                                                    target={buttonRef}
+                                                    onDismiss={onDismissSetting}
+                                                    directionalHint={DirectionalHint.bottomRightEdge}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        )}
+
 
                         <div className="grid" style={{ alignItems: "center", display: "flex", justifyContent: "space-between" }}>
                             <div className="row">
@@ -1307,7 +1490,8 @@ export default function TreeView({ props }: any) {
             </Panel>
             <PopupBox isPopupBoxVisible={isPopupBoxVisible} hidePopup={hidePopup} msg={alertMsg} />
             <div className={cls["modal"]} style={showLoader}></div>
-            <Panel
+
+            {/* <Panel
                 headerText={panelTitle}
                 isOpen={isOpenCommonPanel}
                 onDismiss={dismissCommanPanel}
@@ -1318,12 +1502,64 @@ export default function TreeView({ props }: any) {
             >
                 <div style={{ marginTop: "10px" }}>
                     <div className="grid">
+                        <div className="row">         
+                            {panelForm}                       
+                        </div>
+                    </div>
+                </div>
+            </Panel> */}
+
+            <Panel
+                headerText={panelTitle}
+                isOpen={isOpenCommonPanel}
+                onDismiss={dismissCommanPanel}
+                closeButtonAriaLabel="Close"
+                type={panelSize}
+                onRenderFooterContent={() => (
+                    <>
+                        {panelTitle === DisplayLabel.CheckIn ? (
+                            <PrimaryButton
+                                text={DisplayLabel.CheckIn}
+                                style={{ marginRight: "10px" }}
+                                onClick={handleCheckIn}
+                            />
+                        ) : (
+                            actionButton
+                        )}
+
+                        <DefaultButton onClick={dismissCommanPanel} className={styles["light-btn"]}>
+                            Cancel
+                        </DefaultButton>
+                    </>
+                )}
+                isFooterAtBottom={true}
+            >
+                <div style={{ marginTop: "10px" }}>
+                    <div className="grid">
                         <div className="row">
-                            {panelForm}
+
+                            {panelTitle === DisplayLabel.CheckIn && (
+                                <div className="col-md-10" style={{ marginBottom: "15px" }}>
+
+                                    {/* <label>{DisplayLabel.CheckInComment}</label> */}
+                                    <label className={styles.Headerlabel}>{DisplayLabel?.CheckInComment}</label>
+                                    <TextField
+
+                                        value={commentCheckIn}
+                                        onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                                            setCommentCheckIn(event.target.value)
+                                        }
+                                        placeholder="Enter comment"
+                                    />
+                                </div>
+                            )}
+
+                            {panelForm && panelTitle !== DisplayLabel.CheckIn && panelForm}
                         </div>
                     </div>
                 </div>
             </Panel>
+
             <ConfirmationDialog hideDialog={hideDialog} closeDialog={closeDialog} handleConfirm={handleConfirm} msg={message} />
             <ConfirmationDialog hideDialog={hideDialogCheckOut} closeDialog={closeDialogCheckOut} handleConfirm={handleConfirmCheckOut} msg={message} />
         </div>

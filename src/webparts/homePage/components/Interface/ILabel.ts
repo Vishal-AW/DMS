@@ -198,5 +198,6 @@ export interface ILabel {
     FolderSpecialCharacterValidation: string;
     ActionDate: string;
     AllowChildInheritance: string;
+    CheckInComment: string;
 
 }

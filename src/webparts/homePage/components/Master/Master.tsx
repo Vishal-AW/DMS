@@ -121,7 +121,13 @@ export default function Master({ props }: any): JSX.Element {
   const [isEditMode, setIsEditMode] = useState(false);
 
   console.log(FileuniqueIdData);
+
   const openAddPanel = () => {
+    const newRef = `${moment().format('YYYY')}-00001`;
+
+    setRefrenceNOData(newRef);
+    setRefExample(newRef);   // ✔ set directly
+
     setIsEditMode(false);
     setIsPanelOpen(true);
   };
@@ -157,7 +163,8 @@ export default function Master({ props }: any): JSX.Element {
     setRefExample(RefrenceNOData);
     setisPopupVisible(false);
     getAdmin();
-  }, []);
+  }, [RefrenceNOData]);
+
 
   const getAdmin = async () => {
     const data = await getListData(`${props.SiteURL}/_api/web/lists/getbytitle('DMS_GroupName')/items`, props.context);
@@ -1297,16 +1304,52 @@ export default function Master({ props }: any): JSX.Element {
       //   console.log("No file selected.");
       // }
 
+      //comment by rupali
+      // if (uploadfile.length > 0 && selectedFile) {
+      //   const backImageActualName = selectedFile.name.split(".")[0].replace(/[^a-zA-Z0-9]/g, "");
+      //   const backImageName = `${backImageActualName}.${selectedFile.name.split(".")[1]}`;
+      //   siteurl = `${props.SiteURL}/DMS_TileDocument/${uniqueid}-${backImageName}`;
+      // }
+      // else {
+      //   const existingData = await getDataById(props.SiteURL, props.spHttpClient, CurrentEditID);
+      //   siteurl = existingData.value[0]?.Documentpath || "";
+      // }
+
+      // let siteurl = "";
 
       if (uploadfile.length > 0 && selectedFile) {
-        const backImageActualName = selectedFile.name.split(".")[0].replace(/[^a-zA-Z0-9]/g, "");
-        const backImageName = `${backImageActualName}.${selectedFile.name.split(".")[1]}`;
+
+        const backImageActualName = selectedFile.name
+          .split(".")[0]
+          .replace(/[^a-zA-Z0-9]/g, "");
+
+        const extension = selectedFile.name.split(".")[1] || "";
+        const backImageName = `${backImageActualName}.${extension}`;
+
         siteurl = `${props.SiteURL}/DMS_TileDocument/${uniqueid}-${backImageName}`;
+
       } else {
-        const existingData = await getDataById(props.SiteURL, props.spHttpClient, CurrentEditID);
-        siteurl = existingData.value[0]?.Documentpath || "";
+
+        const existingData = await getDataById(
+          props.SiteURL,
+          props.spHttpClient,
+          CurrentEditID
+        );
+
+        console.log("existingData response:", existingData);
+
+        const item =
+          existingData?.value?.[0] ||
+          existingData?.d?.results?.[0] ||
+          existingData?.d ||
+          null;
+
+        console.log("Extracted item:", item);
+
+        siteurl = item?.Documentpath || item?.DocumentPath || "";
       }
 
+      console.log("Final siteurl:", siteurl);
       let str = TileName;
       let Internal = str.replace(/[^a-zA-Z0-9]/g, '');
 

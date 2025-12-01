@@ -125,7 +125,7 @@ const grantPermissions = async (context: WebPartContext, folderUrl: string, user
             }
             else if (userId.type === "Admin" || userId.type === "TileAdmin") {
                 const permissionUrl = `${context.pageContext.web.absoluteUrl}/_api/web/GetFolderByServerRelativeUrl('${folderUrl}')/ListItemAllFields/roleassignments/addroleassignment(principalid=${userId.id},roleDefId=1073741829)`;
-                const response = await context.spHttpClient.post(
+                await context.spHttpClient.post(
                     permissionUrl,
                     SPHttpClient.configurations.v1,
                     {
@@ -136,27 +136,27 @@ const grantPermissions = async (context: WebPartContext, folderUrl: string, user
                     }
                 );
 
-                if (!response.ok) {
-                    console.error('Failed to grant permission for user ID:', userId);
-                }
-                else {
+                // if (!response.ok) {
+                //     console.error('Failed to grant permission for user ID:', userId);
+                // }
+                // else {
 
-                    const permissionUrl = `${context.pageContext.web.absoluteUrl}/_api/web/GetFolderByServerRelativeUrl('${folderUrl}')/ListItemAllFields/roleassignments/addroleassignment(principalid=${userId.id},roleDefId=1073741827)`;
-                    const response = await context.spHttpClient.post(
-                        permissionUrl,
-                        SPHttpClient.configurations.v1,
-                        {
-                            headers: {
-                                Accept: 'application/json;odata=verbose',
-                                'Content-Type': 'application/json;odata=verbose',
-                            },
-                        }
-                    );
+                //     const permissionUrl = `${context.pageContext.web.absoluteUrl}/_api/web/GetFolderByServerRelativeUrl('${folderUrl}')/ListItemAllFields/roleassignments/addroleassignment(principalid=${userId.id},roleDefId=1073741827)`;
+                //     const response = await context.spHttpClient.post(
+                //         permissionUrl,
+                //         SPHttpClient.configurations.v1,
+                //         {
+                //             headers: {
+                //                 Accept: 'application/json;odata=verbose',
+                //                 'Content-Type': 'application/json;odata=verbose',
+                //             },
+                //         }
+                //     );
 
-                    if (!response.ok) {
-                        console.error('Failed to grant permission for user ID:', userId);
-                    }
-                }
+                //     if (!response.ok) {
+                //         console.error('Failed to grant permission for user ID:', userId);
+                //     }
+                // }
             }
         }
     } catch (error) {

@@ -148,6 +148,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                                 isMulti={item.ColumnType === "Multiple Select"}
                             />
                             {dynamicValuesErr[item.InternalTitleName] && <p style={{ color: "rgb(164, 38, 44)" }}>{dynamicValuesErr[item.InternalTitleName]}</p>}
+                            <br></br>
                         </div>
                     );
 
@@ -219,9 +220,12 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                 default:
                     return (
                         <div className="column6" key={index}>
+
+                            <label className={styles.Headerlabel}>{item.Title}</label>
+
                             <TextField
                                 type={"text"}
-                                label={item.Title}
+                                // label={item.Title}
                                 value={dynamicValues[item.InternalTitleName] || ""}
                                 onChange={(ev, value) => handleInputChange(item.InternalTitleName, removeSepcialCharacters(value))}
                                 multiline={item.ColumnType === "Multiple lines of Text"}
@@ -329,6 +333,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                 IsExistingRefID: item.IsExistingRefID,
             };
             let InternalStatus = "Published";
+
             if (folderObject.DefineRole) {
                 obj.CurrentApprover = folderObject.ProjectmanagerEmail === null ? folderObject.PublisherEmail : folderObject.ProjectmanagerEmail;
                 InternalStatus = folderObject.ProjectmanagerEmail == null ? "PendingWithPublisher" : "PendingWithPM";

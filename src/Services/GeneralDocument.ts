@@ -74,6 +74,58 @@ export async function getListData(url: string, context: WebPartContext) {
         });
 }
 
+//Created by rupali
+export async function checkUserIsSiteAdminById(context: any, userId: number) {
+    try {
+        const url = `${context.pageContext.web.absoluteUrl}/_api/web/siteusers/getbyid(${userId})?$select=Id,LoginName,IsSiteAdmin`;
+
+        const response = await context.spHttpClient.get(
+            url,
+            SPHttpClient.configurations.v1
+        );
+
+        if (!response.ok) {
+            console.error("Error fetching user");
+            return false;
+        }
+
+        const user = await response.json();
+        return user.IsSiteAdmin; // true / false
+    } catch (error) {
+        console.error("Error:", error);
+        return false;
+    }
+}
+
+//Created by Rupali
+export async function checkUserInProjectAdmin(context: any, userId: number) {
+    try {
+        const siteUrl = context.pageContext.web.absoluteUrl;
+
+        const url = `${siteUrl}/_api/web/sitegroups/getbyname('ProjectAdmin')/users?$select=Id,Title`;
+
+        const response = await context.spHttpClient.get(
+            url,
+            SPHttpClient.configurations.v1
+        );
+
+        if (!response.ok) {
+            console.error("Error fetching ProjectAdmin group users");
+            return false;
+        }
+
+        const data = await response.json();
+
+        // Check if userId exists in group
+        const isUserPresent = data.value.some((user: any) => user.Id === userId);
+
+        return isUserPresent; // true / false
+    } catch (error) {
+        console.error("Error:", error);
+        return false;
+    }
+}
+
 export function updateLibrary(WebUrl: string, spHttpClient: SPHttpClient, metaData: any, Id: number, listName: string) {
     return UpdateItem(WebUrl, spHttpClient, listName, metaData, Id);
 }

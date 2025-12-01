@@ -201,6 +201,9 @@ export default function FolderMaster({ props }: any): JSX.Element {
     };
 
     const TemplateDropdownonChange = async (option?: any) => {
+        setParentropdownErr("");
+        setFolderData([]);
+        setParentropdownID(null)
         setTemplatedropdownID(option);
         // setTemplateData(option);
         ParentFolderData(option.value);
@@ -224,8 +227,9 @@ export default function FolderMaster({ props }: any): JSX.Element {
 
 
     const ParentFolderDropdownonChange = async (option?: any) => {
+        setParentropdownErr("");
         setParentropdownID(option);
-        setFolderData(option);
+        //setFolderData(option);//comment by rupali
     };
 
     const ParentFolderData = async (TemplatedropdownID: number) => {
@@ -338,8 +342,7 @@ export default function FolderMaster({ props }: any): JSX.Element {
             setFolderNameErr(DisplayLabel?.ThisFieldisRequired as string);
             isValidForm = false;
         }
-
-        if (!TemplatedropdownID) {
+        else if (!TemplatedropdownID) {
             setTemplatedropdownErr(DisplayLabel?.ThisFieldisRequired as string);
             isValidForm = false;
         }
@@ -543,11 +546,20 @@ export default function FolderMaster({ props }: any): JSX.Element {
 
                             <TextField
                                 value={FolderName}
-                                onChange={(el: React.ChangeEvent<HTMLInputElement>) => SetFolderName(el.target.value)}
-                                errorMessage={FolderNameErr}
+                                // onChange={(el: React.ChangeEvent<HTMLInputElement>) => SetFolderName(el.target.value)}
+                                //errorMessage={FolderNameErr}
+                                onChange={(el: React.ChangeEvent<HTMLInputElement>) => {
+                                    SetFolderName(el.target.value);
+                                    setFolderNameErr("");   // <-- clear error on typing
+                                }}
                                 placeholder={DisplayLabel?.EnterFolderName}
 
                             />
+                            {FolderNameErr && (
+                                <p style={{ color: "red", fontSize: "12px", marginTop: "5px" }}>
+                                    {FolderNameErr}
+                                </p>
+                            )}
                         </div>
                     </div>
 
