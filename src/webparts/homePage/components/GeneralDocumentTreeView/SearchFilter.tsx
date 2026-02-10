@@ -234,84 +234,221 @@ export default function SearchFilter({ props }: any): JSX.Element {
 
 
     // Step 1 — Get all folders recursively
-    const getAllFolders = async (siteUrl: string, libraryRelativeUrl: string): Promise<any[]> => {
-        try {
-            const response = await fetch(
-                `${siteUrl}/_api/web/GetFolderByServerRelativeUrl('${libraryRelativeUrl}')/Folders?$filter=Name ne 'Forms'`,
-                { headers: { Accept: "application/json;odata=nometadata" } }
-            );
-            const data = await response.json();
+    // const getAllFolders = async (siteUrl: string, libraryRelativeUrl: string): Promise<any[]> => {
+    //     try {
+    //         const response = await fetch(
+    //             `${siteUrl}/_api/web/GetFolderByServerRelativeUrl('${libraryRelativeUrl}')/Folders?$filter=Name ne 'Forms'`,
+    //             { headers: { Accept: "application/json;odata=nometadata" } }
+    //         );
+    //         const data = await response.json();
 
-            let allFolders = data.value;
+    //         let allFolders = data.value;
 
-            // Recursively check subfolders
-            for (const folder of data.value) {
-                const subfolders = await getAllFolders(siteUrl, folder.ServerRelativeUrl);
-                allFolders = allFolders.concat(subfolders);
+    //         // Recursively check subfolders
+    //         for (const folder of data.value) {
+    //             const subfolders = await getAllFolders(siteUrl, folder.ServerRelativeUrl);
+    //             allFolders = allFolders.concat(subfolders);
+    //         }
+
+    //         return allFolders;
+    //     } catch (error) {
+    //         console.error("Error getting folders:", error);
+    //         return [];
+    //     }
+    // };
+
+    const escapeODataUrl = (url: string): string => {
+        return url.replace(/'/g, "''");
+    };
+
+    const getAllFolders = async (siteUrl: string, libraryName: string): Promise<any[]> => {
+
+        const safeLibrary = escapeODataUrl(libraryName);
+
+        const response = await fetch(
+            `${siteUrl}/_api/web/GetFolderByServerRelativeUrl('${safeLibrary}')/Folders?$filter=Name ne 'Forms'`,
+            {
+                headers: {
+                    Accept: "application/json;odata=nometadata"
+                }
             }
+        );
 
-            return allFolders;
-        } catch (error) {
-            console.error("Error getting folders:", error);
-            return [];
-        }
+        const data = await response.json();
+        return data.value || [];
     };
 
     // Step 2 — Check if a folder contains documents
-    const checkFolderHasDocuments = async (siteUrl: string, folderServerRelativeUrl: string): Promise<boolean> => {
-        try {
-            const response = await fetch(
-                `${siteUrl}/_api/web/GetFolderByServerRelativeUrl('${folderServerRelativeUrl}')/Files?$top=1`,
-                { headers: { Accept: "application/json;odata=nometadata" } }
-            );
-            const filesData = await response.json();
-            return filesData.value.length > 0;
-        } catch (error) {
-            console.error("Error checking folder:", error);
-            return false;
-        }
+    // const checkFolderHasDocuments = async (siteUrl: string, folderServerRelativeUrl: string): Promise<boolean> => {
+    //     try {
+    //         const response = await fetch(
+    //             `${siteUrl}/_api/web/GetFolderByServerRelativeUrl('${folderServerRelativeUrl}')/Files?$top=1`,
+    //             { headers: { Accept: "application/json;odata=nometadata" } }
+    //         );
+    //         const filesData = await response.json();
+    //         return filesData.value.length > 0;
+    //     } catch (error) {
+    //         console.error("Error checking folder:", error);
+    //         return false;
+    //     }
+    // };
+
+    const checkFolderHasDocuments = async (
+        siteUrl: string,
+        folderRelativeUrl: string
+    ): Promise<boolean> => {
+
+        const safeUrl = escapeODataUrl(folderRelativeUrl);
+
+        const response = await fetch(
+            `${siteUrl}/_api/web/GetFolderByServerRelativeUrl('${safeUrl}')/Files?$top=1`,
+            {
+                headers: {
+                    Accept: "application/json;odata=nometadata"
+                }
+            }
+        );
+
+        const data = await response.json();
+        return data.value && data.value.length > 0;
     };
 
+    // const escapeODataPath = (path: string): string => {
+    //     return path.replace(/'/g, "''");
+    // };
+
+
+
     // Step 3 — Main function
+    //comment by rupali 18 December for fast result
+    // const ContentSearchData = async () => {
+    //     if (!ContentSearchinput) {
+    //         setContentSearch("Field is required");
+    //         return;
+    //     }
+
+    //     let GetLibraryName = libraryName; // e.g. "Procurement"
+    //     let libraryRelativeUrl = `${GetLibraryName}`; // relative path
+
+    //     // 1. Get all folders
+    //     const allFolders = await getAllFolders(props.SiteURL, libraryRelativeUrl);
+
+    //     const foldersWithDocs: any[] = [];
+
+    //     // 2. Check which folders have documents
+    //     for (const folder of allFolders) {
+    //         const hasDocs = await checkFolderHasDocuments(props.SiteURL, folder.ServerRelativeUrl);
+
+    //         if (hasDocs) {
+    //             let Obj = {
+    //                 Name: folder.Name,
+    //                 ServerRelativeUrl: folder.ServerRelativeUrl
+    //             }
+    //             // foldersWithDocs.push(folder.ServerRelativeUrl); // store folder paths
+    //             foldersWithDocs.push(Obj); // store folder paths
+    //         }
+    //     }
+
+
+    //     if (foldersWithDocs.length > 0) {
+
+    //         // const routePath = `${props.SiteURL}/SitePages/Search.aspx?env=WebViewList&query='${ContentSearchinput} AND IsDocument:1 AND -ContentClass:STS_ListItem_Folder'&Library='${GetLibraryName}'`;
+
+    //         // working comment by rupali
+    //         // const routePath = `${props.SiteURL}/SitePages/Search.aspx?env=WebViewList&query='${ContentSearchinput}'&Library='${GetLibraryName}'`;
+    //         const query = ContentSearchinput?.trim() || "*";
+
+    //         const routePath = `${props.SiteURL}/SitePages/Search.aspx?q=${encodeURIComponent(query)}&Library=${encodeURIComponent(libraryName)}`;
+
+    //         // $window.open(webAbsoluteUrl+"/Pages/Search1.aspx/?q="+query+"&Library="+GetLibraryName,"_blank");
+    //         window.open(routePath, "_blank");
+    //     } else {
+    //         // alert("No documents available in any folder");
+    //         setContentSearch('No documents available in any folder');
+    //     }
+    // };
+
     const ContentSearchData = async () => {
-        if (!ContentSearchinput) {
+        if (!ContentSearchinput?.trim()) {
             setContentSearch("Field is required");
             return;
         }
 
-        let GetLibraryName = libraryName; // e.g. "Procurement"
-        let libraryRelativeUrl = `${GetLibraryName}`; // relative path
-
-        // 1. Get all folders
-        const allFolders = await getAllFolders(props.SiteURL, libraryRelativeUrl);
-
+        const query = ContentSearchinput.trim() || "*";
+        const allFolders = await getAllFolders(props.SiteURL, libraryName);
         const foldersWithDocs: any[] = [];
 
-        // 2. Check which folders have documents
         for (const folder of allFolders) {
-            const hasDocs = await checkFolderHasDocuments(props.SiteURL, folder.ServerRelativeUrl);
+            const hasDocs = await checkFolderHasDocuments(
+                props.SiteURL,
+                folder.ServerRelativeUrl
+            );
 
             if (hasDocs) {
-                let Obj = {
+                foldersWithDocs.push({
                     Name: folder.Name,
                     ServerRelativeUrl: folder.ServerRelativeUrl
-                }
-                // foldersWithDocs.push(folder.ServerRelativeUrl); // store folder paths
-                foldersWithDocs.push(Obj); // store folder paths
+                });
             }
         }
 
-
         if (foldersWithDocs.length > 0) {
+            const routePath = `${props.SiteURL}/SitePages/Search.aspx?env=WebViewList&q=${encodeURIComponent(
+                query
+            )}&Library=${encodeURIComponent(libraryName)}`;
 
-            // const routePath = `${props.SiteURL}/SitePages/Search.aspx?env=WebViewList&query='${ContentSearchinput} AND IsDocument:1 AND -ContentClass:STS_ListItem_Folder'&Library='${GetLibraryName}'`;
-            const routePath = `${props.SiteURL}/SitePages/Search.aspx?env=WebViewList&query='${ContentSearchinput}'&Library='${GetLibraryName}'`;
             window.open(routePath, "_blank");
         } else {
-            // alert("No documents available in any folder");
-            setContentSearch('No documents available in any folder');
+            setContentSearch("No documents available in any folder");
         }
     };
+
+    // const ContentSearchData = async () => {
+    //     if (!ContentSearchinput) {
+    //         setContentSearch("Field is required");
+    //         return;
+    //     }
+
+    //     const GetLibraryName = libraryName;
+    //     const libraryRelativeUrl = `${GetLibraryName}`;
+
+    //     // 1. Get all folders
+    //     const allFolders = await getAllFolders(
+    //         props.SiteURL,
+    //         libraryRelativeUrl
+    //     );
+
+    //     // 2. Parallel folder document check
+    //     const folderChecks = allFolders.map(async (folder: any) => {
+    //         const hasDocs = await checkFolderHasDocuments(
+    //             props.SiteURL,
+    //             folder.ServerRelativeUrl
+    //         );
+
+    //         if (hasDocs) {
+    //             return {
+    //                 Name: folder.Name,
+    //                 ServerRelativeUrl: folder.ServerRelativeUrl
+    //             };
+    //         }
+    //         return null;
+    //     });
+
+    //     const foldersWithDocs = (await Promise.all(folderChecks))
+    //         .filter(Boolean);
+
+    //     // 3. Open search page
+    //     if (foldersWithDocs.length > 0) {
+    //         const routePath =
+    //             `${props.SiteURL}/SitePages/Search.aspx` +
+    //             `?env=WebViewList&query='${ContentSearchinput}'` +
+    //             `&Library='${GetLibraryName}'`;
+
+    //         window.open(routePath, "_blank");
+    //     } else {
+    //         setContentSearch("No documents available in any folder");
+    //     }
+    // };
 
     const SearchData = async () => {
 

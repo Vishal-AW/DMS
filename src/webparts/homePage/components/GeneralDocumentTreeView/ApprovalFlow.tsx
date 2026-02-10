@@ -198,6 +198,7 @@ const ApprovalFlow: React.FunctionComponent<IApproval> = ({ context, libraryName
                 await TileSendMail(context, emailObj);
                 setAlertMsg(DisplayLabel.ApprovedMsg);
                 setIsPopupBoxVisible(true);
+                // window.location.reload();
 
             } catch (error) {
                 console.log("error", error);

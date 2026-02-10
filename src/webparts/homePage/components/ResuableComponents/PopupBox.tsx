@@ -50,14 +50,17 @@ interface IPopupboxProps {
     isPopupBoxVisible: boolean;
     hidePopup: () => void;
     msg: string;
+    type?: "success" | "warning";
 }
 
-const PopupBox: React.FC<IPopupboxProps> = ({ isPopupBoxVisible, hidePopup, msg }) => {
+const PopupBox: React.FC<IPopupboxProps> = ({ isPopupBoxVisible, hidePopup, msg, type = "success", }) => {
     console.log("Alert Box");
     if (!isPopupBoxVisible) {
         return null; // Instead of returning 'false', return 'null' when you don't want to render anything
     }
     //const PopupModal: React.FunctionComponent<PopupModalProps> = ({ isPopupBoxVisible, hidePopup }) => {
+
+    const isSuccess = type === "success";
 
     return (
         // isPopupBoxVisible && (
@@ -95,7 +98,14 @@ const PopupBox: React.FC<IPopupboxProps> = ({ isPopupBoxVisible, hidePopup, msg 
                 <div className="alert">
                     <div className="alert-content">
                         <div className="alert-icon">
-                            <Icon style={{ color: '#50cd89', fontSize: 80 }} iconName="Completed" />
+                            {/* <Icon style={{ color: '#50cd89', fontSize: 80 }} iconName="Completed" /> */}
+                            <Icon
+                                iconName={isSuccess ? "Completed" : "Warning"}
+                                style={{
+                                    fontSize: 80,
+                                    color: isSuccess ? "#50cd89" : "#d83b01",
+                                }}
+                            />
                         </div>
                         <p className="alert-message">{msg}</p>
                         <button className="alert-button" onClick={hidePopup}>OK</button>

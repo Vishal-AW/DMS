@@ -161,7 +161,7 @@ const SideMenu: React.FC<ISideMenu> = ({ onclickbutton, props }) => {
       // }
       return finalMenuHtml;
     });
-    console.log(links);
+    //console.log(links);
     return links;
   }
   function getFirstLevel(item: any) {

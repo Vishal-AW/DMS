@@ -14,6 +14,7 @@ import { ILabel } from "../Interface/ILabel";
 import Select from "react-select";
 import moment from "moment";
 import { TileSendMail } from "../../../../Services/SendEmail";
+//import { set } from "@microsoft/sp-lodash-subset";
 
 interface IUploadFileProps {
     isOpenUploadPanel: boolean;
@@ -37,7 +38,8 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
     const [dynamicValues, setDynamicValues] = useState<{ [key: string]: any; }>({});
     const [dynamicValuesErr, setDynamicValuesErr] = useState<{ [key: string]: string; }>({});
     const [attachmentsFiles, setAttachmentsFiles] = useState<any[]>([]);
-    const [attachment, setAttachment] = useState<{ [key: string]: any; }>({});
+//    const [attachment, setAttachment] = useState<{ [key: string]: any; }>({});
+const [attachment, setAttachment] = React.useState<File[]>([]);
     const [attachmentErr, setAttachmentErr] = useState<string>('');
     const [filesData, setFilesData] = useState<any[]>([]);
     const [filterFilesData, setFilterFilesData] = useState<any[]>([]);
@@ -239,38 +241,88 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
     }, [dynamicControl, options, dynamicValues, dynamicValuesErr]);
 
     // const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15 MB
-    const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB
+    //const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB
 
-    const addAttachment = () => {
-        if (!attachment.name) {
-            setAttachmentErr(DisplayLabel.ThisFieldisRequired);
-            return false;
-        }
-        if (inValidExtensions.includes(attachment.name.split('.').pop())) {
+    // const addAttachment = () => {
+    //     if (!attachment.name) {
+    //         setAttachmentErr(DisplayLabel.ThisFieldisRequired);
+    //         return false;
+    //     }
+    //     if (inValidExtensions.includes(attachment.name.split('.').pop())) {
+    //         setAttachmentErr(DisplayLabel.InvalidFileFormat);
+    //         return false;
+    //     }
+
+    //     if (attachment.size > MAX_FILE_SIZE) {
+    //         setAttachmentErr(DisplayLabel.FileValidationForSize);
+    //         return false;
+    //     }
+
+    //     setAttachmentErr('');
+    //     const newAttachment = {
+    //         attachment: attachment,
+    //         isUpdateExistingFile: "No",
+    //         OldFileName: "",
+    //         version: "1.0",
+    //         isDisabled: true,
+    //         Flag: "New"
+    //     };
+    //     setAttachmentsFiles((prev) => [...prev, newAttachment]);
+    //     setAttachment({});
+    //     setFileKey(Date.now());
+    //     // fileInputRef.current!.value = '';
+
+    // };
+
+  const addAttachment = () => {
+    if (!attachment.length) {
+        setAttachmentErr(DisplayLabel.ThisFieldisRequired);
+        return;
+    }
+
+    const validFiles: File[] = [];
+
+    for (const file of attachment) {
+        const ext = file.name.split('.').pop()?.toLowerCase();
+
+        if (ext && inValidExtensions.includes(ext)) {
             setAttachmentErr(DisplayLabel.InvalidFileFormat);
-            return false;
+            return;
         }
 
-        if (attachment.size > MAX_FILE_SIZE) {
-            setAttachmentErr(DisplayLabel.FileValidationForSize);
-            return false;
+        // if (file.size > MAX_FILE_SIZE) {
+        //     setAttachmentErr(DisplayLabel.FileValidationForSize);
+        //     return;
+        // }
+
+        // prevent duplicate filenames
+        const exists = attachmentsFiles.some(
+            att => att.attachment.name === file.name
+        );
+
+        if (!exists) {
+            validFiles.push(file);
         }
+    }
 
-        setAttachmentErr('');
-        const newAttachment = {
-            attachment: attachment,
-            isUpdateExistingFile: "No",
-            OldFileName: "",
-            version: "1.0",
-            isDisabled: true,
-            Flag: "New"
-        };
-        setAttachmentsFiles((prev) => [...prev, newAttachment]);
-        setAttachment({});
-        setFileKey(Date.now());
-        // fileInputRef.current!.value = '';
+    if (!validFiles.length) return;
 
-    };
+    const newAttachments = validFiles.map(file => ({
+        attachment: file,
+        isUpdateExistingFile: "No",
+        OldFileName: "",
+        version: "1.0",
+        isDisabled: true,
+        Flag: "New"
+    }));
+
+    setAttachmentsFiles(prev => [...prev, ...newAttachments]);
+    setAttachment([]);
+    setAttachmentErr("");
+    setFileKey(Date.now()); // reset file input
+};
+
+
 
     const onClickDetails = (index: number) => {
         let IsExistingReferenceNo = "";
@@ -453,10 +505,22 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                                 {DisplayLabel?.FileAttachmentNote}
                             </label>
 
-                            <TextField type="file" onChange={(event: React.ChangeEvent<HTMLInputElement>) => { if (event.target.files) setAttachment(event.target.files[0]); }}
+                            {/* <TextField type="file" multiple onChange={(event: React.ChangeEvent<HTMLInputElement>) => { if (event.target.files) setAttachment(event.target.files[0]); }}
                                 errorMessage={attachmentErr}
                                 key={fileKey}
-                            />
+                            /> */}
+                            <TextField
+    type="file"
+    multiple
+    onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files) {
+            setAttachment(Array.from(event.target.files));
+        }
+    }}
+    errorMessage={attachmentErr}
+    key={fileKey}
+/>
+
 
                         </div>
                         <div className="column2">

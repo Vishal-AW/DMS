@@ -129,6 +129,8 @@ const ProjectEntryForm: React.FC<IProjectEntryProps> = ({
     }, []);
 
     useEffect(() => {
+        setCreateStructure(false);
+        setFolderTemplate("");
         clearErr();
         clearFeilds();
         setIsDisabled(FormType === "ViewForm");

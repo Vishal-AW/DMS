@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { checkPermissions, commonPostMethod, getAllFolder, getApprovalData, getArchiveData, getListData, updateLibrary, checkUserIsSiteAdminById, checkUserInProjectAdmin } from "../../../../Services/GeneralDocument";
+import { checkPermissions, commonPostMethod, getAllFolder, getApprovalData, getArchiveData, getListData, updateLibrary, checkUserIsSiteAdminById, checkUserInProjectAdmin, hasFolderPermission } from "../../../../Services/GeneralDocument";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./TreeView.module.scss";
 import { CommandBarButton, DefaultButton, DialogType, Icon, IStackItemStyles, IStackStyles, IStackTokens, Panel, PanelType, PrimaryButton, Stack, DirectionalHint } from "@fluentui/react";
@@ -30,6 +30,18 @@ import moment from "moment";
 interface Folder {
     [key: string]: string | number | {} | null | undefined;
 }
+
+interface IFolderItem {
+    Name: string;
+    ServerRelativeUrl: string;
+    UniqueId?: string;
+    ListItemAllFields?: {
+        Id?: number;
+        [key: string]: any;
+    };
+    [key: string]: any; // fallback for other fields
+}
+
 const stackStyles: IStackStyles = { root: { height: '100vh' } };
 const stackItemStyles: IStackItemStyles = {
     root: {
@@ -124,6 +136,10 @@ export default function TreeView({ props }: any) {
 
     const [selectedItem, setSelectedItem] = useState<any>(null);
 
+    const [isRestrictedView, setIsRestrictedView] = useState(false);
+    const [isReadAccess, setIsReadAccess] = useState(false);
+    const [isShowCommnPopupBoxVisible, setIsShowCommnPopupBoxVisible] = useState<boolean>(false);
+
     useEffect(() => {
 
         getProjectAdminGroupUserData(props.context)
@@ -140,6 +156,16 @@ export default function TreeView({ props }: any) {
         fetchFolders(folderPath, folderName);
     }, [isOpenUploadPanel]);
 
+    // useEffect(() => {
+    //     const checkPermissions = async () => {
+    //         const url = `${props.SiteURL}/_api/web/roleassignments/getbyprincipalid(${props.userID})/roledefinitionbindings?$select=Name`;
+    //         const result = await getListData(url, props.context);
+    //         const hasRestricted = result.value.some((r: any) => r.Name === "Restricted View");
+    //         setIsRestrictedView(hasRestricted);
+    //     };
+
+    //     checkPermissions();
+    // }, []);
 
 
     // const fetchFolders = async (folderPath: string, nodeName: string) => {
@@ -176,6 +202,7 @@ export default function TreeView({ props }: any) {
 
     const fetchFolders = async (folderPath: string, nodeName: string) => {
         try {
+
 
             setShowListGridSettingSection(true);
 
@@ -268,18 +295,189 @@ export default function TreeView({ props }: any) {
     const [expandedNodes, setExpandedNodes] = useState<string[]>([libName]);
 
     const toggleNode = (nodeName: string, folderPath: string, obj: Folder) => {
+        const item = obj as IFolderItem;
+        const itemId = item.ListItemAllFields?.Id;
+        if (!itemId) {
+            console.warn("ListItemAllFields.Id missing:", item);
+            return;
+        }
+        getRestrictedUserData(folderPath, itemId, "viewListItems");
+
         setTables("");
         setFolderName(nodeName);
         setFolderPath(folderPath);
         setFolderObject(obj);
         hasRequiredPermissions(folderPath);
+
+
         if (expandedNodes.includes(nodeName))
             setExpandedNodes(expandedNodes.filter((name) => name !== nodeName));
         else
             setExpandedNodes([...expandedNodes, nodeName]);
 
+
+
+
+        // getRestrictedUserData(libDetails.LibraryName, itemId);
+        // getRestrictedUserData(libDetails.LibraryName, itemId, "viewListItems");
+
+
         fetchFolders(folderPath, nodeName);
     };
+
+    // const getRestrictedUserData = async (
+    //     LibraryName: string,
+    //     folderId: number,
+    //     ViewPermission: any  // <-- Correct typing
+    // ) => {
+    //     const canViewOnly = await hasFolderPermission(
+    //         props.context,
+    //         `/sites/rubashare_dms_uat/Shared Documents/${LibraryName}/${folderId}`,
+    //         ViewPermission
+    //     );
+
+    //     if (canViewOnly === false) {
+    //         setIsRestrictedView(true);
+    //     } else {
+    //         setIsRestrictedView(false);
+    //     }
+
+    //     console.log("Can View Only:", canViewOnly);
+    // };
+
+    //Wworking code comment by rupali
+    const getRestrictedUserData = async (folderPath: string, folderId: number, ViewPermission: any) => {
+
+        let View: any = "viewListItems";
+        let Edit: any = "editListItems";
+
+        const canView = await hasFolderPermission(
+            props.context,
+            folderPath,
+            View
+        );
+
+        const canEdit = await hasFolderPermission(
+            props.context,
+            folderPath,
+            Edit
+        );
+
+        // Restricted View Logic
+        if (canView === true && canEdit === false) {
+            setIsRestrictedView(true);
+        } else {
+            setIsRestrictedView(false);
+        }
+        console.log("VIEW:", canView, "EDIT:", canEdit, "Restricted:", canView && !canEdit);
+    }
+
+    const getReadAandRestrictedUserData = async (folderPath: string, folderId: number, ViewPermission: any) => {
+
+        let View: any = "viewListItems";
+        let Edit: any = "editListItems";
+        let Read: any = "openItems"; // BEST one for Read
+
+        const canView = await hasFolderPermission(props.context, folderPath, View);
+        const canEdit = await hasFolderPermission(props.context, folderPath, Edit);
+        const canRead = await hasFolderPermission(props.context, folderPath, Read);
+
+        // Case 1: Restricted View
+        if (canView && !canEdit && !canRead) {
+            setIsRestrictedView(true);
+            // setIsReadAccess(false);
+        }
+        // Case 2: Read
+        else if (canView && !canEdit && canRead) {
+            setIsRestrictedView(false);
+            setIsReadAccess(true);
+        }
+        // Case 3: Edit / Contribute / Full Access
+        else {
+            setIsRestrictedView(false);
+            setIsReadAccess(false);
+        }
+
+        console.log("View:", canView, "Edit:", canEdit, "Read:", canRead);
+
+        // let View: any = "viewListItems";
+        // let Edit: any = "editListItems";
+        // let Read: any = "openItems";
+
+
+        // const canView = await hasFolderPermission(
+        //     props.context,
+        //     folderPath,
+        //     View
+        // );
+
+        // const canEdit = await hasFolderPermission(
+        //     props.context,
+        //     folderPath,
+        //     Edit
+        // );
+
+        // const canRead = await hasFolderPermission(
+        //     props.context,
+        //     folderPath,
+        //     Read
+        // );
+
+        // // Detect Restricted View 
+
+        // if (canView === true && canEdit === false && canRead === false) {
+
+        //     setIsRestrictedView(true);
+        //     setIsReadAccess(false);
+        // }
+
+        // // Detect Read Access (1073741826) 
+
+        // else if (canView === true && canEdit === false && canRead === true) {
+        //     setIsRestrictedView(false);
+        //     setIsReadAccess(true);
+        // }
+
+        // else {
+        //     // Full access or admin 
+        //     setIsRestrictedView(false);
+        //     setIsReadAccess(false);
+        // }
+
+        // console.log("View:", canView, "Edit:", canEdit, "Read:", canRead);
+
+    };
+
+    //New Code
+    // const getRestrictedUserData = async (
+    //     folderPath: string,
+    //     itemId: number,
+    //     ViewPermission: any
+    // ) => {
+
+    //     let permView: any = "viewListItems";     // Normal read
+    //     let permEdit: any = "editListItems";     // Edit
+    //     let permRestricted: any = "openItems";   // Restricted View (VERY IMPORTANT)
+
+    //     const canNormalView = await hasFolderPermission(props.context, folderPath, permView);
+    //     const canEdit = await hasFolderPermission(props.context, folderPath, permEdit);
+    //     const canRestrictedView = await hasFolderPermission(props.context, folderPath, permRestricted);
+
+    //     // Determine Restricted View
+    //     let isRestrictedViewUser = false;
+
+    //     if (canRestrictedView && !canNormalView && !canEdit) {
+    //         isRestrictedViewUser = true;
+    //     }
+
+    //     setIsRestrictedView(isRestrictedViewUser);
+
+    //     console.log("Normal VIEW:", canNormalView);
+    //     console.log("Restricted VIEW:", canRestrictedView);
+    //     console.log("EDIT:", canEdit);
+    //     console.log("IS RESTRICTED VIEW:", isRestrictedViewUser);
+    // };
+
 
 
     // const getStatusColor = (status: any) => {
@@ -344,8 +542,25 @@ export default function TreeView({ props }: any) {
                             wordBreak: "break-word",
                             whiteSpace: "normal"
                         }} href="javascript:void('0')" onClick={() => {
-                            if (row._original.LinkingUrl === "")
-                                window.open(row._original.ServerRelativeUrl, "_blank");
+                            // if (row._original.LinkingUrl === "")
+                            //     window.open(row._original.ServerRelativeUrl, "_blank");
+                            // else
+                            //     window.open(row._original.LinkingUrl, "_blank");
+                            if (row._original.LinkingUrl === "") {
+                                // window.open(row._original.ServerRelativeUrl, "_blank");
+                                if (isRestrictedView === true) {
+                                    const filePath = row._original.ServerRelativeUrl;
+                                    const folderPath = filePath.substring(0, filePath.lastIndexOf("/"));
+
+                                    const previewUrl = `${props.SiteURL}/AWHSE/Forms/AllItems.aspx?id=${encodeURIComponent(filePath)
+                                        }&parent=${encodeURIComponent(folderPath)}`;
+
+                                    window.open(previewUrl, "_blank");
+                                    return;  // 👉 stop here, do NOT go to normal behavior
+                                } else {
+                                    window.open(row._original.ServerRelativeUrl, "_blank");
+                                }
+                            }
                             else
                                 window.open(row._original.LinkingUrl, "_blank");
                         }}>{item?.ActualName}</a>
@@ -466,8 +681,10 @@ export default function TreeView({ props }: any) {
     ];
 
 
+    // original comment by rupali
     const createMenuProps = (item: any): IContextualMenuProps => {
         const button = libDetails.ShowMoreActions ? libDetails.ShowMoreActions.split(";") : [];
+
         const menuItems: any = [
             {
                 key: 'docDetails',
@@ -480,109 +697,322 @@ export default function TreeView({ props }: any) {
                 onClick: () => commonFunction("View", item)
             }
         ];
-        if ((libDetails.TileAdminId === props.userID || item._original.ListItemAllFields.AuthorId === props.userID) && !libDetails.IsArchiveRequired) {
-            menuItems.push({
-                key: 'deleteDocument',
-                text: DisplayLabel.Delete,
-                onClick: () => commonFunction("Delete", item),
-            });
-        }
-        button.map((el: string) => {
-            menuItems.push({
-                key: el,
-                text: DisplayLabel[el],
-                onClick: () => commonFunction(el, item),
-            });
-        });
-        if (item._original.CheckOutType === 2) {
-            menuItems.push({
-                key: 'checkOut',
-                text: DisplayLabel.Checkout,
-                onClick: () => commonFunction("Checkout", item),
+
+
+        if (isRestrictedView === true) {
+            button.map((el: string) => {
+                menuItems.push({
+                    key: el,
+                    text: DisplayLabel[el],
+                    onClick: () => commonFunction(el, item),
+                });
             });
         }
 
-        // Only users with permission can see check-in/out options
+        if (isRestrictedView === false) {
+            if ((libDetails.TileAdminId === props.userID || item._original.ListItemAllFields.AuthorId === props.userID) && !libDetails.IsArchiveRequired) {
+                menuItems.push({
+                    key: 'deleteDocument',
+                    text: DisplayLabel.Delete,
+                    onClick: () => commonFunction("Delete", item),
+                });
+            }
+            button.map((el: string) => {
+                menuItems.push({
+                    key: el,
+                    text: DisplayLabel[el],
+                    onClick: () => commonFunction(el, item),
+                });
+            });
+            if (item._original.CheckOutType === 2) {
+                menuItems.push({
+                    key: 'checkOut',
+                    text: DisplayLabel.Checkout,
+                    onClick: () => commonFunction("Checkout", item),
+                });
+            }
 
-        const canSeeCheckInOut = (
-            item._original.CheckedOutByUser?.Id === props.userID ||
-            SiteCollectionUserFlag === true ||
-            projectAdminGroupUserFlag === true || libDetails.TileAdminId === props.userID
-        );
+            // Only users with permission can see check-in/out options
 
-        // if (item._original.CheckedOutByUser.Id === props.userID || SiteCollectionUserFlag === true) {
-        //     if (item._original.CheckOutType === 0) {
-        //         menuItems.push({
-        //             key: 'CheckIn',
-        //             text: DisplayLabel.CheckIn,
-        //             onClick: () => commonFunction("CheckIn", item),
-        //         }, {
-        //             key: 'DiscardCheckOut',
-        //             text: DisplayLabel.DiscardCheckOut,
-        //             onClick: () => commonFunction("DiscardCheckOut", item),
-        //         });
-        //     }
-        // }
-        // if (item._original.CheckOutType === 0) {
-        //     menuItems.push({
-        //         key: 'CheckIn',
-        //         text: DisplayLabel.CheckIn,
-        //         onClick: () => commonFunction("CheckIn", item),
-        //     }, {
-        //         key: 'DiscardCheckOut',
-        //         text: DisplayLabel.DiscardCheckOut,
-        //         onClick: () => commonFunction("DiscardCheckOut", item),
-        //     });
-        // }
+            const canSeeCheckInOut = (
+                item._original.CheckedOutByUser?.Id === props.userID ||
+                SiteCollectionUserFlag === true ||
+                projectAdminGroupUserFlag === true || libDetails.TileAdminId === props.userID
+            );
 
-        // If user has permission
-        if (canSeeCheckInOut) {
 
-            // File is checked out (0 = something in your case)
-            if (item._original.CheckOutType === 0) {
 
-                menuItems.push(
-                    {
-                        key: 'CheckIn',
-                        text: DisplayLabel.CheckIn,
-                        onClick: () => commonFunction("CheckIn", item),
-                    },
-                    {
-                        key: 'DiscardCheckOut',
-                        text: DisplayLabel.DiscardCheckOut,
-                        onClick: () => commonFunction("DiscardCheckOut", item),
+            // If user has permission
+            if (canSeeCheckInOut) {
+
+                // File is checked out (0 = something in your case)
+                if (item._original.CheckOutType === 0) {
+
+                    menuItems.push(
+                        {
+                            key: 'CheckIn',
+                            text: DisplayLabel.CheckIn,
+                            onClick: () => commonFunction("CheckIn", item),
+                        },
+                        {
+                            key: 'DiscardCheckOut',
+                            text: DisplayLabel.DiscardCheckOut,
+                            onClick: () => commonFunction("DiscardCheckOut", item),
+                        }
+                    );
+                }
+            }
+
+            // Return menuItems
+            //return menuItems;
+
+            if (libDetails.TileAdminId === props.userID || isValidUser) {
+                menuItems.push({
+                    key: 'share',
+                    text: DisplayLabel.Share,
+                    onClick: () => {
+                        setShareURL(`${props.SiteURL}/_layouts/15/sharedialog.aspx?listId=${libDetails.LibGuidName}&listItemId=${item._original.ListItemAllFields.Id}&clientId=sharePoint&policyTip=0&folderColor=undefined&ma=0&fullScreenMode=true&itemName=${item._original.ListItemAllFields.ActualName}&origin=${portalUrl}`);
+                        setIFrameDialogOpened(true);
                     }
-                );
+                });
+            }
+
+            if (isValidUser || libDetails.TileAdminId === props.userID) {
+                menuItems.push({
+                    key: 'advancePermission',
+                    text: DisplayLabel.AdvancePermission,
+                    onClick: () => { setItemId(item._original.ListItemAllFields.Id); setIsPanelOpen(true); },
+                });
             }
         }
 
-        // Return menuItems
-        //return menuItems;
-
-        if (libDetails.TileAdminId === props.userID || isValidUser) {
-            menuItems.push({
-                key: 'share',
-                text: DisplayLabel.Share,
-                onClick: () => {
-                    setShareURL(`${props.SiteURL}/_layouts/15/sharedialog.aspx?listId=${libDetails.LibGuidName}&listItemId=${item._original.ListItemAllFields.Id}&clientId=sharePoint&policyTip=0&folderColor=undefined&ma=0&fullScreenMode=true&itemName=${item._original.ListItemAllFields.ActualName}&origin=${portalUrl}`);
-                    setIFrameDialogOpened(true);
-                }
-            });
-        }
-
-        if (isValidUser || libDetails.TileAdminId === props.userID) {
-            menuItems.push({
-                key: 'advancePermission',
-                text: DisplayLabel.AdvancePermission,
-                onClick: () => { setItemId(item._original.ListItemAllFields.Id); setIsPanelOpen(true); },
-            });
-        }
 
         return {
             shouldFocusOnMount: true,
             items: menuItems
         };
     };
+
+    //baclkUpCopy Of original
+    // const createMenuProps = (item: any): IContextualMenuProps => {
+    //     const button = libDetails.ShowMoreActions ? libDetails.ShowMoreActions.split(";") : [];
+
+
+
+    //     const menuItems: any = [
+    //         {
+    //             key: 'docDetails',
+    //             text: DisplayLabel.History,
+    //             onClick: () => commonFunction("History", item)
+    //         },
+    //         {
+    //             key: 'view',
+    //             text: DisplayLabel.View,
+    //             onClick: () => commonFunction("View", item)
+    //         }
+    //     ];
+    //     if ((libDetails.TileAdminId === props.userID || item._original.ListItemAllFields.AuthorId === props.userID) && !libDetails.IsArchiveRequired) {
+    //         menuItems.push({
+    //             key: 'deleteDocument',
+    //             text: DisplayLabel.Delete,
+    //             onClick: () => commonFunction("Delete", item),
+    //         });
+    //     }
+    //     button.map((el: string) => {
+    //         menuItems.push({
+    //             key: el,
+    //             text: DisplayLabel[el],
+    //             onClick: () => commonFunction(el, item),
+    //         });
+    //     });
+    //     if (item._original.CheckOutType === 2) {
+    //         menuItems.push({
+    //             key: 'checkOut',
+    //             text: DisplayLabel.Checkout,
+    //             onClick: () => commonFunction("Checkout", item),
+    //         });
+    //     }
+
+    //     // Only users with permission can see check-in/out options
+
+    //     const canSeeCheckInOut = (
+    //         item._original.CheckedOutByUser?.Id === props.userID ||
+    //         SiteCollectionUserFlag === true ||
+    //         projectAdminGroupUserFlag === true || libDetails.TileAdminId === props.userID
+    //     );
+    //     if (isRestrictedView) {
+    //         alert("Restricted");
+    //     }
+
+
+
+    //     // If user has permission
+    //     if (canSeeCheckInOut) {
+
+    //         // File is checked out (0 = something in your case)
+    //         if (item._original.CheckOutType === 0) {
+
+    //             menuItems.push(
+    //                 {
+    //                     key: 'CheckIn',
+    //                     text: DisplayLabel.CheckIn,
+    //                     onClick: () => commonFunction("CheckIn", item),
+    //                 },
+    //                 {
+    //                     key: 'DiscardCheckOut',
+    //                     text: DisplayLabel.DiscardCheckOut,
+    //                     onClick: () => commonFunction("DiscardCheckOut", item),
+    //                 }
+    //             );
+    //         }
+    //     }
+
+    //     // Return menuItems
+    //     //return menuItems;
+
+    //     if (libDetails.TileAdminId === props.userID || isValidUser) {
+    //         menuItems.push({
+    //             key: 'share',
+    //             text: DisplayLabel.Share,
+    //             onClick: () => {
+    //                 setShareURL(`${props.SiteURL}/_layouts/15/sharedialog.aspx?listId=${libDetails.LibGuidName}&listItemId=${item._original.ListItemAllFields.Id}&clientId=sharePoint&policyTip=0&folderColor=undefined&ma=0&fullScreenMode=true&itemName=${item._original.ListItemAllFields.ActualName}&origin=${portalUrl}`);
+    //                 setIFrameDialogOpened(true);
+    //             }
+    //         });
+    //     }
+
+    //     if (isValidUser || libDetails.TileAdminId === props.userID) {
+    //         menuItems.push({
+    //             key: 'advancePermission',
+    //             text: DisplayLabel.AdvancePermission,
+    //             onClick: () => { setItemId(item._original.ListItemAllFields.Id); setIsPanelOpen(true); },
+    //         });
+    //     }
+
+    //     return {
+    //         shouldFocusOnMount: true,
+    //         items: menuItems
+    //     };
+    // };
+
+    // const createMenuProps = (item: sany): IContextualMenuProps => {
+
+    //     // Always available options
+    //     let menuItems: any[] = [
+    //         {
+    //             key: 'docDetails',
+    //             text: DisplayLabel.History,
+    //             onClick: () => commonFunction("History", item)
+    //         },
+    //         {
+    //             key: 'view',
+    //             text: DisplayLabel.View,
+    //             onClick: () => commonFunction("View", item)
+    //         }
+    //     ];
+
+    //     // If Restricted View → return ONLY View + History
+    //     if (isRestrictedView === true) {
+    //         return {
+    //             shouldFocusOnMount: true,
+    //             items: menuItems
+    //         };
+    //     }
+
+    //     // -----------------------------------------
+    //     // ⚠️ BELOW: Only runs when NOT Restricted View
+    //     // -----------------------------------------
+
+    //     const button = libDetails.ShowMoreActions ? libDetails.ShowMoreActions.split(";") : [];
+
+    //     // Delete option
+    //     if (
+    //         (libDetails.TileAdminId === props.userID ||
+    //             item._original.ListItemAllFields.AuthorId === props.userID) &&
+    //         !libDetails.IsArchiveRequired
+    //     ) {
+    //         menuItems.push({
+    //             key: 'deleteDocument',
+    //             text: DisplayLabel.Delete,
+    //             onClick: () => commonFunction("Delete", item),
+    //         });
+    //     }
+
+    //     // Dynamic custom actions
+    //     button.map((el: string) => {
+    //         menuItems.push({
+    //             key: el,
+    //             text: DisplayLabel[el],
+    //             onClick: () => commonFunction(el, item),
+    //         });
+    //     });
+
+    //     // Checkout option if needed
+    //     if (item._original.CheckOutType === 2) {
+    //         menuItems.push({
+    //             key: 'checkOut',
+    //             text: DisplayLabel.Checkout,
+    //             onClick: () => commonFunction("Checkout", item),
+    //         });
+    //     }
+
+    //     // Permissions to show checkin/checkout options
+    //     const canSeeCheckInOut =
+    //         item._original.CheckedOutByUser?.Id === props.userID ||
+    //         SiteCollectionUserFlag === true ||
+    //         projectAdminGroupUserFlag === true ||
+    //         libDetails.TileAdminId === props.userID;
+
+    //     if (canSeeCheckInOut) {
+    //         if (item._original.CheckOutType === 0) {
+    //             menuItems.push(
+    //                 {
+    //                     key: 'CheckIn',
+    //                     text: DisplayLabel.CheckIn,
+    //                     onClick: () => commonFunction("CheckIn", item),
+    //                 },
+    //                 {
+    //                     key: 'DiscardCheckOut',
+    //                     text: DisplayLabel.DiscardCheckOut,
+    //                     onClick: () => commonFunction("DiscardCheckOut", item),
+    //                 }
+    //             );
+    //         }
+    //     }
+
+    //     // Share
+    //     if (libDetails.TileAdminId === props.userID || isValidUser) {
+    //         menuItems.push({
+    //             key: 'share',
+    //             text: DisplayLabel.Share,
+    //             onClick: () => {
+    //                 setShareURL(
+    //                     `${props.SiteURL}/_layouts/15/sharedialog.aspx?listId=${libDetails.LibGuidName}&listItemId=${item._original.ListItemAllFields.Id}`
+    //                 );
+    //                 setIFrameDialogOpened(true);
+    //             }
+    //         });
+    //     }
+
+    //     // Advance Permission
+    //     if (isValidUser || libDetails.TileAdminId === props.userID) {
+    //         menuItems.push({
+    //             key: 'advancePermission',
+    //             text: DisplayLabel.AdvancePermission,
+    //             onClick: () => {
+    //                 setItemId(item._original.ListItemAllFields.Id);
+    //                 setIsPanelOpen(true);
+    //             },
+    //         });
+    //     }
+
+    //     return {
+    //         shouldFocusOnMount: true,
+    //         items: menuItems
+    //     };
+    // };
+
+
     const commonFunction = async (action: string, item: any) => {
         if (action === "Delete") {
             setMessage(DisplayLabel.DeleteConfirmMsg);
@@ -605,7 +1035,14 @@ export default function TreeView({ props }: any) {
             setFileName(fileDetails[0]);
             setIsOpenCommonPanel(true);
         }
-        else if (action === "Download") { location.href = `${props.SiteURL}/_layouts/15/download.aspx?SourceUrl=${item._original.ServerRelativeUrl}`; }
+        else if (action === "Download") {
+            if (isRestrictedView === true) {
+                setAlertMsg(DisplayLabel.RenameAlertMsg);
+                setIsShowCommnPopupBoxVisible(true);
+            } else {
+                location.href = `${props.SiteURL}/_layouts/15/download.aspx?SourceUrl=${item._original.ServerRelativeUrl}`;
+            }
+        }
         else if (action === "Preview") {
             setActionButton(null);
             setPanelSize(PanelType.smallFluid);
@@ -840,10 +1277,25 @@ export default function TreeView({ props }: any) {
 
             case 'bmp':
                 return <img src={`${filePath}`} alt={DisplayLabel.Preview} />;
-            case 'pdf':
-                return <iframe src={`${filePath}`} style={{ width: "100%", height: "80vh" }}></iframe>;
+            // case 'pdf':
+            //     return <iframe src={`${filePath}`} style={{ width: "100%", height: "80vh" }}></iframe>;
+            case "pdf":
+                if (isRestrictedView === true) {
+                    const folderPath = filePath.substring(0, filePath.lastIndexOf("/"));
+                    return (
+                        <iframe
+                            src={`${props.SiteURL}/AWHSE/Forms/AllItems.aspx?id=${encodeURIComponent(filePath)}&parent=${encodeURIComponent(folderPath)}`}
+                            style={{ width: "100%", height: "80vh" }}
+                        />
+                    );
+
+                } else {
+                    return <iframe src={`${filePath}`} style={{ width: "100%", height: "80vh" }}></iframe>;
+                }
         }
     };
+
+
     const renameTheFile = (id: number) => {
         if (fileName === "") {
             setFileNameErr(DisplayLabel.ThisFieldisRequired);
@@ -854,11 +1306,22 @@ export default function TreeView({ props }: any) {
                 ActualName: `${fileName}.${extension}`
             };
             updateLibrary(props.SiteURL, props.spHttpClient, obj, id, libName).then((response) => {
-                dismissFolderPanel();
-                setShowLoader({ display: "none" });
-                setAlertMsg(DisplayLabel.SubmitMsg);
-                setIsPopupBoxVisible(true);
-                fetchFolders(folderPath, folderName);
+
+                if (response) {
+                    dismissFolderPanel();
+                    setShowLoader({ display: "none" });
+                    setAlertMsg(DisplayLabel.SubmitMsg);
+                    setIsPopupBoxVisible(true);
+                    fetchFolders(folderPath, folderName);
+                }
+                else {
+                    dismissFolderPanel();
+                    setShowLoader({ display: "none" });
+                    setAlertMsg(DisplayLabel.RenameAlertMsg);
+                    setIsShowCommnPopupBoxVisible(true);
+                    //alert("Error");
+                }
+
             });
         }
     };
@@ -933,7 +1396,20 @@ export default function TreeView({ props }: any) {
                             />
                             <span className={styles["node-name"]}>{node.Name}</span>
                         </span>
-                        <div ref={(el) => (linkRef.current[node.ListItemAllFields.Id] = el)} onClick={(e) => onShowContextualMenu(e, node.ListItemAllFields.Id)}>
+                        <div ref={(el) => (linkRef.current[node.ListItemAllFields.Id] = el)}
+                            // onClick={(e) => onShowContextualMenu(e, node.ListItemAllFields.Id)}
+                            onClick={async (e) => {
+                                const itemId = node.ListItemAllFields.Id;
+                                const afolderPath = `${parentPath}/${node.Name}`;
+                                // Call your function here
+                                const result = await getReadAandRestrictedUserData(afolderPath, itemId, "viewListItems");
+                                console.log(result);
+
+                                // Now call your contextual menu function
+                                onShowContextualMenu(e, node.ListItemAllFields.Id);
+                            }}
+
+                        >
                             <Icon
                                 iconName={"More"}
                                 className={styles["folder-icon"]}
@@ -1004,44 +1480,223 @@ export default function TreeView({ props }: any) {
         ));
     };
 
+    //working code
+    // const bindMenu = (node: any, afolderPath: string) => {
+    //     // getRestrictedUserData(folderPath, itemId, "viewListItems");
+    //     const itemId = node.ListItemAllFields.Id;
+    //     getReadAandRestrictedUserData(afolderPath, itemId, "viewListItems");
+
+
+    //     const menuItems: any = [];
+
+    //     if (isValidUser || libDetails.TileAdminId === props.userID) {
+    //         menuItems.push({
+    //             key: 'advancePermission',
+    //             text: DisplayLabel.AdvancePermission,
+    //             onClick: () => { setItemId(node.ListItemAllFields.Id); setIsPanelOpen(true); },
+    //         });
+    //     }
+    //     // 📌 CASE 1: READ ACCESS → View + Share
+    //     if (isReadAccess === true && isRestrictedView === false) {
+    //         menuItems.push(
+    //             { key: "divider1", itemType: ContextualMenuItemType.Divider },
+    //             {
+    //                 key: "view",
+    //                 text: DisplayLabel.View,
+    //                 onClick: () => {
+    //                     setActionFolderPath(afolderPath);
+    //                     setProjectUpdateData(node);
+    //                     setIsCreateProjectPopupOpen(true);
+    //                     setFormType("ViewForm");
+    //                 }
+    //             },
+    //             {
+    //                 key: 'share',
+    //                 text: DisplayLabel.Share,
+    //                 onClick: () => {
+    //                     setShareURL(`${props.SiteURL}/_layouts/15/sharedialog.aspx?listId=${libDetails.LibGuidName}&listItemId=${node.ListItemAllFields.Id}&clientId=sharePoint`);
+    //                     setIFrameDialogOpened(true);
+    //                 }
+    //             }
+    //         );
+    //     }
+
+    //     // 📌 CASE 2: RESTRICTED VIEW → ONLY VIEW
+    //     else if (isRestrictedView === true && isReadAccess === false) {
+    //         menuItems.push(
+    //             { key: "divider2", itemType: ContextualMenuItemType.Divider },
+    //             {
+    //                 key: "view",
+    //                 text: DisplayLabel.View,
+    //                 onClick: () => {
+    //                     setActionFolderPath(afolderPath);
+    //                     setProjectUpdateData(node);
+    //                     setIsCreateProjectPopupOpen(true);
+    //                     setFormType("ViewForm");
+    //                 }
+    //             }
+    //         );
+    //     }
+
+    //     // 📌 CASE 3: EDIT / FULL ACCESS → ALL BUTTONS
+    //     else {
+    //         menuItems.push(
+    //             { key: "divider3", itemType: ContextualMenuItemType.Divider },
+
+    //             {
+    //                 key: 'share',
+    //                 text: DisplayLabel.Share,
+    //                 onClick: () => {
+    //                     setShareURL(`${props.SiteURL}/_layouts/15/sharedialog.aspx?listId=${libDetails.LibGuidName}&listItemId=${node.ListItemAllFields.Id}`);
+    //                     setIFrameDialogOpened(true);
+    //                 }
+    //             },
+
+    //             {
+    //                 key: "view",
+    //                 text: DisplayLabel.View,
+    //                 onClick: () => {
+    //                     setActionFolderPath(afolderPath);
+    //                     setProjectUpdateData(node);
+    //                     setIsCreateProjectPopupOpen(true);
+    //                     setFormType("ViewForm");
+    //                 }
+    //             },
+
+    //             {
+    //                 key: 'edit',
+    //                 text: DisplayLabel.Edit,
+    //                 onClick: () => {
+    //                     setActionFolderPath(afolderPath);
+    //                     setProjectUpdateData(node);
+    //                     setIsCreateProjectPopupOpen(true);
+    //                     setFormType("EditForm");
+    //                 }
+    //             },
+    //         );
+    //     }
+
+    //     return menuItems;
+    // };
+
     const bindMenu = (node: any, afolderPath: string) => {
-
-
-
         const menuItems: any = [];
+
         if (isValidUser || libDetails.TileAdminId === props.userID) {
             menuItems.push({
                 key: 'advancePermission',
                 text: DisplayLabel.AdvancePermission,
-                onClick: () => { setItemId(node.ListItemAllFields.Id); setIsPanelOpen(true); },
+                onClick: () => {
+                    setItemId(node.ListItemAllFields.Id);
+                    setIsPanelOpen(true);
+                },
             });
         }
-        menuItems.push(
-            {
-                key: 'divider_1',
-                itemType: ContextualMenuItemType.Divider,
-            },
-            {
-                key: 'share',
-                text: DisplayLabel.Share,
-                onClick: () => {
-                    setShareURL(`${props.SiteURL}/_layouts/15/sharedialog.aspx?listId=${libDetails.LibGuidName}&listItemId=${node.ListItemAllFields.Id}&clientId=sharePoint&policyTip=0&folderColor=undefined&ma=0&fullScreenMode=true&itemName=${node.Name}&origin=${portalUrl}`);
-                    setIFrameDialogOpened(true);
+
+        // CASE 1: READ USERS (not restricted)
+        if (isReadAccess || isRestrictedView) {
+            menuItems.push(
+                { key: "divider1", itemType: ContextualMenuItemType.Divider },
+                {
+                    key: "view",
+                    text: DisplayLabel.View,
+                    onClick: () => {
+                        setActionFolderPath(afolderPath);
+                        setProjectUpdateData(node);
+                        setIsCreateProjectPopupOpen(true);
+                        setFormType("ViewForm");
+                    }
+                },
+                {
+                    key: 'share',
+                    text: DisplayLabel.Share,
+                    onClick: () => {
+                        setShareURL(`${props.SiteURL}/_layouts/15/sharedialog.aspx?listId=${libDetails.LibGuidName}&listItemId=${node.ListItemAllFields.Id}`);
+                        setIFrameDialogOpened(true);
+                    }
                 }
-            },
-            {
-                key: "view",
-                text: DisplayLabel.View,
-                onClick: () => { setActionFolderPath(afolderPath); setProjectUpdateData(node); setIsCreateProjectPopupOpen(true); setFormType("ViewForm"); },
-            },
-            {
-                key: 'edit',
-                text: DisplayLabel.Edit,
-                onClick: () => { setActionFolderPath(afolderPath); setProjectUpdateData(node); setIsCreateProjectPopupOpen(true); setFormType("EditForm"); },
-            },
-        );
+            );
+        }
+
+        // CASE 3: EDIT/FULL CONTROL
+        else {
+            menuItems.push(
+                { key: "divider3", itemType: ContextualMenuItemType.Divider },
+
+                {
+                    key: 'share',
+                    text: DisplayLabel.Share,
+                    onClick: () => {
+                        setShareURL(`${props.SiteURL}/_layouts/15/sharedialog.aspx?listId=${libDetails.LibGuidName}&listItemId=${node.ListItemAllFields.Id}`);
+                        setIFrameDialogOpened(true);
+                    }
+                },
+
+                {
+                    key: "view",
+                    text: DisplayLabel.View,
+                    onClick: () => {
+                        setActionFolderPath(afolderPath);
+                        setProjectUpdateData(node);
+                        setIsCreateProjectPopupOpen(true);
+                        setFormType("ViewForm");
+                    }
+                },
+
+                {
+                    key: 'edit',
+                    text: DisplayLabel.Edit,
+                    onClick: () => {
+                        setActionFolderPath(afolderPath);
+                        setProjectUpdateData(node);
+                        setIsCreateProjectPopupOpen(true);
+                        setFormType("EditForm");
+                    }
+                },
+            );
+        }
+
         return menuItems;
     };
+
+    //Original Code
+    // const bindMenu = (node: any, afolderPath: string) => {
+
+    //     const menuItems: any = [];
+    //     if (isValidUser || libDetails.TileAdminId === props.userID) {
+    //         menuItems.push({
+    //             key: 'advancePermission',
+    //             text: DisplayLabel.AdvancePermission,
+    //             onClick: () => { setItemId(node.ListItemAllFields.Id); setIsPanelOpen(true); },
+    //         });
+    //     }
+    //     menuItems.push(
+    //         {
+    //             key: 'divider_1',
+    //             itemType: ContextualMenuItemType.Divider,
+    //         },
+    //         {
+    //             key: 'share',
+    //             text: DisplayLabel.Share,
+    //             onClick: () => {
+    //                 setShareURL(`${props.SiteURL}/_layouts/15/sharedialog.aspx?listId=${libDetails.LibGuidName}&listItemId=${node.ListItemAllFields.Id}&clientId=sharePoint&policyTip=0&folderColor=undefined&ma=0&fullScreenMode=true&itemName=${node.Name}&origin=${portalUrl}`);
+    //                 setIFrameDialogOpened(true);
+    //             }
+    //         },
+    //         {
+    //             key: "view",
+    //             text: DisplayLabel.View,
+    //             onClick: () => { setActionFolderPath(afolderPath); setProjectUpdateData(node); setIsCreateProjectPopupOpen(true); setFormType("ViewForm"); },
+    //         },
+    //         {
+    //             key: 'edit',
+    //             text: DisplayLabel.Edit,
+    //             onClick: () => { setActionFolderPath(afolderPath); setProjectUpdateData(node); setIsCreateProjectPopupOpen(true); setFormType("EditForm"); },
+    //         },
+    //     );
+    //     return menuItems;
+    // };
+
     const onShowContextualMenu = useCallback((ev: React.MouseEvent<HTMLElement>, nodeId: string) => {
         ev.preventDefault(); // don't navigate
         setNodeId(Number(nodeId));
@@ -1115,6 +1770,10 @@ export default function TreeView({ props }: any) {
     // const hidePopup = useCallback(() => { setIsPopupBoxVisible(false); }, [isPopupBoxVisible]);
     const hidePopup = useCallback(() => {
         setIsPopupBoxVisible(false);
+    }, []);
+
+    const hideCommonPopup = useCallback(() => {
+        setIsShowCommnPopupBoxVisible(false);
     }, []);
 
     //Original Code
@@ -1489,6 +2148,10 @@ export default function TreeView({ props }: any) {
                 </div>
             </Panel>
             <PopupBox isPopupBoxVisible={isPopupBoxVisible} hidePopup={hidePopup} msg={alertMsg} />
+            <PopupBox isPopupBoxVisible={isShowCommnPopupBoxVisible} hidePopup={hideCommonPopup} msg={alertMsg} type="warning" />
+
+            {/* <PopupBox isPopupBoxVisible={isShowCommnPopupBoxVisible} hidePopup={hideCommonPopup} msg={alertMsg} iconName="warning" /> */}
+
             <div className={cls["modal"]} style={showLoader}></div>
 
             {/* <Panel

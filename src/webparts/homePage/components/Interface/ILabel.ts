@@ -199,5 +199,8 @@ export interface ILabel {
     ActionDate: string;
     AllowChildInheritance: string;
     CheckInComment: string;
+    Search: string;
+    AllDocuments: string;
+    RenameAlertMsg: string;
 
 }

@@ -3,8 +3,18 @@ import { ISPHttpClientOptions, SPHttpClient, SPHttpClientResponse } from '@micro
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import { GetListItem, UpdateItem } from "../DAL/Commonfile";
 
-// import { SPPermission } from '@microsoft/sp-page-context';
+import { SPPermission } from '@microsoft/sp-page-context';
 
+const PermissionMap: Record<string, any> = {
+    viewListItems: SPPermission.viewListItems,
+    openItems: SPPermission.openItems,
+    viewVersions: SPPermission.viewVersions,
+    viewFormPages: SPPermission.viewFormPages,
+    editListItems: SPPermission.editListItems,
+    deleteListItems: SPPermission.deleteListItems,
+    approveItems: SPPermission.approveItems,
+    // add more if needed…
+};
 
 export async function getAllFolder(WebUrl: string, context: WebPartContext, FolderName: string) {
     const url = WebUrl + "/_api/Web/GetFolderByServerRelativeUrl('" + FolderName + "')?$select=*&$orderby=Id desc&$expand=Files/CheckedOutByUser,Folders,Files,Files/ModifiedBy,Folders/ListItemAllFields,Files/ListItemAllFields,ListItemAllFields,Files/Status,FileLeafRef,FileRef,FileDirRef";
@@ -125,6 +135,39 @@ export async function checkUserInProjectAdmin(context: any, userId: number) {
         return false;
     }
 }
+
+//new added by rupali to check is user restricted view permision
+
+export const hasFolderPermission = async (
+    context: any,
+    folderServerRelativeUrl: string,
+    permissionKind: keyof SPPermission
+): Promise<boolean> => {
+    try {
+        const url = `${context.pageContext.web.absoluteUrl}/_api/web/getFolderByServerRelativeUrl('${folderServerRelativeUrl}')/ListItemAllFields?$select=EffectiveBasePermissions`;
+
+        const response = await context.spHttpClient.get(url,
+            SPHttpClient.configurations.v1);
+
+        const json = await response.json();
+
+        if (!json.EffectiveBasePermissions) {
+            return false;
+        }
+
+        const perm = new SPPermission({
+            High: json.EffectiveBasePermissions.High,
+            Low: json.EffectiveBasePermissions.Low
+        });
+
+        return perm.hasPermission(PermissionMap[permissionKind]);
+
+    } catch (error) {
+        console.error("Permission check error:", error);
+        return false;
+    }
+};
+
 
 export function updateLibrary(WebUrl: string, spHttpClient: SPHttpClient, metaData: any, Id: number, listName: string) {
     return UpdateItem(WebUrl, spHttpClient, listName, metaData, Id);

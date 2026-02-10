@@ -214,9 +214,10 @@ export async function GetAllLabel(WebUrl: string, spHttpClient: SPHttpClient, La
       FolderSpecialCharacterValidation: getValue("FolderSpecialCharacterValidation", data, Language),
       ActionDate: getValue("ActionDate", data, Language),
       AllowChildInheritance: getValue("AllowChildInheritance", data, Language),
-      CheckInComment: getValue("CheckInComment", data, Language)
-
-
+      CheckInComment: getValue("CheckInComment", data, Language),
+      Search: getValue("Search", data, Language),
+      AllDocuments: getValue("AllDocuments", data, Language),
+      RenameAlertMsg: getValue("RenameAlertMsg", data, Language),
 
     };
 
