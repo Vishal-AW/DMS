@@ -65,7 +65,7 @@ export default function Master({ props }: any): JSX.Element {
   const [assignEmail, setAssignEmail] = useState<string[]>([]);
   const [TileAdminName, setTileAdminName] = useState<string>("");
   const [TileAdminID, setTileAdminID] = useState<string[]>([]);
-  const [OldTileAdminID, setOldTileAdminID] = useState<string[]>([]);
+  // const [OldTileAdminID, setOldTileAdminID] = useState<string[]>([]);
   const [order0Data, setorder0Data] = useState([]);
   const [uOrder0Data, setUorder0Data] = useState<any[]>([]);
   const [RedundancyDataID, setRedundancyDataID] = useState('');
@@ -1162,7 +1162,7 @@ export default function Master({ props }: any): JSX.Element {
       let LID = await SaveTileSetting(props.SiteURL, props.spHttpClient, option);
       if (LID != null) {
         const MainTileID = LID.Id;
-        setOldTileAdminID([LID.TileAdminId]);
+        // setOldTileAdminID([LID.TileAdminId]);
         const MainTileLID = LID.Id.toString();
         setCurrentEditID(MainTileID);
         saveAttachment(MainTileID, Fileuniqueid);
@@ -1377,13 +1377,19 @@ export default function Master({ props }: any): JSX.Element {
       setPermission(permissionData);
       grantPermissionsForLib(props.context, Internal, permissionData);
 
+      let oldData = await getDataById(props.SiteURL, props.spHttpClient, CurrentEditID);
+      let OldTileData = oldData.value;
+      const oldAdmin = OldTileData[0].TileAdmin.EMail || null;
+      const newAdmin = TileAdminID?.[0] || null;
+      const isTileAdminChanged = oldAdmin !== newAdmin;
+
       let option = {
         __metadata: { type: "SP.Data.DMS_x005f_Mas_x005f_TileListItem" },
         TileName: TileName,
         PermissionId: { results: userIds },
         TileAdminId: TilesIds[0],
-        IsTileAC: true,
-        OldAdminId: OldTileAdminID[0],
+        IsTileAC: isTileAdminChanged === true ? true : false,
+        OldAdminId: isTileAdminChanged === true ? OldTileData[0].TileAdmin.Id : null,
         AllowApprover: isAllowApprover,
         Active: isTileStatus,
         IsDynamicReference: DynamicDataReference,
@@ -1403,7 +1409,7 @@ export default function Master({ props }: any): JSX.Element {
       await UpdateTileSetting(props.SiteURL, props.spHttpClient, option, CurrentEditID);
       let UpdateData = await getDataById(props.SiteURL, props.spHttpClient, CurrentEditID);
       let UpdateTileID = UpdateData.value;
-      setOldTileAdminID([UpdateData.value[0].TileAdmin.Id]);  
+      //setOldTileAdminID([UpdateData.value[0].TileAdmin.Id]);
       if (UpdateTileID != null) {
         // if (uploadfile.length > 0) {
         //   var obj = {

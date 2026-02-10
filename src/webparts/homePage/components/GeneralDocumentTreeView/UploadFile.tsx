@@ -38,8 +38,8 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
     const [dynamicValues, setDynamicValues] = useState<{ [key: string]: any; }>({});
     const [dynamicValuesErr, setDynamicValuesErr] = useState<{ [key: string]: string; }>({});
     const [attachmentsFiles, setAttachmentsFiles] = useState<any[]>([]);
-//    const [attachment, setAttachment] = useState<{ [key: string]: any; }>({});
-const [attachment, setAttachment] = React.useState<File[]>([]);
+    //    const [attachment, setAttachment] = useState<{ [key: string]: any; }>({});
+    const [attachment, setAttachment] = React.useState<File[]>([]);
     const [attachmentErr, setAttachmentErr] = useState<string>('');
     const [filesData, setFilesData] = useState<any[]>([]);
     const [filterFilesData, setFilterFilesData] = useState<any[]>([]);
@@ -274,53 +274,68 @@ const [attachment, setAttachment] = React.useState<File[]>([]);
 
     // };
 
-  const addAttachment = () => {
-    if (!attachment.length) {
-        setAttachmentErr(DisplayLabel.ThisFieldisRequired);
-        return;
-    }
-
-    const validFiles: File[] = [];
-
-    for (const file of attachment) {
-        const ext = file.name.split('.').pop()?.toLowerCase();
-
-        if (ext && inValidExtensions.includes(ext)) {
-            setAttachmentErr(DisplayLabel.InvalidFileFormat);
+    const addAttachment = () => {
+        if (!attachment.length) {
+            setAttachmentErr(DisplayLabel.ThisFieldisRequired);
             return;
         }
 
-        // if (file.size > MAX_FILE_SIZE) {
-        //     setAttachmentErr(DisplayLabel.FileValidationForSize);
-        //     return;
-        // }
+        const validFiles: File[] = [];
+        let duplicateFound = false;
 
-        // prevent duplicate filenames
-        const exists = attachmentsFiles.some(
-            att => att.attachment.name === file.name
-        );
+        for (const file of attachment) {
+            const ext = file.name.split('.').pop()?.toLowerCase();
 
-        if (!exists) {
+            if (ext && inValidExtensions.includes(ext)) {
+                setAttachmentErr(DisplayLabel.InvalidFileFormat);
+                return;
+            }
+
+            // if (file.size > MAX_FILE_SIZE) {
+            //     setAttachmentErr(DisplayLabel.FileValidationForSize);
+            //     return;
+            // }
+
+            // prevent duplicate filenames
+            // const exists = attachmentsFiles.some(
+            //     att => att.attachment.name === file.name
+            // );
+
+            // if (!exists) {
+            //     validFiles.push(file);
+            // }
+
+            const exists = attachmentsFiles.some(
+                att => att.attachment.name.toLowerCase() === file.name.toLowerCase()
+            );
+
+            if (exists) {
+                duplicateFound = true;
+                continue;
+            }
+
             validFiles.push(file);
         }
-    }
 
-    if (!validFiles.length) return;
+        if (duplicateFound) {
+            setAttachmentErr("File with the same name already exists.");
+        }
+        if (!validFiles.length) return;
 
-    const newAttachments = validFiles.map(file => ({
-        attachment: file,
-        isUpdateExistingFile: "No",
-        OldFileName: "",
-        version: "1.0",
-        isDisabled: true,
-        Flag: "New"
-    }));
+        const newAttachments = validFiles.map(file => ({
+            attachment: file,
+            isUpdateExistingFile: "No",
+            OldFileName: "",
+            version: "1.0",
+            isDisabled: true,
+            Flag: "New"
+        }));
 
-    setAttachmentsFiles(prev => [...prev, ...newAttachments]);
-    setAttachment([]);
-    setAttachmentErr("");
-    setFileKey(Date.now()); // reset file input
-};
+        setAttachmentsFiles(prev => [...prev, ...newAttachments]);
+        setAttachment([]);
+        setAttachmentErr("");
+        setFileKey(Date.now()); // reset file input
+    };
 
 
 
@@ -510,16 +525,16 @@ const [attachment, setAttachment] = React.useState<File[]>([]);
                                 key={fileKey}
                             /> */}
                             <TextField
-    type="file"
-    multiple
-    onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-        if (event.target.files) {
-            setAttachment(Array.from(event.target.files));
-        }
-    }}
-    errorMessage={attachmentErr}
-    key={fileKey}
-/>
+                                type="file"
+                                multiple
+                                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                                    if (event.target.files) {
+                                        setAttachment(Array.from(event.target.files));
+                                    }
+                                }}
+                                errorMessage={attachmentErr}
+                                key={fileKey}
+                            />
 
 
                         </div>
