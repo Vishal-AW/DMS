@@ -464,7 +464,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                 FolderDocumentPath: `/${folderPath}`,
                 OCRStatus: "Pending",
                 UploadFlag: "Frontend",
-                Level: "1",
+                Level: "1.0",
                 Active: true
             };
 
