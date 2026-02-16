@@ -207,7 +207,13 @@ export default function TreeView({ props }: any) {
             {
                 key: "folder",
                 text: "Files Upload",
-                iconProps: { iconName: "Upload" },
+                iconProps: {
+                    iconName: "Upload",
+                    styles: {
+                        root: { color: "#0078D4" }
+                    }
+                },
+
                 onClick: () => {
                     setFileType("upload");
                     setIsOpenUploadPanel(true);
@@ -216,7 +222,12 @@ export default function TreeView({ props }: any) {
             {
                 key: "word",
                 text: "Word Document",
-                iconProps: { iconName: "WordDocument" },
+                iconProps: {
+                    iconName: "WordDocument",
+                    styles: {
+                        root: { color: "#2B579A" }
+                    }
+                },
                 onClick: () => {
                     setFileType("docx");
                     setIsOpenUploadPanel(true);
@@ -226,7 +237,12 @@ export default function TreeView({ props }: any) {
             {
                 key: "excel",
                 text: "Excel Document",
-                iconProps: { iconName: "ExcelDocument" },
+                iconProps: {
+                    iconName: "ExcelDocument",
+                    styles: {
+                        root: { color: "#217346" }
+                    }
+                },
                 onClick: () => {
                     setFileType("xlsx");
                     setIsOpenUploadPanel(true);
