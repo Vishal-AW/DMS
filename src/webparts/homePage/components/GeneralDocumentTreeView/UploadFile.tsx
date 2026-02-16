@@ -26,8 +26,9 @@ interface IUploadFileProps {
     files: any;
     folderObject: any;
     LibraryDetails: any;
+    filetype: string
 }
-function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPath, libName, folderName, files, folderObject, LibraryDetails }: IUploadFileProps) {
+function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPath, libName, folderName, files, folderObject, LibraryDetails, filetype }: IUploadFileProps) {
     // const fileInputRef = useRef<HTMLInputElement | null>(null);
     const inValidExtensions = ["exe", "mp4", "mp3"];
     const DisplayLabel: ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}');
@@ -50,6 +51,10 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
     const [fileKey, setFileKey] = useState<number>(Date.now());
     const [alertMsg, setAlertMsg] = useState("");
     const [archiveCount, setArchiveCount] = useState("");
+    const [newFileName, setNewFileName] = useState("");
+    const [fileNameError, setFileNameError] = useState("");
+    const invalidCharsRegex = /["*:<>?/\\|]/;
+
 
     const peoplePickerContext: IPeoplePickerContext = {
         absoluteUrl: context.pageContext.web.absoluteUrl,
@@ -337,8 +342,6 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
         setFileKey(Date.now()); // reset file input
     };
 
-
-
     const onClickDetails = (index: number) => {
         let IsExistingReferenceNo = "";
         if (attachmentsFiles[index].isUpdateExistingFile === "Yes") {
@@ -352,6 +355,193 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
         }
         setAttachmentsFiles((prev) => prev.map((ele, i) => i === index ? { ...ele, isDisabled: !ele.isDisabled, IsExistingRefID: IsExistingReferenceNo } : ele));
     };
+
+
+    const validateFileName = (): boolean => {
+        let isFileValid = true;
+        if (dynamicControl.length > 0) {
+            dynamicControl.forEach((item: any) => {
+                if (item.IsRequired && !dynamicValues[item.InternalTitleName]) {
+                    setDynamicValuesErr((prev) => ({
+                        ...prev,
+                        [item.InternalTitleName]: DisplayLabel.ThisFieldisRequired,
+                    }));
+                    isFileValid = false;
+                }
+            });
+        }
+
+        if (!newFileName.trim()) {
+            setFileNameError(DisplayLabel.ThisFieldisRequired);
+            isFileValid = false;
+        }
+        else if (invalidCharsRegex.test(newFileName)) {
+            setFileNameError("File name contains invalid characters");
+            isFileValid = false;
+        } else {
+            setFileNameError("");
+        }
+
+        return isFileValid;
+    };
+
+
+
+    const getDigest = async () => {
+        const response = await fetch(
+            `${context.pageContext.web.absoluteUrl}/_api/contextinfo`,
+            {
+                method: "POST",
+                headers: {
+                    "Accept": "application/json;odata=verbose"
+                }
+            }
+        );
+
+        const data = await response.json();
+        return data.d.GetContextWebInformation.FormDigestValue;
+    };
+
+
+    const createOfficeFile = async () => {
+
+        if (!validateFileName()) return;
+
+        try {
+            const digest = await getDigest();
+
+            const folderServerRelativeUrl =
+                `${context.pageContext.web.serverRelativeUrl}/${folderPath}`
+                    .replace(/\/+/g, "/");
+
+            const fileName = `${newFileName}.${filetype}`;
+            const fileServerRelativeUrl = `${folderServerRelativeUrl}/${fileName}`;
+
+            console.log("Final Path:", folderServerRelativeUrl);
+
+            const createRes = await fetch(
+                `${context.pageContext.web.absoluteUrl}/_api/web/GetFolderByServerRelativePath(decodedurl='${folderServerRelativeUrl}')/Files/add(overwrite=true,url='${fileName}')`,
+                {
+                    method: "POST",
+                    body: new ArrayBuffer(0),
+                    headers: {
+                        "Accept": "application/json;odata=verbose",
+                        "X-RequestDigest": digest
+                    }
+                }
+            );
+
+            if (!createRes.ok) {
+                throw new Error("File creation failed");
+            }
+            const itemResponse = await fetch(
+                `${context.pageContext.web.absoluteUrl}/_api/web/GetFileByServerRelativePath(decodedurl='${fileServerRelativeUrl}')/ListItemAllFields`,
+                {
+                    headers: {
+                        "Accept": "application/json;odata=verbose"
+                    }
+                }
+            );
+
+            const itemData = await itemResponse.json();
+            const itemId = itemData.d.Id;
+
+            console.log("Created Item ID:", itemId);
+
+
+            const res = await fetch(
+                `${context.pageContext.web.absoluteUrl}/_api/web/lists/getbytitle('${libName}')?$select=ListItemEntityTypeFullName`,
+                { headers: { Accept: "application/json;odata=verbose" } }
+            );
+
+            const data = await res.json();
+            const entityType = data.d.ListItemEntityTypeFullName;
+            console.log(entityType)
+
+
+            let obj: any = {
+                ActualName: fileName,
+                FolderDocumentPath: `/${folderPath}`,
+                OCRStatus: "Pending",
+                UploadFlag: "Frontend",
+                Level: "1",
+                Active: true
+            };
+
+            let InternalStatus = "Published";
+
+            if (folderObject.DefineRole) {
+                obj.CurrentApprover =
+                    folderObject.ProjectmanagerEmail === null
+                        ? folderObject.PublisherEmail
+                        : folderObject.ProjectmanagerEmail;
+
+                InternalStatus =
+                    folderObject.ProjectmanagerEmail == null
+                        ? "PendingWithPublisher"
+                        : "PendingWithPM";
+            }
+
+            const status = await getStatusByInternalStatus(
+                context.pageContext.web.absoluteUrl,
+                context.spHttpClient,
+                InternalStatus
+            );
+
+            obj.StatusId = status.value[0].ID;
+            obj.InternalStatus = status.value[0].InternalStatus;
+            obj.DisplayStatus = status.value[0].StatusName;
+
+            const queryURL = `${context.pageContext.web.absoluteUrl}/_api/web/lists/getByTitle('${libName}')/items?$select=RefSequence,Created&$top=1&$orderby=RefSequence desc`;
+
+            const LastDocRes = await getListData(queryURL, context);
+
+            const lastSeq = LastDocRes.value[0]?.RefSequence ?? 0;
+
+            const ReferenceNo = generateAutoRefNumber(
+                lastSeq,
+                folderObject,
+                LastDocRes.value[0]?.Created,
+                libName
+            );
+
+            obj.ReferenceNo = ReferenceNo.refNo.replace(/null/, "");
+            obj.RefSequence = ReferenceNo.count;
+
+            await updateLibrary(
+                context.pageContext.web.absoluteUrl,
+                context.spHttpClient,
+                obj,
+                itemId,
+                libName
+            );
+            const fileInfoRes = await fetch(
+                `${context.pageContext.web.absoluteUrl}/_api/web/GetFileByServerRelativePath(decodedurl='${fileServerRelativeUrl}')?$select=UniqueId`,
+                {
+                    headers: { Accept: "application/json;odata=verbose" }
+                }
+            );
+
+            const fileInfo = await fileInfoRes.json();
+            const uniqueId = fileInfo.d.UniqueId.replace(/-/g, "");
+
+            const openUrl =
+                `${context.pageContext.web.absoluteUrl}${fileServerRelativeUrl}` +
+                `?d=w${uniqueId}`;
+
+            window.open(openUrl, "_blank");
+
+            setShowLoader({ display: "none" });
+            dismissUploadPanel();
+
+
+        } catch (error) {
+            console.error("Error creating file:", error);
+
+        }
+    };
+
+
     const submit = async () => {
         let isValid = true;
         if (dynamicControl.length > 0) {
@@ -366,7 +556,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                 }
             });
         }
-        if (attachmentsFiles.length === 0) {
+        if (filetype === "upload" && attachmentsFiles.length === 0) {
             setAttachmentErr(DisplayLabel.ThisFieldisRequired);
             isValid = false;
         }
@@ -490,7 +680,11 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                 closeButtonAriaLabel="Close"
                 type={PanelType.large}
                 onRenderFooterContent={() => (<>
-                    <PrimaryButton onClick={submit} styles={{ root: { marginRight: 8 } }} className={styles['primary-btn']}>{DisplayLabel.Submit}</PrimaryButton>
+                    {filetype === "upload" ? (
+                        <PrimaryButton onClick={submit} styles={{ root: { marginRight: 8 } }} className={styles['primary-btn']}>{DisplayLabel.Submit}</PrimaryButton>
+                    ) : (
+                        <PrimaryButton onClick={createOfficeFile} styles={{ root: { marginRight: 8 } }} className={styles['primary-btn']}>Create File</PrimaryButton>
+                    )}
                     <DefaultButton onClick={dismissUploadPanel} className={styles['light-btn']}>{DisplayLabel.Cancel}</DefaultButton>
                 </>)}
                 isFooterAtBottom={true}
@@ -512,41 +706,42 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                     <div className="row">
                         {renderDynamicControls()}
                     </div>
-                    <div className="row">
-                        <div className="column10">
-                            <label className={styles.Headerlabel}>{DisplayLabel.ChooseFile}<span style={{ color: "red" }}>*</span> </label>
-                            <br></br>
-                            <label className={styles.Headerlabel} style={{ color: "red" }}>
-                                {DisplayLabel?.FileAttachmentNote}
-                            </label>
+                    {filetype === "upload" && (
+                        <div className="row">
+                            <div className="column10">
+                                <label className={styles.Headerlabel}>{DisplayLabel.ChooseFile}<span style={{ color: "red" }}>*</span> </label>
+                                <br></br>
+                                <label className={styles.Headerlabel} style={{ color: "red" }}>
+                                    {DisplayLabel?.FileAttachmentNote}
+                                </label>
 
-                            {/* <TextField type="file" multiple onChange={(event: React.ChangeEvent<HTMLInputElement>) => { if (event.target.files) setAttachment(event.target.files[0]); }}
+                                {/* <TextField type="file" multiple onChange={(event: React.ChangeEvent<HTMLInputElement>) => { if (event.target.files) setAttachment(event.target.files[0]); }}
                                 errorMessage={attachmentErr}
                                 key={fileKey}
                             /> */}
-                            <TextField
-                                type="file"
-                                multiple
-                                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                                    if (event.target.files) {
-                                        setAttachment(Array.from(event.target.files));
-                                    }
-                                }}
-                                errorMessage={attachmentErr}
-                                key={fileKey}
-                            />
+                                <TextField
+                                    type="file"
+                                    multiple
+                                    onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                                        if (event.target.files) {
+                                            setAttachment(Array.from(event.target.files));
+                                        }
+                                    }}
+                                    errorMessage={attachmentErr}
+                                    key={fileKey}
+                                />
 
 
-                        </div>
-                        <div className="column2">
-                            <IconButton
-                                iconProps={{ iconName: 'Add' }}
-                                style={{ background: "#009ef7", color: "#fff", border: "#009ef7", marginTop: "58px" }}
-                                onClick={addAttachment}
-                                label="Add"
-                            />
-                        </div>
-                    </div>
+                            </div>
+                            <div className="column2">
+                                <IconButton
+                                    iconProps={{ iconName: 'Add' }}
+                                    style={{ background: "#009ef7", color: "#fff", border: "#009ef7", marginTop: "58px" }}
+                                    onClick={addAttachment}
+                                    label="Add"
+                                />
+                            </div>
+                        </div>)}
                     <div className="row">
                         <div className="column12">
                             {attachmentsFiles.length ? <table className={styles.table}>
@@ -638,6 +833,25 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                             }
                         </div>
                     </div>
+
+
+                    {filetype !== "upload" && (
+                        <div className="row">
+                            <div className="column12">
+                                <TextField
+                                    label="File Name"
+                                    value={newFileName}
+                                    onChange={(e, val) => setNewFileName(val || "")}
+                                    required
+                                    errorMessage={fileNameError}
+                                />
+                            </div>
+                        </div>
+                    )}
+
+
+
+
                 </div>
             </Panel>
             <PopupBox isPopupBoxVisible={isPopupBoxVisible} hidePopup={hidePopup} msg={alertMsg} />

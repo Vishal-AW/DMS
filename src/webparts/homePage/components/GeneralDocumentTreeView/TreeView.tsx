@@ -93,7 +93,6 @@ export default function TreeView({ props }: any) {
     const onDismissSetting = () => setMenuVisible(false);
     const [viewListSetting, setViewListSetting] = useState("");
     const [isShowviewListSetting, setIsShowviewListSetting] = useState(false);
-
     const invalidCharsRegex = /["*:<>?/\\|]/;
 
 
@@ -139,6 +138,8 @@ export default function TreeView({ props }: any) {
     const [isRestrictedView, setIsRestrictedView] = useState(false);
     const [isReadAccess, setIsReadAccess] = useState(false);
     const [isShowCommnPopupBoxVisible, setIsShowCommnPopupBoxVisible] = useState<boolean>(false);
+    const [fileType, setFileType] = useState<string>("");
+
 
     useEffect(() => {
 
@@ -197,6 +198,72 @@ export default function TreeView({ props }: any) {
     //         }
     //     } catch (error) {
     //         console.error("Error fetching folders:", error);
+    //     }
+    // };
+
+
+    const uploadMenuProps: IContextualMenuProps = {
+        items: [
+            {
+                key: "folder",
+                text: "Files Upload",
+                iconProps: { iconName: "Upload" },
+                onClick: () => {
+                    setFileType("upload");
+                    setIsOpenUploadPanel(true);
+                },
+            },
+            {
+                key: "word",
+                text: "Word Document",
+                iconProps: { iconName: "WordDocument" },
+                onClick: () => {
+                    setFileType("docx");
+                    setIsOpenUploadPanel(true);
+                },
+                //onClick: () => openCreateFilePopup("docx")
+            },
+            {
+                key: "excel",
+                text: "Excel Document",
+                iconProps: { iconName: "ExcelDocument" },
+                onClick: () => {
+                    setFileType("xlsx");
+                    setIsOpenUploadPanel(true);
+                },
+                // onClick: () => openCreateFilePopup("xlsx")
+            },
+        ],
+    };
+
+    // const createOfficeFile = async () => {
+
+    //     if (!validateFileName()) return;
+
+    //     try {
+    //         const digest = await getDigest();
+
+    //         const folderServerRelativeUrl =
+    //             folderPath ||
+    //             `${props.context.pageContext.web.serverRelativeUrl}/${libDetails?.DocumentLibraryName}`;
+
+    //         await fetch(
+    //             `${props.context.pageContext.web.absoluteUrl}/_api/web/GetFolderByServerRelativeUrl('${folderServerRelativeUrl}')/Files/add(overwrite=true,url='${newFileName}.${selectedExtension}')`,
+    //             {
+    //                 method: "POST",
+    //                 body: new ArrayBuffer(0),
+    //                 headers: {
+    //                     "Accept": "application/json;odata=verbose",
+    //                     "X-RequestDigest": digest
+    //                 }
+    //             }
+    //         );
+
+    //         setIsCreateDialogOpen(false);
+    //         fetchFolders(folderServerRelativeUrl, "");
+
+    //     } catch (error) {
+    //         console.error("Error creating file:", error);
     //     }
     // };
 
@@ -2085,7 +2152,7 @@ export default function TreeView({ props }: any) {
                                     {folderPath === libName ? <></> :
                                         <div style={{ float: "right" }}>
                                             {tables === "" ? <>
-                                                {rightFolders.length === 0 && (isValidUser || libDetails.TileAdminId === props.userID || hasPermission) ? <DefaultButton text={DisplayLabel.Upload} onClick={() => setIsOpenUploadPanel(true)} className={styles['secondary-btn']} styles={{ root: { marginRight: 8 } }} /> : <></>}
+                                                {rightFolders.length === 0 && (isValidUser || libDetails.TileAdminId === props.userID || hasPermission) ? <DefaultButton text="Create or Upload" menuProps={uploadMenuProps} className={styles['secondary-btn']} styles={{ root: { marginRight: 8 } }} /> : <></>}
                                                 {files.length === 0 && (hasPermission) ? <DefaultButton className={styles['info-btn']} text={DisplayLabel.NewFolder} onClick={() => { setIsOpenFolderPanel(true); setFolderName(""); setFolderNameErr(""); }} /> : <></>}
                                             </> : <> </>
                                             }
@@ -2119,7 +2186,7 @@ export default function TreeView({ props }: any) {
             />
             <AdvancePermission isOpen={isPanelOpen} context={props.context} folderId={itemId} LibraryName={libName} dismissPanel={onDismiss} />
             <ProjectEntryForm isOpen={isCreateProjectPopupOpen} dismissPanel={dissmissProjectCreationPanel} context={props.context} LibraryDetails={libDetails} admin={admin} FormType={formType} folderObject={projectUpdateData} folderPath={actionFolderPath} ChildFolderRoleInheritance={ChildFolderRoleInheritance} />
-            <UploadFiles context={props.context} isOpenUploadPanel={isOpenUploadPanel} folderName={folderName} folderPath={folderPath} dismissUploadPanel={dismissUploadPanel} libName={libName} files={files} folderObject={folderObject?.ListItemAllFields} LibraryDetails={libDetails} />
+            <UploadFiles context={props.context} isOpenUploadPanel={isOpenUploadPanel} folderName={folderName} folderPath={folderPath} dismissUploadPanel={dismissUploadPanel} libName={libName} files={files} folderObject={folderObject?.ListItemAllFields} LibraryDetails={libDetails} filetype={fileType} />
             <Panel
                 headerText={DisplayLabel.AddNewFolder}
                 isOpen={isOpenFolderPanel}
@@ -2147,6 +2214,7 @@ export default function TreeView({ props }: any) {
                     </div>
                 </div>
             </Panel>
+
             <PopupBox isPopupBoxVisible={isPopupBoxVisible} hidePopup={hidePopup} msg={alertMsg} />
             <PopupBox isPopupBoxVisible={isShowCommnPopupBoxVisible} hidePopup={hideCommonPopup} msg={alertMsg} type="warning" />
 
