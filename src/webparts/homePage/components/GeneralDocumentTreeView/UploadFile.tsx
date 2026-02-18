@@ -464,21 +464,36 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
             });
         }
 
-        if (!newFileName.trim()) {
+        const trimmedName = newFileName.trim();
+        if (!trimmedName) {
             setFileNameError(DisplayLabel.ThisFieldisRequired);
-            isFileValid = false;
+            return false;
         }
-        else if (invalidCharsRegex.test(newFileName)) {
+
+        if (invalidCharsRegex.test(trimmedName)) {
             setFileNameError("File name contains invalid characters");
-            isFileValid = false;
-        } else {
-            setFileNameError("");
+            return false;
         }
 
+        const existsInFileData = FileData?.find(f => {
+            const actualName = f.ListItemAllFields?.ActualName;
+            if (!actualName) return false;
+
+            const nameWithoutExt =
+                actualName.substring(0, actualName.lastIndexOf(".")) || actualName;
+
+            return nameWithoutExt.toLowerCase() === trimmedName.toLowerCase();
+        });
+
+        if (existsInFileData) {
+            setFileNameError("File Name already exists");
+            return false;
+        }
+
+        setFileNameError("");
         return isFileValid;
+
     };
-
-
 
     const getDigest = async () => {
         const response = await fetch(
