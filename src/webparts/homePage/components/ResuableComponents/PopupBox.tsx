@@ -128,10 +128,33 @@ export default React.memo(PopupBox);
 interface IConfirmboxProps {
     hideDialog: boolean;
     closeDialog: () => void;
-    handleConfirm: (value: boolean) => void;
+    handleConfirm?: (value: boolean) => void;
+    handleNo?: () => void;
     msg: string;
+    Yes?: string;
+    No?: string
 }
-export const ConfirmationDialog: React.FC<IConfirmboxProps> = ({ hideDialog, closeDialog, handleConfirm, msg }) => {
+export const ConfirmationDialog: React.FC<IConfirmboxProps> = ({ hideDialog, closeDialog, handleConfirm, handleNo, msg, Yes = "Yes", No = "No" }) => {
+
+
+    const onYesClick = () => {
+        if (handleConfirm) {
+            handleConfirm(true);
+        }
+        closeDialog();
+    };
+
+    const onNoClick = () => {
+        if (handleConfirm) {
+            handleConfirm(false);
+        }
+
+        if (handleNo) {
+            handleNo();
+        } else {
+            closeDialog();
+        }
+    };
 
     return (
         <div>
@@ -145,13 +168,24 @@ export const ConfirmationDialog: React.FC<IConfirmboxProps> = ({ hideDialog, clo
                 }}
                 modalProps={{
                     isBlocking: true,
+                    isDarkOverlay: false
                 }}
             >
                 <DialogFooter>
 
                     {/* <PrimaryButton text="Yes" onClick={() => handleConfirm(true)} /> */}
-                    <PrimaryButton text="Yes" style={{ backgroundColor: '#ca5010', border: '1px solid #ca5010' }} onClick={() => handleConfirm(true)} />
-                    <DefaultButton text="No" onClick={closeDialog} />
+                    {/* <PrimaryButton text={Yes} style={{ backgroundColor: '#ca5010', border: '1px solid #ca5010' }} onClick={() => handleConfirm(true)} />
+                    <DefaultButton text={No} onClick={closeDialog} /> */}
+                    <PrimaryButton
+                        text={Yes}
+                        style={{ backgroundColor: '#ca5010', border: '1px solid #ca5010' }}
+                        onClick={onYesClick}
+                    />
+
+                    <DefaultButton
+                        text={No}
+                        onClick={onNoClick}
+                    />
                 </DialogFooter>
             </Dialog>
         </div>

@@ -7,7 +7,7 @@ import { getUserIdFromLoginName, uuidv4 } from "../../../../DAL/Commonfile";
 import { getConfigActive } from "../../../../Services/ConfigService";
 import { generateAutoRefNumber, getListData, updateLibrary, UploadFile, getDataByRefID } from "../../../../Services/GeneralDocument";
 import { getDataByLibraryName } from "../../../../Services/MasTileService";
-import PopupBox from "../ResuableComponents/PopupBox";
+import PopupBox, { ConfirmationDialog } from "../ResuableComponents/PopupBox";
 import { getStatusByInternalStatus } from "../../../../Services/StatusSerivce";
 import cls from '../HomePage.module.scss';
 import { ILabel } from "../Interface/ILabel";
@@ -26,9 +26,10 @@ interface IUploadFileProps {
     files: any;
     folderObject: any;
     LibraryDetails: any;
-    filetype: string
+    filetype: string;
+    FileData: any[]
 }
-function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPath, libName, folderName, files, folderObject, LibraryDetails, filetype }: IUploadFileProps) {
+function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPath, libName, folderName, files, folderObject, LibraryDetails, filetype, FileData }: IUploadFileProps) {
     // const fileInputRef = useRef<HTMLInputElement | null>(null);
     const inValidExtensions = ["exe", "mp4", "mp3"];
     const DisplayLabel: ILabel = JSON.parse(localStorage.getItem('DisplayLabel') || '{}');
@@ -54,6 +55,12 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
     const [newFileName, setNewFileName] = useState("");
     const [fileNameError, setFileNameError] = useState("");
     const invalidCharsRegex = /["*:<>?/\\|]/;
+
+    const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+    const [duplicateFiles, setDuplicateFiles] = useState<File[]>([]);
+    const [existingFileNamesInFileData, SetexistingFileNamesInFileData] = useState<any[]>([]);
+
+
 
 
     const peoplePickerContext: IPeoplePickerContext = {
@@ -310,16 +317,36 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
             //     validFiles.push(file);
             // }
 
-            const exists = attachmentsFiles.some(
+            // const exists = attachmentsFiles.some(
+            //     att => att.attachment.name.toLowerCase() === file.name.toLowerCase()
+            // );
+
+            // if (exists) {
+            //     duplicateFound = true;
+            //     continue;
+            // }
+
+            const existsInFileData = FileData?.find(
+                f => f.ListItemAllFields.ActualName?.toLowerCase() === file.name.toLowerCase()
+            );
+
+            const existsInAttachments = attachmentsFiles.some(
                 att => att.attachment.name.toLowerCase() === file.name.toLowerCase()
             );
 
-            if (exists) {
+            if (existsInFileData || existsInAttachments) {
                 duplicateFound = true;
+                SetexistingFileNamesInFileData(prev => [...prev, file.name]);
+                setDuplicateFiles(prev => [...prev, file]);
                 continue;
             }
 
+
             validFiles.push(file);
+        }
+
+        if (duplicateFound) {
+            setShowConfirmDialog(true);
         }
 
         if (duplicateFound) {
@@ -341,6 +368,72 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
         setAttachmentErr("");
         setFileKey(Date.now()); // reset file input
     };
+
+
+    const renameWithCounter = (file: File) => {
+        const dotIndex = file.name.lastIndexOf(".");
+        const name = file.name.substring(0, dotIndex);
+        const ext = file.name.substring(dotIndex);
+
+        let counter = 1;
+        let newName = `${name}(${counter})${ext}`;
+
+        const isExist = (fileName: string) =>
+            FileData?.some(f =>
+                f.ListItemAllFields?.ActualName?.toLowerCase() === fileName.toLowerCase()
+            ) ||
+            attachmentsFiles?.some(f =>
+                f.attachment.name.toLowerCase() === fileName.toLowerCase()
+            );
+
+        while (isExist(newName)) {
+            counter++;
+            newName = `${name}(${counter})${ext}`;
+        }
+
+        return new File([file], newName, { type: file.type });
+    };
+
+    const handleDuplicateConfirm = async (keepBoth: boolean) => {
+        setShowConfirmDialog(false);
+
+        if (!duplicateFiles.length) return;
+
+        if (keepBoth) {
+            const renamedAttachments = duplicateFiles.map(file => {
+                const renamedFile = renameWithCounter(file);
+                return {
+                    attachment: renamedFile,
+                    isUpdateExistingFile: "No",
+                    OldFileName: "",
+                    version: "1.0",
+                    isDisabled: true,
+                    Flag: "New"
+                };
+            });
+
+            setAttachmentsFiles(prev => [...prev, ...renamedAttachments]);
+        }
+        else {
+            const replaceAttachments = duplicateFiles.map(file => ({
+                attachment: file,
+                isUpdateExistingFile: "No",
+                OldFileName: "",
+                version: "1.0",
+                isDisabled: true,
+                Flag: "Replace"
+            }));
+
+            setAttachmentsFiles(prev => [...prev, ...replaceAttachments]);
+        }
+
+        setDuplicateFiles([]);
+        setFileKey(Date.now());
+    };
+
+
+
+
 
     const onClickDetails = (index: number) => {
         let IsExistingReferenceNo = "";
@@ -401,7 +494,6 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
         const data = await response.json();
         return data.d.GetContextWebInformation.FormDigestValue;
     };
-
 
     const createOfficeFile = async () => {
 
@@ -577,6 +669,7 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
             }
 
             const Fileuniqueid = await uuidv4();
+            let finalFileName = `${Fileuniqueid}-${item.attachment.name}`;
             const folderData = JSON.parse(JSON.stringify(folderObject, (key, value) => (value === null || (Array.isArray(value) && value.length === 0)) ? undefined : value));
             let obj: any = {
                 ...folderData,
@@ -619,10 +712,21 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
             obj.ReferenceNo = ReferenceNo.refNo.replace(/null/, "");
             obj.RefSequence = ReferenceNo.count;
 
+            if (item.Flag === "Replace") {
 
+                const existingFile = FileData.find(
+                    f => f.ListItemAllFields.ActualName?.toLowerCase() === item.attachment.name.toLowerCase()
+                );
 
+                if (existingFile) {
+                    finalFileName = existingFile.Name;
 
-            let UploadFileData = await UploadFile(context.pageContext.web.absoluteUrl, context.spHttpClient, item.attachment, `${Fileuniqueid}-${item.attachment.name}`, libName, obj, folderPath);
+                }
+            }
+
+            //  let UploadFileData = await UploadFile(context.pageContext.web.absoluteUrl, context.spHttpClient, item.attachment, `${Fileuniqueid}-${item.attachment.name}`, libName, obj, folderPath);
+            let UploadFileData = await UploadFile(context.pageContext.web.absoluteUrl, context.spHttpClient, item.attachment, finalFileName, libName, obj, folderPath);
+
             console.log(UploadFileData);
 
             if (folderObject.DefineRole != null) {
@@ -676,7 +780,13 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
             <Panel
                 headerText={DisplayLabel.Upload}
                 isOpen={isOpenUploadPanel}
-                onDismiss={dismissUploadPanel}
+                //onDismiss={dismissUploadPanel}
+                onDismiss={(ev) => {
+                    if (showConfirmDialog) return;
+                    dismissUploadPanel();
+                }}
+                isLightDismiss={false}
+                isBlocking={true}
                 closeButtonAriaLabel="Close"
                 type={PanelType.large}
                 onRenderFooterContent={() => (<>
@@ -855,6 +965,15 @@ function UploadFiles({ context, isOpenUploadPanel, dismissUploadPanel, folderPat
                 </div>
             </Panel>
             <PopupBox isPopupBoxVisible={isPopupBoxVisible} hidePopup={hidePopup} msg={alertMsg} />
+            <ConfirmationDialog
+                hideDialog={showConfirmDialog}
+                closeDialog={() => setShowConfirmDialog(false)}
+                handleConfirm={handleDuplicateConfirm}
+                msg={`A file with this name already exists so we couldn't upload ${existingFileNamesInFileData.join(", ")}.Add it as a new version of the existing file, or keep them both.`}
+                Yes="Keep Both"
+                No="Replace"
+            />
+
             <div className={cls["modal"]} style={showLoader}></div>
         </div>
     );
